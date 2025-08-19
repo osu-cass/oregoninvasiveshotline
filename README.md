@@ -18,7 +18,11 @@ Ensure that you have Docker and Docker Compose installed in your host's environm
 
 To use the provided Docker container definitions:
 
-    docker-compose up -d
+```bash
+docker-compose up -d
+docker-compose build
+docker compose up -d bootstrap
+```
 
 To authenticate with the provided default user:
 
