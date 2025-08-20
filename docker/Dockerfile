@@ -1,4 +1,4 @@
-FROM python:3.11-bullseye
+FROM python:3.12-slim-bookworm
 LABEL org.opencontainers.image.authors="tlinton@pdx.edu"
 LABEL org.opencontainers.image.source=https://github.com/PSU-OIT-ARC/oregoninvasiveshotline
 
@@ -8,7 +8,7 @@ RUN apt update -y && apt install -y \
   binutils libgdal-dev proj-bin
 
 # Set build arguments
-ARG APP_PYTHON=python3.11
+ARG APP_PYTHON=python3
 ARG APP_ENV=/opt/venv
 ARG APP_REQUIREMENTS=requirements.txt
 

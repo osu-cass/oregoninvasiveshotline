@@ -25,7 +25,7 @@ services:
       # - ${VOLUME_PATH}/postgres/11/main:/var/lib/postgresql/data
       - ${VOLUME_PATH}/dumps:/archive
     ports:
-      - 5431:5432
+      - 5432:5432
 
   rabbitmq:
     image: rabbitmq:3-alpine

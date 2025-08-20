@@ -13,7 +13,7 @@ psu-oit-wdt-emcee = {version = "~=1.2.0.dev2", extras = ["aws"], index = "wdt" }
 pytz = "*"
 markdown = "~=3.6.0"
 Pillow = "~=10.4.0"
-Django = { version = "~=3.2.0", extras = ["argon2", "bcrypt"]}
+Django = { version = "~=5.2.0", extras = ["argon2", "bcrypt"]}
 psycopg2 = "~=2.9.0"
 celery = "~=5.4.0"
 uWSGI = "~=2.0.0"
