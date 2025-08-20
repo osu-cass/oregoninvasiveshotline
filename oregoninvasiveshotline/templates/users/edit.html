@@ -9,8 +9,8 @@
 
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ form|bootstrap }}
-    <input type="submit" value="Submit" class="btn btn-primary"/>
+    {% bootstrap_form form %}
+    {% bootstrap_button button_type="submit" content="Submit" class="btn btn-primary" %}
     <a href="{% url 'users-list' %}" class="btn btn-warning">Cancel</a>
 </form>
 

@@ -9,9 +9,9 @@
     </h3>
 
     <form class="form-inline" style="margin: 15px 0;">
-        {{ form|bootstrap }}
+        {% bootstrap_form form %}
         <div class="pull-right">
-            <input type="submit" value="Search" class="btn btn-primary"/>
+            {% bootstrap_button button_type="submit" content="Search" class="btn btn-primary" %}
             <a href="{% url 'users-list' %}" class="btn btn-warning">Reset</a>
         </div>
     </form>

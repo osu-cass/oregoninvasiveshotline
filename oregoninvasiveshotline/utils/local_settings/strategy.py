@@ -2,7 +2,7 @@
 import logging
 import json
 import os
-import pkg_resources
+from importlib.resources import files
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from configparser import NoSectionError, RawConfigParser
@@ -60,7 +60,7 @@ class Strategy(with_metaclass(ABCMeta)):
 
         if ':' in file_name:
             package, path = file_name.split(':', 1)
-            file_name = pkg_resources.resource_filename(package, path)
+            file_name = files(package).joinpath(path)
 
         if extender:
             if not file_name:

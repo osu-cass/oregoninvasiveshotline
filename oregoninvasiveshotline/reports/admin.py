@@ -1,10 +1,10 @@
 from django.contrib import admin
-from django.contrib.gis.admin.options import OSMGeoAdmin
+from django.contrib.gis.admin.options import GISModelAdmin
 
 from .models import Report
 
 
-class CustomGeoModelAdmin(OSMGeoAdmin):
+class CustomGeoModelAdmin(GISModelAdmin):
     list_display = ['report_id', '__str__',
                     'county',
                     'claimed_by', 'created_on']

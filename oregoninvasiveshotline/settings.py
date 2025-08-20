@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os.path
 
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.urls import reverse_lazy
 from celery.schedules import crontab
 
@@ -117,7 +117,7 @@ TEMPLATES = [{
     'APP_DIRS': True,
     'OPTIONS': {
         'builtins': [
-            "bootstrapform.templatetags.bootstrap",
+            # "bootstrapform.templatetags.bootstrap",
             "oregoninvasiveshotline.templatetags.arc"
         ],
         'context_processors': [
@@ -145,8 +145,9 @@ INSTALLED_APPS = [
     "oregoninvasiveshotline.species",
     "oregoninvasiveshotline.users",
 
-    "bootstrapform",
+    # "bootstrapform",
     "rest_framework",
+    "django_bootstrap5",
 
     "django.contrib.admin",
     "django.contrib.auth",

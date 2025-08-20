@@ -6,9 +6,9 @@ about the species that was reported
 
 ## Technology stack
 
-- PostgreSQL 11
-- PostGIS 2.5.x
-- Python 3.13
+- PostgreSQL 16
+- PostGIS 3.5.x
+- Python 3.12
 - Django 5.2 LTS
 - Google Maps
 - Bootstrap 5

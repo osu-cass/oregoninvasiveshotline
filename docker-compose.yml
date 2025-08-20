@@ -14,7 +14,7 @@ networks:
 
 services:
   postgres:
-    image: postgis/postgis:11-2.5
+    image: postgis/postgis:16-3.5
     networks:
       - default
     environment:
@@ -28,7 +28,7 @@ services:
       - 5432:5432
 
   rabbitmq:
-    image: rabbitmq:3-alpine
+    image: rabbitmq:4.1-alpine
     networks:
       - default
     volumes:
@@ -37,7 +37,8 @@ services:
     # on container delete/init cycle.
     #   Refs: https://github.com/docker-library/rabbitmq/issues/106#issuecomment-241882358
     hostname: 'rabbitmq-dev'
-    user: '${USER_ID}'
+    # user: '${USER_ID}'
+    user: "0:0"
 
   bootstrap:
     build:
@@ -61,7 +62,8 @@ services:
     secrets:
       - SecretKey
       - DBPassword
-    user: '${USER_ID}'
+    # user: '${USER_ID}'
+    user: "0:0"
 
   app:
     build:
@@ -89,7 +91,8 @@ services:
       - SecretKey
       - DBPassword
       - GOOGLE_API_KEY
-    user: '${USER_ID}'
+    # user: '${USER_ID}'
+    user: "0:0"
 
   celery:
     build:
@@ -112,4 +115,5 @@ services:
     secrets:
       - SecretKey
       - DBPassword
-    user: '${USER_ID}'
+    # user: '${USER_ID}'
+    user: "0:0"

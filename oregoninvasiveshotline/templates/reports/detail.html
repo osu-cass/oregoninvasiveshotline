@@ -185,9 +185,9 @@ Report #{{ report.pk }} - {{ report }}
                                 </div>
                             {% endif %}
                             {% csrf_token %}
-                            {{ invite_form|bootstrap }}
+                            {% bootstrap_form invite_form %}
                             <input type="hidden" name="submit_flag" value="{{ invite_form.SUBMIT_FLAG }}" />
-                            <input type="submit" value="Submit" name="submit" class="btn btn-primary"/>
+                            {% bootstrap_button button_type="submit" content="Submit" class="btn btn-primary" %}
                         </form>
                     </div>
                 </div>

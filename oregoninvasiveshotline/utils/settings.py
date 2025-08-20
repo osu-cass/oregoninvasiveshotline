@@ -19,7 +19,6 @@ import inspect
 import ipaddress
 import os
 from datetime import datetime, timedelta
-from pkg_resources import get_distribution
 
 from django import VERSION as DJANGO_VERSION
 from django.conf import settings as django_settings
