@@ -20,10 +20,11 @@ Ensure that you have Docker and Docker Compose installed in your host's environm
 To use the provided Docker container definitions:
 
 ```bash
-docker-compose up -d
-docker-compose build
-docker compose up -d bootstrap
+docker compose build
+docker compose up
 ```
+
+View the website at http://localhost:8000
 
 To authenticate with the provided default user:
 
