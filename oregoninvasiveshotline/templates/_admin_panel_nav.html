@@ -1,30 +1,30 @@
-<ul class="nav nav-pills{% if nav_stacked %} nav-stacked{% endif %}">
+<ul class="nav nav-pills{% if nav_stacked %} flex-column{% endif %}">
     {% if nav_home %}
-        <li>
-            <a href="{% url 'admin-panel' %}" title="Admin Panel">
-                <span class="glyphicon glyphicon-wrench"></span>
+        <li class="nav-item">
+            <a href="{% url 'admin-panel' %}" class="nav-link{% if nav_active == 'home' %} active{% endif %}" title="Admin Panel">
+                <i class="bi bi-wrench"></i>  <!-- replace with Bootstrap Icons -->
             </a>
         </li>
     {% endif %}
-    <li{% if nav_active == 'species' %} class="active"{% endif %}>
-        <a href="{% url 'species-list' %}">Species</a>
+    <li class="nav-item">
+        <a href="{% url 'species-list' %}" class="nav-link{% if nav_active == 'species' %} active{% endif %}">Species</a>
     </li>
-    <li{% if nav_active == 'categories' %} class="active"{% endif %}>
-        <a href="{% url 'categories-list' %}">Categories</a>
+    <li class="nav-item">
+        <a href="{% url 'categories-list' %}" class="nav-link{% if nav_active == 'categories' %} active{% endif %}">Categories</a>
     </li>
-    <li{% if nav_active == 'severities' %} class="active"{% endif %}>
-        <a href="{% url 'severities-list' %}">Severities</a>
+    <li class="nav-item">
+        <a href="{% url 'severities-list' %}" class="nav-link{% if nav_active == 'severities' %} active{% endif %}">Severities</a>
     </li>
-    <li{% if nav_active == 'pages' %} class="active"{% endif %}>
-        <a href="{% url 'pages-list' %}">Static Pages</a>
+    <li class="nav-item">
+        <a href="{% url 'pages-list' %}" class="nav-link{% if nav_active == 'pages' %} active{% endif %}">Static Pages</a>
     </li>
-    <li{% if nav_active == 'users' %} class="active"{% endif %}>
-        <a href="{% url 'users-list' %}">Users</a>
+    <li class="nav-item">
+        <a href="{% url 'users-list' %}" class="nav-link{% if nav_active == 'users' %} active{% endif %}">Users</a>
     </li>
-    <li{% if nav_active == 'reports' %} class="active"{% endif %}>
-        <a href="{% url 'admin:reports_report_changelist' %}">Reports</a>
+    <li class="nav-item">
+        <a href="{% url 'admin:reports_report_changelist' %}" class="nav-link{% if nav_active == 'reports' %} active{% endif %}">Reports</a>
     </li>
-    <li{% if nav_active == 'subscriptions' %} class="active"{% endif %}>
-        <a href="{% url 'notifications-admin-list' %}">Subscriptions</a>
+    <li class="nav-item">
+        <a href="{% url 'notifications-admin-list' %}" class="nav-link{% if nav_active == 'subscriptions' %} active{% endif %}">Subscriptions</a>
     </li>
 </ul>

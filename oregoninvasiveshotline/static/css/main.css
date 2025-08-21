@@ -100,10 +100,10 @@ select[multiple] {
 #phone {
     /* the magic numbers here place the phone number in the center of the
      * Report Now button on the menu */
-    position:absolute;
-    top:30px;
-    left:-25px;
-    color:#333;
+    position: absolute;
+    top: 40px;
+    left: -35px;
+    color: #333;
     white-space: nowrap;
 }
 @media (max-width: 529px){

@@ -28,75 +28,72 @@
     <body class="{% block body_class %}{% endblock %}">
         {% block body %}
             <div>
-                <div id="header" class="container">
-                    <div class="row">
-                        <div class="col-lg-4 col-md-5 col-sm-12">
-                            <a href="{% url 'home' %}">
-                                <img src="{% static 'img/header_logo.png' %}">
-                            </a>
-                        </div>
-
-                        <div class="col-lg-4 col-md-4 col-sm-8" id="header-links">
-                            <a href="/pages/learn/">Learn</a>
-
-                            <a href="{% url 'reports-list' %}">Search&nbsp;Reports</a>
-
-                            <span style="position: relative;">
+                <nav class="navbar navbar-expand-lg navbar-light" style="padding-top: 0 !important;">
+                <div class="container rounded-bottom">
+                    <a class="navbar-brand" href="{% url 'home' %}">
+                        <img src="{% static 'img/header_logo.png' %}" alt="Oregon Invasives Hotline" class="img-fluid">
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link" href="/pages/learn/">Learn</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'reports-list' %}">Search Reports</a>
+                            </li>
+                            <li class="nav-item" style="position: relative;">
                                 <a class="btn btn-warning" href="{% url 'reports-create' %}">Report Now</a>
-                                <!-- only show the phone on certain pages, since it is kinda ugly -->
+                                {% comment %} only show phone on certain screens, since it's kinda ugly {% endcomment %}
                                 {% if request.path == '/' or request.path == '/reports/create' %}
-                                    <span id="phone" class="hidden-md hidden-sm hidden-xs">
+                                    <span id="phone" class="d-none d-lg-inline">
                                         or call <strong>1-866-INVADER</strong>
                                     </span>
                                 {% endif %}
-                            </span>
-                        </div>
-
-                        <div class="col-lg-4 col-md-3 col-sm-4" id="auth-links">
+                            </li>
+                        </ul>
+                        <ul class="navbar-nav">
                             {% if user.is_authenticated %}
-                                <div class="dropdown">
+                                <li class="nav-item dropdown">
                                     <button type="button"
                                             class="btn btn-outline-secondary dropdown-toggle"
                                             data-bs-toggle="dropdown"
                                             aria-expanded="false">
-                                        <!-- Replace glyphicon with a proper icon -->
                                         <i class="bi bi-person"></i>
                                         {{ user.get_short_name }}
                                     </button>
-
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         {% if request.session.report_ids %}
                                             <li><a class="dropdown-item strong" href="{% url 'users-home' %}">My Reports</a></li>
                                         {% endif %}
-
                                         {% if user.is_staff %}
                                             <li><a class="dropdown-item" href="{% url 'admin-panel' %}">Admin</a></li>
                                         {% elif user.is_active %}
                                             <li><a class="dropdown-item" href="{% url 'species-list' %}">Species</a></li>
                                         {% endif %}
-
                                         {% if user.is_active %}
                                             <li><a class="dropdown-item strong" href="{% url 'users-home' %}">My Account</a></li>
                                         {% endif %}
-
                                         <li><hr class="dropdown-divider"></li>
-
                                         <li><a class="dropdown-item" href="{% url 'logout' %}">Log out</a></li>
                                     </ul>
-                                </div>
+                                </li>
                             {% else %}
-                                <a href="{% url 'login' %}" class="btn btn-outline-secondary">
-                                    <!-- Replace glyphicon -->
-                                    <i class="bi bi-box-arrow-in-right"></i>
-                                    Log in
-                                </a>
+                                <li class="nav-item">
+                                    <a href="{% url 'login' %}" class="btn btn-outline-secondary">
+                                        <i class="bi bi-box-arrow-in-right"></i>
+                                        Log in
+                                    </a>
+                                </li>
                             {% endif %}
-                        </div>
-
+                        </ul>
                     </div>
                 </div>
+            </nav>
 
-                <div class="{% block main_class %}container{% endblock %}">
+                <div class="{% block main_class %}container{% endblock %} rounded-top pt-3">
                     {% if messages %}
                         {% for message in messages %}
                             <div {% if message.tags %} class="alert alert-{{ message.tags }}"{% endif %}>
