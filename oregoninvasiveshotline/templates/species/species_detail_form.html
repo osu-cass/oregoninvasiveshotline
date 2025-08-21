@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load django_bootstrap5 %}
+
 {% block content %}
 {% if form.instance.pk %}
     <h3>Edit Species</h3>
@@ -9,13 +11,13 @@
 
 <form action="" method="post">
     {% csrf_token %}
-    {{ form.name|bootstrap }}
-    {{ form.scientific_name|bootstrap }}
-    {{ form.category|bootstrap }}
-    {{ form.severity|bootstrap }}
-    {{ form.remedy|bootstrap }}
-    {{ form.resources|bootstrap }}
-    {{ form.is_confidential|bootstrap }}
+    {% bootstrap_field form.name %}
+    {% bootstrap_field form.scientific_name %}
+    {% bootstrap_field form.category %}
+    {% bootstrap_field form.severity %}
+    {% bootstrap_field form.remedy %}
+    {% bootstrap_field form.resources %}
+    {% bootstrap_field form.is_confidential %}
     <input type="submit" class="btn btn-primary" value="Update" />
     <a href="{% url 'species-list' %}" class="btn btn-warning">Cancel</a>
 </form>

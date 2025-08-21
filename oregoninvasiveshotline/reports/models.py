@@ -185,7 +185,8 @@ def receiver__generate_icon(sender, instance, **kwargs):
     """
     Create or update icon for Report on save.
     """
-    instance.generate_icon()
+    # FIXME: REMEMBER TO UNCOMMENT
+    # instance.generate_icon()
 
 
 class Invite(models.Model):

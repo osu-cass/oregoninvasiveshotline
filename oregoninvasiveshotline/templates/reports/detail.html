@@ -2,6 +2,7 @@
 
 {% load permissions %}
 {% load static %}
+{% load django_bootstrap5 %}
 
 
 {% block title %}
@@ -149,24 +150,24 @@ Report #{{ report.pk }} - {{ report }}
                                     {% endif %}
                                 </div>
                             {% endif %}
-                            {{ management_form.edrr_status|bootstrap }}
-                            {{ management_form.category|bootstrap }}
+                            {% bootstrap_field management_form.edrr_status %}
+                            {% bootstrap_field management_form.category %}
                             <div id="reported-species">
-                                {{ management_form.actual_species|bootstrap }}
+                                {% bootstrap_field management_form.actual_species %}
                                 <p>&mdash; or &mdash; create a new species</p>
                                 <table>
                                     <tr>
-                                        <td>{{ management_form.new_species|bootstrap }}</td>
+                                        <td>{% bootstrap_field management_form.new_species %}</td>
                                         <td>&nbsp;</td>
-                                        <td>{{ management_form.severity|bootstrap }}</td>
+                                        <td>{% bootstrap_field management_form.severity %}</td>
                                     </tr>
                                 </table>
                             </div>
                             <hr />
-                            {{ management_form.is_public|bootstrap }}
-                            {{ management_form.is_archived|bootstrap }}
+                            {% bootstrap_field management_form.is_public %}
+                            {% bootstrap_field management_form.is_archived %}
                             <input type="hidden" name="submit_flag" value="{{ management_form.SUBMIT_FLAG }}" />
-                            <input type="submit" value="Submit" name="submit" class="btn btn-primary"/>
+                            {% bootstrap_button button_type="submit" content="Submit" class="btn btn-primary" %}
                         </form>
                     </div>
                     <div class="public-form tab-pane" id="invite">

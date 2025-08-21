@@ -1,12 +1,14 @@
 {% extends "base.html" %}
 
+{% load django_bootstrap5 %}
+
 {% block content %}
 <h3>Edit User Subscription</h3>
     <form method="post">
         {% csrf_token %}
-        {{ form.user|bootstrap }}
-        {{ form.name|bootstrap }}
-        {{ form.query|bootstrap }}
+        {% bootstrap_field form.user %}
+        {% bootstrap_field form.name %}
+        {% bootstrap_field form.query %}
         <input type="submit" name="submit" value="Submit" class="btn btn-primary"/>
         <a href="javascript:window.history.go(-1)" class="btn btn-default">Back</a>
     </form>

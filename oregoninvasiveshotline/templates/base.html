@@ -56,52 +56,43 @@
                             {% if user.is_authenticated %}
                                 <div class="dropdown">
                                     <button type="button"
-                                            class="btn btn-default dropdown-toggle"
-                                            data-toggle="dropdown"
-                                            aria-expanded="true"
-                                            aria-haspopup="true">
-                                        <span class="glyphicon glyphicon-user"></span>
+                                            class="btn btn-outline-secondary dropdown-toggle"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false">
+                                        <!-- Replace glyphicon with a proper icon -->
+                                        <i class="bi bi-person"></i>
                                         {{ user.get_short_name }}
-                                        <span class="caret"></span>
                                     </button>
 
-                                    <ul class="dropdown-menu dropdown-menu-right">
+                                    <ul class="dropdown-menu dropdown-menu-end">
                                         {% if request.session.report_ids %}
-                                            <li>
-                                                <a class="strong" href="{% url 'users-home' %}">My Reports</a>
-                                            </li>
+                                            <li><a class="dropdown-item strong" href="{% url 'users-home' %}">My Reports</a></li>
                                         {% endif %}
 
                                         {% if user.is_staff %}
-                                            <li>
-                                                <a href="{% url 'admin-panel' %}">Admin</a>
-                                            </li>
+                                            <li><a class="dropdown-item" href="{% url 'admin-panel' %}">Admin</a></li>
                                         {% elif user.is_active %}
-                                            <li>
-                                                <a href="{% url 'species-list' %}">Species</a>
-                                            </li>
+                                            <li><a class="dropdown-item" href="{% url 'species-list' %}">Species</a></li>
                                         {% endif %}
 
                                         {% if user.is_active %}
-                                            <li>
-                                                <a class="strong" href="{% url 'users-home' %}">My Account</a>
-                                            </li>
+                                            <li><a class="dropdown-item strong" href="{% url 'users-home' %}">My Account</a></li>
                                         {% endif %}
 
-                                        <li class="divider"></li>
+                                        <li><hr class="dropdown-divider"></li>
 
-                                        <li>
-                                            <a href="{% url 'logout' %}">Log out</a>
-                                        </li>
+                                        <li><a class="dropdown-item" href="{% url 'logout' %}">Log out</a></li>
                                     </ul>
                                 </div>
                             {% else %}
-                                <a href="{% url 'login' %}" class="btn btn-default">
-                                    <span class="glyphicon glyphicon-log-in"></span>
+                                <a href="{% url 'login' %}" class="btn btn-outline-secondary">
+                                    <!-- Replace glyphicon -->
+                                    <i class="bi bi-box-arrow-in-right"></i>
                                     Log in
                                 </a>
                             {% endif %}
                         </div>
+
                     </div>
                 </div>
 

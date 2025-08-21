@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load django_bootstrap5 %}
+
 {% block content %}
     {% include '_admin_panel_nav.html' with nav_home=True nav_active='species' %}<hr>
 
@@ -10,9 +12,9 @@
 
     <form class="form-inline" style="margin: 15px 0;">
         {{ form.non_field_errors }}
-        {{ form.q|bootstrap }}
-        {{ form.order_by|bootstrap }}
-        {{ form.order|bootstrap }}
+        {% bootstrap_field form.q %}
+        {% bootstrap_field form.order_by %}
+        {% bootstrap_field form.order %}
         <div class="pull-right">
             <input type="submit" name="submit" value="Search" class="btn btn-primary" />
             <a class="btn btn-warning" href="{% url 'species-list' %}">Reset</a>

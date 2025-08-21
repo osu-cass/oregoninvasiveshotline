@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block content %}
 
+{% load django_bootstrap5 %}
+
 {% if form.instance.pk %}
     <h3>Edit User</h3>
 {% else %}
