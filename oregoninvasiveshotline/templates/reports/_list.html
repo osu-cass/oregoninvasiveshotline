@@ -57,17 +57,17 @@
                             {% if user.is_active %}
                                 <span class="pull-right">
                                     {% if report.is_public %}
-                                        <span title="Public" class="glyphicon glyphicon-eye-open"></span>
+                                        <span title="Public" class="bi bi-eye"></span>
                                     {% endif %}
                                     {% if report.actual_species %}
-                                        <span title="Confirmed" class="glyphicon glyphicon-ok"></span>
+                                        <span title="Confirmed" class="bi bi-check-circle"></span>
                                     {% endif %}
                                     {% if report.is_archived %}
-                                        <span title="Archived" class="glyphicon glyphicon-oil"></span>
+                                        <span title="Archived" class="bi bi-archive"></span>
                                     {% endif %}
                                     {% if report.claimed_by_id %}
                                         <span title="Claimed by {{ report.claimed_by }}"
-                                              class="glyphicon glyphicon-user {% if report.claimed_by_id == request.user.pk %}text-info strong{% endif %}">
+                                              class="bi bi-person {% if report.claimed_by_id == request.user.pk %}text-info strong{% endif %}">
                                         </span>
                                     {% endif %}
                                 </span>

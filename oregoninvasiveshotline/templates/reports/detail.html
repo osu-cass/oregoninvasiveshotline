@@ -41,13 +41,13 @@ Report #{{ report.pk }} - {{ report }}
 
             {% if user.is_active %}
                 {% if report.is_public %}
-                    <span class="glyphicon glyphicon-eye-open" title="Public"></span>
+                    <span class="bi bi-eye" title="Public"></span>
                 {% endif %}
                 {% if report.actual_species %}
-                    <span class="glyphicon glyphicon-ok" title="Confirmed"></span>
+                    <span class="bi bi-check-circle" title="Confirmed"></span>
                 {% endif %}
                 {% if report.is_archived %}
-                    <span class="glyphicon glyphicon-oil" title="Archived"></span>
+                    <span class="bi bi-archive" title="Archived"></span>
                 {% endif %}
             {% endif %}
         </p>
@@ -126,9 +126,13 @@ Report #{{ report.pk }} - {{ report }}
         {% if report.claimed_by and report.claimed_by == user %}
             <div class="report-management clearfix sidebar-block">
                 <h4>Report Management {% if report.claimed_by == user %}<small><a href="{% url 'reports-unclaim' report.pk %}">(unclaim)</a></small>{% endif %}</h4>
-                <ul class="nav nav-tabs" id="management-tabs">
-                    <li class="active"><a data-toggle="tab" href="#confirm"><span class="glyphicon glyphicon-grain"></span> Species</a></li>
-                    <li><a data-toggle="tab" href="#invite"><span class="glyphicon glyphicon-phone-alt"></span> Invite {% if invites %}<small>({{ invites|length }})</small>{% endif %}</a></li>
+                <ul class="nav nav-pills" id="management-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#confirm"><span class="bi bi-bar-chart-fill"></span> Species</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#invite"><span class="bi bi-telephone-fill"></span> Invite {% if invites %}<small>({{ invites|length }})</small>{% endif %}</a>
+                    </li>
                 </ul>
 
                 <div class="tab-content">
