@@ -12,17 +12,18 @@
 
         {% if reports %}
             <div id="map-canvas" style="height: 550px;"></div>
-        {% else %}
+        {% endif %}
             <div class="alert alert-warning">
+                {% if not reports %}
                 <p>
                     No matching reports found.
                 </p>
+                {% endif %}
                 <p>
                     You can <a href="{{ subscription_url }}">subscribe to this search</a> to be
                     alerted when a matching report is added.
                 </p>
             </div>
-        {% endif %}
         <br>
 
         {% include 'reports/_legend_dialog.html' %}

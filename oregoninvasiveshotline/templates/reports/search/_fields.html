@@ -1,12 +1,16 @@
-
-
+<div class="d-flex flex-column">
   <div id="search-input-group" class="input-group">
     <input name="q" id="id_q" type="search"
-           class="form-control"
+           class="form-control rounded"
            value="{{ form.q.value|default:'' }}"
            placeholder="Enter category, county, species, or other keyword(s)" />
-    <div class="input-group-btn">
+    <div class="input-group-append d-none d-md-block ms-2">
       <input type="submit" value="Search" name="submit" class="btn btn-primary">
       <a href="{% url 'reports-list' %}" class="btn btn-warning">Reset</a>
     </div>
   </div>
+  <div class="d-flex flex-wrap mt-2 d-md-none">
+    <input type="submit" value="Search" name="submit" class="btn btn-primary flex-grow-1 me-2">
+    <a href="{% url 'reports-list' %}" class="btn btn-warning flex-grow-1">Reset</a>
+  </div>
+</div>
