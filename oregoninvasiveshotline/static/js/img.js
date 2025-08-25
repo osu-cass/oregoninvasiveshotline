@@ -2,8 +2,8 @@ function resizeImage(img){
     /*
     Returns the image element as a dataurl resized to be at most 800x600
     */
-    var MAX_WIDTH = 800.0;
-    var MAX_HEIGHT = 600.0;
+    var MAX_WIDTH = 1920.0;
+    var MAX_HEIGHT = 1080.0;
 
     var width = img.width;
     var height = img.height;

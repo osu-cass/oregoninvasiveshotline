@@ -38,7 +38,7 @@ services:
     #   Refs: https://github.com/docker-library/rabbitmq/issues/106#issuecomment-241882358
     hostname: 'rabbitmq-dev'
     # user: '${USER_ID}'
-    user: "0:0"
+    # user: "0:0"
 
   bootstrap:
     build:
@@ -62,8 +62,8 @@ services:
     secrets:
       - SecretKey
       - DBPassword
-    # user: '${USER_ID}'
-    user: "0:0"
+    user: '${USER_ID}'
+    # user: "0:0"
 
   app:
     build:
@@ -84,6 +84,7 @@ services:
       - ${VOLUME_PATH}/media:/media
       - ${VOLUME_PATH}/static:/static
       - ./:/app
+      # - ./media:/media
     depends_on:
       - postgres
       - rabbitmq
@@ -91,8 +92,8 @@ services:
       - SecretKey
       - DBPassword
       - GOOGLE_API_KEY
-    # user: '${USER_ID}'
-    user: "0:0"
+    user: '${USER_ID}'
+    # user: "0:0"
 
   celery:
     build:
@@ -115,5 +116,5 @@ services:
     secrets:
       - SecretKey
       - DBPassword
-    # user: '${USER_ID}'
-    user: "0:0"
+    user: '${USER_ID}'
+    # user: "0:0"
