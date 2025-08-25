@@ -113,6 +113,7 @@ class Report(models.Model):
         """
         icon_path = self.icon_path
         if force or not os.path.exists(icon_path):
+            os.makedirs(os.path.dirname(icon_path), exist_ok=True)
             inner_icon_path = self.category.icon and self.category.icon.path
             icon = generate_icon(icon_path, inner_icon_path, self.icon_color)
             return icon
@@ -147,6 +148,7 @@ class Report(models.Model):
 
         sub_dir = 'generated_thumbnails'
         output_dir = os.path.join(settings.MEDIA_ROOT, sub_dir)
+        os.makedirs(output_dir, exist_ok=True)
         media_url = posixpath.join(settings.MEDIA_URL, sub_dir)
 
         file_name = '{image.pk}.png'.format(image=image)
@@ -186,7 +188,7 @@ def receiver__generate_icon(sender, instance, **kwargs):
     Create or update icon for Report on save.
     """
     # FIXME: REMEMBER TO UNCOMMENT
-    # instance.generate_icon()
+    instance.generate_icon()
 
 
 class Invite(models.Model):
