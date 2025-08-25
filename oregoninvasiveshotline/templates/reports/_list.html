@@ -39,7 +39,7 @@
                     <tr class="{{ report.css_class }}">
                         <td class="reports-table-img" rowspan="2">
                             <a href="#map-canvas" class="report-location-click" data-report-index="{{ forloop.counter0 }}">
-                                <img src="{{ report.image_url|default:report.icon_url }}">
+                                <img src="{{ report.image_url|default:report.icon_url }}" alt="Image/icon representing report">
                             </a>
                         </td>
 

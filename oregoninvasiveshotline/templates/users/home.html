@@ -10,7 +10,7 @@ Account Home
             {% if user.pk %}
                 <div id="avatar_box" class="col-md-4">
                     <div id="avatar-image">
-                        <img src="{{ user.get_avatar_url }}" />
+                        <img src="{{ user.get_avatar_url }}" alt="Your avatar (normally first and last inital if unchanged)" />
                     </div>
                     <div class="panel panel-default">
                         <div class="panel-body">
@@ -53,7 +53,7 @@ Account Home
                     <p><strong>Affiliations:</strong> {{ user.affiliations|linebreaksbr }}</p>
                 {% endif %}
                 {% if user.is_active and not user.affiliations and not user.biography %}
-                    <div class="alert alert-warning">You haven't entered a biography or any affiliations. Go to your <a href="{% url 'users-edit' user.pk %}">Edit Profile</a> page to add them.</div>
+                    <div class="alert alert-warning" style="background-color: #fcfaf3ff;">You haven't entered a biography or any affiliations. Go to your <a style="color: #3e3cbeff;" href="{% url 'users-edit' user.pk %}">Edit Profile</a> page to add them.</div>
                 {% endif %}
             </div>
         </div>

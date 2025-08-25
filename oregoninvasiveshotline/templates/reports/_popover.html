@@ -1,6 +1,6 @@
 <a href="{% url 'reports-detail' report.pk %}" class="map-popover">
     {% if image_url %}
-        <img src="{{ image_url }}" />
+        <img src="{{ image_url }}" alt="Image representing report" />
     {% endif %}
     <strong>#{{ report.pk }}: {{ report.species.name|default:report.category }}
         {% if report.species %}

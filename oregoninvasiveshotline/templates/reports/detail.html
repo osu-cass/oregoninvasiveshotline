@@ -67,7 +67,7 @@ Report #{{ report.pk }} - {{ report }}
         <div class="comment-list">
             {% for comment in comments %}
                 <div id="comment-{{ comment.pk }}" class="comment">
-                    <img src="{{ comment.created_by.get_avatar_url }}" class="pull-left" width="64" height="64" />
+                    <img src="{{ comment.created_by.get_avatar_url }}" class="pull-left" width="64" height="64" alt="Avatar of commenter" />
                     {% if comment.created_by.is_active %}
                         {{ comment.body|urlize|linebreaksbr }}
                     {% else %}
@@ -208,7 +208,7 @@ Report #{{ report.pk }} - {{ report }}
         {% elif report.claimed_by and report.claimed_by != user %}
             <div class="credit clearfix sidebar-block">
                 <h4>Expert Reviewer</h4>
-                <img src="{{ report.claimed_by.get_avatar_url }}" class="pull-left" width="64" height="64" />
+                <img src="{{ report.claimed_by.get_avatar_url }}" class="pull-left" width="64" height="64" alt="Avatar of Reviewer" />
                 <p><strong><a href="{% url 'users-detail' report.claimed_by.pk %}">{{ report.claimed_by.get_proper_name }}</a></strong> <br />{{ report.claimed_by.affiliations|linebreaksbr }}</p>
             </div>
         {% endif %}
@@ -244,7 +244,7 @@ Report #{{ report.pk }} - {{ report }}
 {% block js %}
     {{ block.super }}
 
-    <script src="//maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
             async></script>
     <script>
         function initMap() {

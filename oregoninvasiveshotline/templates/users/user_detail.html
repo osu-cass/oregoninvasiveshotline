@@ -10,7 +10,7 @@
 
 <div id="avatar_box" class="pull-left">
     <div id="avatar-image">
-        <img src="{{ object.get_avatar_url }}" />
+        <img src="{{ object.get_avatar_url }}" alt="User avatar" />
     </div>
     {% if current_user.is_active %}
         <p>{{ object.email }}</p>
