@@ -60,11 +60,12 @@
                                     <button type="button"
                                             class="btn btn-outline-secondary dropdown-toggle"
                                             data-bs-toggle="dropdown"
-                                            aria-expanded="false">
+                                            aria-expanded="false"
+                                            aria-labelledby="user-menu-button">
                                         <i class="bi bi-person"></i>
                                         {{ user.get_short_name }}
                                     </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="user-menu-button">
                                         {% if request.session.report_ids %}
                                             <li><a class="dropdown-item strong" href="{% url 'users-home' %}">My Reports</a></li>
                                         {% endif %}
