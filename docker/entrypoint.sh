@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-
 if [[ ${APP_SERVICE} == "bootstrap" ]]; then
     ${APP_ENV}/bin/python manage.py migrate --no-input
     ${APP_ENV}/bin/python manage.py collectstatic --no-input

@@ -16,3 +16,8 @@ __pycache__/
 *.pyo
 
 venv
+
+# Secrets
+docker/secret_key.txt
+docker/db_password.txt
+docker/google_api_key.txt
