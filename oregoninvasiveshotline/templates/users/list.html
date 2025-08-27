@@ -35,9 +35,9 @@
                         <td>{{ user.email }}</td>
                         <td class="text-center">
                             {% if user.is_active %}
-                                <span class="bi bi-check-circle"></span>
+                                <span class="bi bi-check-circle" title="Is Manager"></span>
                             {% else %}
-                                -
+                                <span title="Is Not Manager">-</span
                             {% endif %}
                         </td>
                         <td class="text-right">

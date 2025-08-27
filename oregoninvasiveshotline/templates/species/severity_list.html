@@ -22,7 +22,7 @@
                         <a href="{% url 'severities-detail' severity.pk %}">{{ severity.name }}</a>
                     </td>
                     <td class="text-right">
-                        <a href="{% url 'severities-delete' severity.pk %}" class="text-danger">
+                        <a href="{% url 'severities-delete' severity.pk %}" class="text-danger" title="Delete Severity">
                             <span class="bi bi-trash"></span>
                         </a>
                     </td>
