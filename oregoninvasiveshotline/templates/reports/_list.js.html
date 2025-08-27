@@ -1,79 +1,99 @@
 {% load static %}
 
-
-<script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
-        async></script>
+<script
+  src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
+  async
+></script>
 <script>
-    function initMap() {
-        var reports = {{ reports|jsonify }};
-        if (reports.length === 0){
-            return;
-        }
+  function initMap() {
+      var reports = {{ reports|jsonify }};
+      if (reports.length === 0){
+          return;
+      }
 
-        var options = getDefaultMapOptions();
-        var map = new google.maps.Map(document.getElementById('map-canvas'), options);
+      var options = getDefaultMapOptions();
+      var map = new google.maps.Map(document.getElementById('map-canvas'), options);
 
-        // we need to save all the "info windows" we create, so we can close them
-        // all when a balloon is clicked (so only one window opens at a time)
-        var windows = []
+      // we need to save all the "info windows" we create, so we can close them
+      // all when a balloon is clicked (so only one window opens at a time)
+      var windows = []
 
-        // for each report, draw the marker on the map where the report was located
-        for(var i = 0; i < reports.length; i++){
-            var report = reports[i];
-            var marker = new google.maps.Marker({
-                position: {
-                    lat: report.lat,
-                    lng: report.lng
-                },
-                map: map,
-                title: report.title,
-                icon: generateIcon(report.icon_url),
-            });
-            report.marker = marker
+      // for each report, draw the marker on the map where the report was located
+      for(var i = 0; i < reports.length; i++){
+          var report = reports[i];
+          var marker = new google.maps.Marker({
+              position: {
+                  lat: report.lat,
+                  lng: report.lng
+              },
+              map: map,
+              title: report.title,
+              icon: generateIcon(report.icon_url),
+          });
+          report.marker = marker
 
-            var infowindow = new google.maps.InfoWindow({
-                content: report.content
-            });
+          var infowindow = new google.maps.InfoWindow({
+              content: report.content
+          });
 
-            // we keep track of all the
-            windows.push(infowindow)
+          // we keep track of all the
+          windows.push(infowindow)
 
-            with({map: map, marker: marker, infowindow: infowindow}){
-                google.maps.event.addListener(marker, 'click', function() {
-                    for(var i = 0; i < windows.length; i++){
-                        windows[i].close()
-                    }
-                    infowindow.open(map, marker);
-                });
-            }
-        }
+          with({map: map, marker: marker, infowindow: infowindow}){
+              google.maps.event.addListener(marker, 'click', function() {
+                  for(var i = 0; i < windows.length; i++){
+                      windows[i].close()
+                  }
+                  infowindow.open(map, marker);
+              });
+          }
+      }
 
-        $('.report-location-click').click(function(){
-            var index = $(this).data("report-index");
-            google.maps.event.trigger(reports[index].marker, 'click');
+      $('.report-location-click').click(function(){
+          var index = $(this).data("report-index");
+          google.maps.event.trigger(reports[index].marker, 'click');
 
-        });
-    }
+      });
+  }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/choices.js@11.1.0/public/assets/scripts/choices.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const categoriesElement = document.querySelector('select[name="categories"]');
-      if (categoriesElement) {
-        const choicesCategories = new Choices(categoriesElement);
-      }
+  document.addEventListener("DOMContentLoaded", function () {
+    const categoriesElement = document.querySelector(
+      'select[name="categories"]'
+    );
+    if (categoriesElement) {
+      const choicesCategories = new Choices(categoriesElement);
 
-      const countiesElement = document.querySelector('select[name="counties"]');
-      if (countiesElement) {
-        const choicesCounties = new Choices(countiesElement);
+      const clonedCategoriesInput = categoriesElement
+        .closest(".choices__inner")
+        .querySelector(".choices__input--cloned");
+      // We need to add the id to the input element for accessability
+      if (clonedCategoriesInput)
+        clonedCategoriesInput.id = "id_categories_input";
+    }
+
+    const countiesElement = document.querySelector('select[name="counties"]');
+    if (countiesElement) {
+      const choicesCounties = new Choices(countiesElement);
+
+      const clonedCountiesInput = countiesElement
+        .closest(".choices__inner")
+        .querySelector(".choices__input--cloned");
+      if (clonedCountiesInput) {
+        clonedCountiesInput.id = "id_counties_input";
       }
-    });
+    }
+  });
 </script>
 <script>
   $(document).ready(function () {
-    $('.modal-remote').on('click', function(e){
+    $(".modal-remote").on("click", function (e) {
       e.preventDefault();
-      $('#map-legend-dialog').modal('show').find('.modal-body').load($(this).attr('href'));
+      $("#map-legend-dialog")
+        .modal("show")
+        .find(".modal-body")
+        .load($(this).attr("href"));
     });
   });
 </script>
