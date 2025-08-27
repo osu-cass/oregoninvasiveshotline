@@ -49,7 +49,7 @@ class ReportSearchForm(SearchForm):
 
     source = forms.ChoiceField(
         required=False,
-        label='',
+        label='Extra Criteria',
         choices=[
             ('', '- Extra Criteria -'),
             ('invited', 'Invited to Review'),
@@ -58,20 +58,20 @@ class ReportSearchForm(SearchForm):
     )
     categories = forms.MultipleChoiceField(
         required=False,
-        label='Categories',
+        label='',
         choices=get_category_choices,
         widget=forms.SelectMultiple(attrs={'title': 'Categories'})
     )
     counties = forms.MultipleChoiceField(
         required=False,
-        label='Counties',
+        label='',
         choices=get_county_choices,
         widget=forms.SelectMultiple(attrs={'title': 'Counties'})
     )
     is_archived = forms.ChoiceField(
         required=False,
         initial='notarchived',
-        label='',
+        label='Is Archived?',
         choices=[
             ('', '- Archived? -'),
             ('archived', 'Archived'),
@@ -80,7 +80,7 @@ class ReportSearchForm(SearchForm):
     )
     is_public = forms.ChoiceField(
         required=False,
-        label='',
+        label='Is Public?',
         choices=[
             ('', '- Public? -'),
             ('public', 'Public'),
@@ -88,7 +88,7 @@ class ReportSearchForm(SearchForm):
         ])
     claimed_by = forms.ChoiceField(
         required=False,
-        label='',
+        label='Claimed By?',
         choices=[
             ('', '- Claimed By -'),
             ('me', 'Me'),
