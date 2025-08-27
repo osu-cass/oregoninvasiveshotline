@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 
-from oregoninvasiveshotline.images.forms import get_image_formset
+from oregoninvasiveshotline.images.forms import ImageFormSet
 from oregoninvasiveshotline.images.models import Image
 
 from .forms import CommentForm
@@ -26,12 +26,9 @@ def edit(request, comment_id):
         raise PermissionDenied()
 
     PartialCommentForm = functools.partial(CommentForm, user=request.user, report=comment.report, instance=comment)
-    # this is dumb, but the only way to pass an extra arg to the subform
-    ImageFormSet = get_image_formset(user=request.user)
-
     if request.POST:
         form = PartialCommentForm(request.POST)
-        formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.filter(comment=comment))
+        formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.filter(comment=comment), form_kwargs={'user': request.user})
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save(user=comment.created_by, fk=comment)
@@ -39,7 +36,7 @@ def edit(request, comment_id):
             return redirect("reports-detail", comment.report.pk)
     else:
         form = PartialCommentForm()
-        formset = ImageFormSet(queryset=Image.objects.filter(comment=comment))
+        formset = ImageFormSet(queryset=Image.objects.filter(comment=comment), form_kwargs={'user': request.user})
 
     return render(request, "comments/edit.html", {
         "comment": comment,

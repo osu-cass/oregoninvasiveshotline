@@ -55,19 +55,18 @@
         });
     }
 </script>
-<script type='text/javascript' src="{% static 'js/select2.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/choices.js@11.1.0/public/assets/scripts/choices.min.js"></script>
 <script>
-    $(document).ready(function () {
-        if ($().select2){
-            $('select[name="categories"]').select2({
-                theme: "bootstrap",
-                width: "100%"
-            });
-            $('select[name="counties"]').select2({
-                theme: "bootstrap",
-                width: "100%"
-            });
-        }
+    document.addEventListener('DOMContentLoaded', function() {
+      const categoriesElement = document.querySelector('select[name="categories"]');
+      if (categoriesElement) {
+        const choicesCategories = new Choices(categoriesElement);
+      }
+
+      const countiesElement = document.querySelector('select[name="counties"]');
+      if (countiesElement) {
+        const choicesCounties = new Choices(countiesElement);
+      }
     });
 </script>
 <script>

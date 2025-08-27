@@ -11,14 +11,16 @@
         licensing guidelines.
       </em>
     </p>
-    <p class="alert alert-warning">The total size of your images when uploading must not exceed 16MB.</p>
+    <p class="alert alert-info">The total size of your images when uploading must not exceed 16MB.</p>
     <div class="formset">
         {{ formset.management_form }}
         <!-- the first form yielded is the empty form. We use that as a template for the JS, so make it hidden -->
-        <table class="table table-striped2 table-condensed">
+        <div class="formset">
             {% for subform in formset.iter_with_empty_form_first %}
-                <tr class="formset-row" {% if forloop.counter0 == 0%}style="display:none"{% endif %}>
-                    <td>
+                <div class="formset-row d-flex gap-3 align-items-start"
+                    {% if forloop.counter0 == 0 %}style="display:none"{% endif %}>
+                    
+                    <div class="formset-image">
                         {% if subform.image.errors %}
                             <div class="text-danger">
                                 {{ subform.image.errors }}
@@ -27,16 +29,27 @@
                         {% if not subform.image.value %}
                             <span class="preview"></span>
                         {% endif %}
-                        {{ subform.image }}
-                    </td>
-                    <td style="width:100%">{% bootstrap_field subform.name %}</td>
+                        {% bootstrap_field subform.image label_class="visually-hidden" %}
+                    </div>
+
+                    <div class="formset-name flex-grow-1">
+                        {% bootstrap_field subform.name %}
+                    </div>
+
                     {% if subform.visibility %}
-                        <td class="visibility-selector">{% bootstrap_field subform.visibility %}</td>
+                        <div class="formset-visibility">
+                            {% bootstrap_field subform.visibility %}
+                        </div>
                     {% endif %}
-                    <td class="delete-field">{{ subform.image_id }} {% bootstrap_field subform.DELETE %}</td>
-                </tr>
+
+                    <div class="formset-delete">
+                        {{ subform.image_id }}
+                        {% bootstrap_field subform.DELETE %}
+                    </div>
+                </div>
             {% endfor %}
-        </table>
+        </div>
+
         <a href="#" class="formset-adder">Add Another Image</a>
     </div>
 </fieldset>

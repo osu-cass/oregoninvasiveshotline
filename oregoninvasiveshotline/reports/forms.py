@@ -58,13 +58,13 @@ class ReportSearchForm(SearchForm):
     )
     categories = forms.MultipleChoiceField(
         required=False,
-        label='',
+        label='Categories',
         choices=get_category_choices,
         widget=forms.SelectMultiple(attrs={'title': 'Categories'})
     )
     counties = forms.MultipleChoiceField(
         required=False,
-        label='',
+        label='Counties',
         choices=get_county_choices,
         widget=forms.SelectMultiple(attrs={'title': 'Counties'})
     )
