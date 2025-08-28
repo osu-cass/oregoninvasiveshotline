@@ -66,5 +66,5 @@ ImageFormSet = modelformset_factory(
     form=ImageForm,
     formset=BaseImageFormSet,
     can_delete=True,
-    extra=0,
+    extra=1,
 )

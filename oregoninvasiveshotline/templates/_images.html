@@ -18,7 +18,7 @@
         <div class="formset">
             {% for subform in formset.iter_with_empty_form_first %}
                 <div class="formset-row d-flex gap-3 align-items-start"
-                    {% if forloop.counter0 == 0 %}style="display:none"{% endif %}>
+                    {% if forloop.counter0 == 0 %}style="display: none !important;"{% endif %}>
                     
                     <div class="formset-image">
                         {% if subform.image.errors %}
