@@ -20,8 +20,7 @@ Ensure that you have Docker and Docker Compose installed in your host's environm
 To use the provided Docker container definitions:
 
 ```bash
-docker compose build
-docker compose up
+docker compose up -d --build
 ```
 
 View the website at http://localhost:8000
@@ -37,10 +36,6 @@ development environments (native or docker) you should export an environment var
     export GOOGLE_API_KEY='{ key }'
 
 To prepare the database you may use, e.g., the `import_database` command to install a copy of production data.
-
-To update the frontend dependencies of the project, use the included make rule:
-
-    make client_dependencies
 
 To run the test library:
 

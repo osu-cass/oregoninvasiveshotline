@@ -1,10 +1,10 @@
 secrets:
   SecretKey:
-    file: docker/secret_key.txt
+    file: docker/secrets/secret_key.txt
   DBPassword:
-    file: docker/db_password.txt
+    file: docker/secrets/db_password.txt
   GOOGLE_API_KEY:
-    file: docker/google_api_key.txt
+    file: docker/secrets/google_api_key.txt
 
 networks:
   default:
@@ -20,7 +20,7 @@ services:
       - POSTGRES_PASSWORD=invasives
       - POSTGRES_DB=invasives
     volumes:
-      # - ${VOLUME_PATH}/postgres/11/main:/var/lib/postgresql/data
+      - ${VOLUME_PATH}/postgres/16/main:/var/lib/postgresql/data
       - ${VOLUME_PATH}/dumps:/archive
     ports:
       - 5439:5432
@@ -35,8 +35,6 @@ services:
     # on container delete/init cycle.
     #   Refs: https://github.com/docker-library/rabbitmq/issues/106#issuecomment-241882358
     hostname: 'rabbitmq-dev'
-    # user: '${USER_ID}'
-    # user: "0:0"
 
   bootstrap:
     build:
@@ -61,7 +59,6 @@ services:
       - SecretKey
       - DBPassword
     user: '${USER_ID}'
-    # user: "0:0"
 
   app:
     build:
@@ -91,7 +88,6 @@ services:
       - DBPassword
       - GOOGLE_API_KEY
     user: '${USER_ID}'
-    # user: "0:0"
 
   celery:
     build:
@@ -115,4 +111,3 @@ services:
       - SecretKey
       - DBPassword
     user: '${USER_ID}'
-    # user: "0:0"

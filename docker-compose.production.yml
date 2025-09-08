@@ -1,10 +1,10 @@
 secrets:
   SecretKey:
-    file: docker/secret_key.txt
+    file: docker/secrets/secret_key.txt
   DBPassword:
-    file: docker/db_password.txt
+    file: docker/secrets/db_password.txt
   GOOGLE_API_KEY:
-    file: docker/google_api_key.txt
+    file: docker/secrets/google_api_key.txt
 
 networks:
   default:
@@ -21,8 +21,6 @@ services:
     # on container delete/init cycle.
     #   Refs: https://github.com/docker-library/rabbitmq/issues/106#issuecomment-241882358
     hostname: 'rabbitmq-dev'
-    # user: '${USER_ID}'
-    # user: "0:0"
 
   bootstrap:
     image: ghcr.io/osu-cass/oregoninvasiveshotline:latest
@@ -40,7 +38,6 @@ services:
       - SecretKey
       - DBPassword
     user: '${USER_ID}'
-    # user: "0:0"
 
   app:
     image: ghcr.io/osu-cass/oregoninvasiveshotline:latest
@@ -56,7 +53,6 @@ services:
       - ${VOLUME_PATH}/media:/media
       - ${VOLUME_PATH}/static:/static
       - ./:/app
-      # - ./media:/media
     depends_on:
       - rabbitmq
     secrets:
@@ -64,7 +60,6 @@ services:
       - DBPassword
       - GOOGLE_API_KEY
     user: '${USER_ID}'
-    # user: "0:0"
 
   celery:
     image: ghcr.io/osu-cass/oregoninvasiveshotline:latest
@@ -83,4 +78,3 @@ services:
       - SecretKey
       - DBPassword
     user: '${USER_ID}'
-    # user: "0:0"

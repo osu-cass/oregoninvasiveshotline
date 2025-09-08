@@ -117,7 +117,6 @@ TEMPLATES = [{
     'APP_DIRS': True,
     'OPTIONS': {
         'builtins': [
-            # "bootstrapform.templatetags.bootstrap",
             "oregoninvasiveshotline.templatetags.arc"
         ],
         'context_processors': [
@@ -145,7 +144,6 @@ INSTALLED_APPS = [
     "oregoninvasiveshotline.species",
     "oregoninvasiveshotline.users",
 
-    # "bootstrapform",
     "rest_framework",
     "django_bootstrap5",
 
