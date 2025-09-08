@@ -11,20 +11,6 @@ networks:
     driver: bridge
 
 services:
-  postgres:
-    image: postgis/postgis:16-3.5
-    networks:
-      - default
-    environment:
-      - POSTGRES_USER=invasives
-      - POSTGRES_PASSWORD=invasives
-      - POSTGRES_DB=invasives
-    volumes:
-      - ${VOLUME_PATH}/postgres/16/main:/var/lib/postgresql/data
-      - ${VOLUME_PATH}/dumps:/archive
-    ports:
-      - 5439:5432
-
   rabbitmq:
     image: rabbitmq:4.1-alpine
     networks:
@@ -37,12 +23,7 @@ services:
     hostname: 'rabbitmq-dev'
 
   bootstrap:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-      args:
-        - APP_USER_ID=${USER_ID}
-        - APP_GROUP_ID=${GROUP_ID}
+    image: ghcr.io/osu-cass/oregoninvasiveshotline:latest
     environment:
       - EMCEE_CMD_ENV=docker
       - APP_SERVICE=bootstrap
@@ -53,20 +34,13 @@ services:
       - ${VOLUME_PATH}/media:/media
       - ${VOLUME_PATH}/static:/static
       - ./:/app
-    depends_on:
-      - postgres
     secrets:
       - SecretKey
       - DBPassword
     user: '${USER_ID}'
 
   app:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-      args:
-        - APP_USER_ID=${USER_ID}
-        - APP_GROUP_ID=${GROUP_ID}
+    image: ghcr.io/osu-cass/oregoninvasiveshotline:latest
     environment:
       - EMCEE_CMD_ENV=docker
       - APP_SERVICE=wsgi
@@ -79,9 +53,7 @@ services:
       - ${VOLUME_PATH}/media:/media
       - ${VOLUME_PATH}/static:/static
       - ./:/app
-      # - ./media:/media
     depends_on:
-      - postgres
       - rabbitmq
     secrets:
       - SecretKey
@@ -90,12 +62,7 @@ services:
     user: '${USER_ID}'
 
   celery:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-      args:
-        - APP_USER_ID=${USER_ID}
-        - APP_GROUP_ID=${GROUP_ID}
+    image: ghcr.io/osu-cass/oregoninvasiveshotline:latest
     environment:
       - EMCEE_CMD_ENV=docker
       - APP_SERVICE=celery

@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load django_bootstrap5 %}
+
 {% block content %}
     {% if form.errors %}
         <div class="alert alert-danger">
@@ -13,15 +15,15 @@
         {% if form.url or form.title %}
             <div class="row">
                 {% if form.url %}
-                    <div class="col-md-6">{{ form.url|bootstrap }}</div>
+                    <div class="col-md-6">{% bootstrap_field form.url %}</div>
                 {% endif %}
                 {% if form.title %}
-                    <div class="col-md-6">{{ form.title|bootstrap }}</div>
+                    <div class="col-md-6">{% bootstrap_field form.title %}</div>
                 {% endif %}
             </div>
         {% endif %}
 
-        {{ form.content|bootstrap }}
+        {% bootstrap_field form.content %}
         <hr />
 
         <div class="pull-right">
@@ -30,7 +32,6 @@
                 <a href="{% url 'pages-delete' page_id %}" class="btn btn-danger">Delete</a>
             {% endif %}
         </div>
-
         <input type="submit" name="Submit" class="btn btn-primary"
                value="{% if page %}Update{% else %}Create{% endif %} Page">
     </form>

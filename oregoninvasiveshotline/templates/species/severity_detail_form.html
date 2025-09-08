@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load django_bootstrap5 %}
+
 {% block content %}
 {% if form.instance.pk %}
     <h3>Edit Severity</h3>
@@ -9,8 +11,8 @@
 
 <form action="" method="post">
     {% csrf_token %}
-    {{ form|bootstrap }}
-    <input type="submit" class="btn btn-primary" value="Update" />
+    {% bootstrap_form form %}
+    {% bootstrap_button button_type="submit" content="Update" class="btn btn-primary" %}
 </form>
 
 {% endblock %}

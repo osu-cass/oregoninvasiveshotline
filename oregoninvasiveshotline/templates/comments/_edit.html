@@ -1,5 +1,6 @@
 {% load permissions %}
 
+{% load django_bootstrap5 %}
 <form method="post" enctype="multipart/form-data" id="create-comment">
     <fieldset>
         <legend>{% if form.instance.pk %}Edit{% else %}Add{% endif %} Comment</legend>
@@ -9,11 +10,11 @@
         {% csrf_token %}
         <div class="row">
             <div class="col-md-8">
-                {{ form.body|bootstrap }}
+                {% bootstrap_field form.body %}
             </div>
             <div class="col-md-4">
                 {% if form.visibility %}
-                    {{ form.visibility|bootstrap }}
+                    {% bootstrap_field form.visibility %}
                 {% endif %}
             </div>
         </div>
@@ -22,7 +23,7 @@
         <div class="row">
             <div class="col-md-10">
                 <input type="hidden" name="submit_flag" value="{{ form.SUBMIT_FLAG }}" />
-                <input type="submit" value="Submit" name="submit" class="btn btn-primary"/>
+                {% bootstrap_button button_type="submit" content="Submit" class="btn btn-primary" %}
                 {% if comment.pk %}
                     <a href="{% url 'reports-detail' comment.report.pk %}" class="btn btn-warning">Cancel</a>
                 {% else %}

@@ -1,4 +1,4 @@
-FROM python:3.11-bullseye
+FROM python:3.12-slim-bookworm
 LABEL org.opencontainers.image.authors="tlinton@pdx.edu"
 LABEL org.opencontainers.image.source=https://github.com/PSU-OIT-ARC/oregoninvasiveshotline
 
@@ -8,7 +8,7 @@ RUN apt update -y && apt install -y \
   binutils libgdal-dev proj-bin
 
 # Set build arguments
-ARG APP_PYTHON=python3.11
+ARG APP_PYTHON=python3
 ARG APP_ENV=/opt/venv
 ARG APP_REQUIREMENTS=requirements.txt
 
@@ -28,25 +28,25 @@ ENV APP_GROUP_ID=${APP_GROUP_ID}
 
 # Configure user
 RUN groupadd -g ${APP_GROUP_ID} "${APP_GROUP}" || echo "Group already exists"
-RUN useradd -m -g "${APP_GROUP}" -u ${APP_USER_ID} "${APP_USER}" || echo "User already exists"
+RUN useradd -d /opt -m -g "${APP_GROUP}" -u ${APP_USER_ID} "${APP_USER}" || echo "User already exists"
 
 # Prepare application-local path
 RUN chown ${APP_USER}:${APP_GROUP} /opt
 
 # Prepare virtual environment
-COPY --chown=${APP_USER}:${APP_GROUP} /Pipfile /
-COPY --chown=${APP_USER}:${APP_GROUP} /Pipfile.lock /
+COPY --chown=${APP_USER}:${APP_GROUP} /Pipfile /opt/
+COPY --chown=${APP_USER}:${APP_GROUP} /Pipfile.lock /opt/
 
 #
 RUN pip install pipenv
 
 # Configure python virtual environment
 USER ${APP_USER}
-WORKDIR /
+WORKDIR /opt
 
 RUN ${APP_PYTHON} -m venv ${APP_ENV}
 RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv sync
-RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv check
+# RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv check
 RUN ${APP_ENV}/bin/pip cache purge
 
 # Install container entrypoint

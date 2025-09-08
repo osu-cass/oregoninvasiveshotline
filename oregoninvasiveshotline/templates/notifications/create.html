@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load django_bootstrap5 %}
 
 {% block title %}Subscribe to Search{% endblock %}
 
@@ -9,11 +10,11 @@
 
     <form method="post">
         {% csrf_token %}
-        {{ form.name|bootstrap }}
+        {% bootstrap_field form.name %}
         {% if form.user %}
-            {{ form.user|bootstrap }}
+            {% bootstrap_field form.user %}
         {% endif %}
-        <input type="submit" name="submit" value="Subscribe" class="btn btn-primary"/>
+        {% bootstrap_button button_type="submit" content="Submit" class="btn btn-primary" %}
         <a href="javascript:window.history.go(-1)" class="btn btn-default">Back</a>
     </form>
 {% endblock %}

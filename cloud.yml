@@ -5,7 +5,7 @@ networks:
     attachable: true
 services:
   postgresql:
-    image: postgis/postgis:11-2.5
+    image: postgis/postgis:16-3.5
     networks:
     - overlay
     volumes:

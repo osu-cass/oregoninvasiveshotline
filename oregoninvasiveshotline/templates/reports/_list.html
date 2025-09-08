@@ -12,17 +12,18 @@
 
         {% if reports %}
             <div id="map-canvas" style="height: 550px;"></div>
-        {% else %}
+        {% endif %}
             <div class="alert alert-warning">
+                {% if not reports %}
                 <p>
                     No matching reports found.
                 </p>
+                {% endif %}
                 <p>
                     You can <a href="{{ subscription_url }}">subscribe to this search</a> to be
                     alerted when a matching report is added.
                 </p>
             </div>
-        {% endif %}
         <br>
 
         {% include 'reports/_legend_dialog.html' %}
@@ -38,7 +39,7 @@
                     <tr class="{{ report.css_class }}">
                         <td class="reports-table-img" rowspan="2">
                             <a href="#map-canvas" class="report-location-click" data-report-index="{{ forloop.counter0 }}">
-                                <img src="{{ report.image_url|default:report.icon_url }}">
+                                <img src="{{ report.image_url|default:report.icon_url }}" alt="Image/icon representing report">
                             </a>
                         </td>
 
@@ -57,17 +58,17 @@
                             {% if user.is_active %}
                                 <span class="pull-right">
                                     {% if report.is_public %}
-                                        <span title="Public" class="glyphicon glyphicon-eye-open"></span>
+                                        <span title="Public" class="bi bi-eye"></span>
                                     {% endif %}
                                     {% if report.actual_species %}
-                                        <span title="Confirmed" class="glyphicon glyphicon-ok"></span>
+                                        <span title="Confirmed" class="bi bi-check-circle"></span>
                                     {% endif %}
                                     {% if report.is_archived %}
-                                        <span title="Archived" class="glyphicon glyphicon-oil"></span>
+                                        <span title="Archived" class="bi bi-archive"></span>
                                     {% endif %}
                                     {% if report.claimed_by_id %}
                                         <span title="Claimed by {{ report.claimed_by }}"
-                                              class="glyphicon glyphicon-user {% if report.claimed_by_id == request.user.pk %}text-info strong{% endif %}">
+                                              class="bi bi-person {% if report.claimed_by_id == request.user.pk %}text-info strong{% endif %}">
                                         </span>
                                     {% endif %}
                                 </span>

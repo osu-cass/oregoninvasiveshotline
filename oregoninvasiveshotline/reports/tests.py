@@ -185,17 +185,22 @@ class TestReportIconGeneration(TestCase):
         )
 
     def test_generate_icon_manually(self):
+        category = make(
+            'species.Category',
+            icon=self._make_category_icon()
+        )
         report = prepare(
             Report,
             point=ORIGIN,
             actual_species__severity__color='#ff8800',
-            actual_species__category__icon=self._make_category_icon(),
+            actual_species__category=category,
         )
         self.assertFalse(os.path.exists(report.icon_path))
         report.generate_icon()
         self.assertTrue(os.path.exists(report.icon_path))
         # Clean up
         os.unlink(report.icon_path)
+        os.unlink(category.icon.path)
 
     def test_icon_is_generated_on_post_save_for_existing_reports(self):
         report = make(

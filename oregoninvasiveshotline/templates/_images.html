@@ -1,3 +1,5 @@
+{% load django_bootstrap5 %}
+
 <fieldset id="images">
     <legend>Images</legend>
     <p>
@@ -27,11 +29,11 @@
                         {% endif %}
                         {{ subform.image }}
                     </td>
-                    <td style="width:100%">{{ subform.name|bootstrap }}</td>
+                    <td style="width:100%">{% bootstrap_field subform.name %}</td>
                     {% if subform.visibility %}
-                        <td class="visibility-selector">{{ subform.visibility|bootstrap }}</td>
+                        <td class="visibility-selector">{% bootstrap_field subform.visibility %}</td>
                     {% endif %}
-                    <td class="delete-field">{{ subform.image_id }} {{ subform.DELETE|bootstrap }}</td>
+                    <td class="delete-field">{{ subform.image_id }} {% bootstrap_field subform.DELETE %}</td>
                 </tr>
             {% endfor %}
         </table>

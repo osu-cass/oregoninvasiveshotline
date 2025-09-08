@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load django_bootstrap5 %}
+
 {% block content %}
 {% if form.instance.pk %}
     <h3>Update Category</h3>
@@ -9,8 +11,8 @@
 
 <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ form|bootstrap }}
-    <input type="submit" class="btn btn-primary" value="Update" />
+    {% bootstrap_form form %}
+    {% bootstrap_button button_type="submit" content="Update" class="btn btn-primary" %}
     <a href="{% url 'categories-list' %}" class="btn btn-warning">Cancel</a>
 </form>
 

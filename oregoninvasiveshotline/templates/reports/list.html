@@ -13,43 +13,43 @@
 {% block main_class %}container-fluid{% endblock %}
 
 {% block content %}
-    {% include 'nav_tabs.html' with tab=tab %}
+{% include 'nav_tabs.html' with tab=tab %}
+{% load django_bootstrap5 %}
 
     <div class="tab-content">
         <div class="tab-pane active" id="{{ tab }}">
             <form class="form-inline">
                 <div class="row">
                     <div class="col-lg-7">
-                      <span class="strong">Search</span><br/>
+                      <span class="strong w-full">Search</span><br/>
                       {% include 'reports/search/_fields.html' %}
                     </div>
                     <div class="col-lg-5">
                         <div class="row">
                           <div class="col-lg-6">
                             <span class="strong">Counties</span>
-                            {{ form.counties }}
+                            {% bootstrap_field form.counties %}
                           </div>
                           <div class="col-lg-6">
                             <span class="strong">Categories</span>
                             <a href="{% url 'reports-help' %}?modal=true"
                                class="modal-remote help"
                                title="Category legend">
-                              <span class="glyphicon glyphicon-question-sign"></span>
-                              <span class="sr-only">[?]</span>
+                              <span class="bi bi-question-circle"></span>
+                              <span class="visually-hidden">[?]</span>
                             </a>
-                            {{ form.categories }}
+                            {% bootstrap_field form.categories %}
                           </div>
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-lg-offset-7 col-lg-5" style="padding-top: 1em;">
-                        <span class="strong">Filters</span><br/>
-                        {{ form.claimed_by|bootstrap }}
-                        {{ form.is_public|bootstrap }}
-                        {{ form.is_archived|bootstrap }}
-                        {% if form.source %}{{ form.source|bootstrap }}{% endif %}
-                    </div>
+                <div class="d-flex flex-wrap align-items-center gap-3 pt-3">
+                  <span class="fw-bold me-2 mb-3">Filters</span>
+                  {% comment %} for whatever reason these  {% endcomment %}
+                  {% bootstrap_field form.claimed_by class="mb-0" %}
+                  {% bootstrap_field form.is_public class="mb-0" %}
+                  {% bootstrap_field form.is_archived class="mb-0" %}
+                  {% if form.source %}{% bootstrap_field form.source class="mb-0" %}{% endif %}
                 </div>
                 <div class="row">
                   {{ form.non_field_errors }}

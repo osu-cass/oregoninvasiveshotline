@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% load static %}
-
+{% load django_bootstrap5 %}
 
 {% block title %}
 Report an Invader
@@ -25,17 +25,17 @@ Report an Invader
         <legend>Your Contact Info</legend>
         <div class="row">
             <div class="col-md-4">
-                {{ form.first_name|bootstrap }}
+                {% bootstrap_field form.first_name %}
             </div>
             <div class="col-md-4">
-                {{ form.last_name|bootstrap }}
+                {% bootstrap_field form.last_name %}
             </div>
             <div class="col-md-4">
-                {{ form.phone|bootstrap }}
+                {% bootstrap_field form.phone %}
             </div>
         </div>
-        {{ form.email|bootstrap }}
-        {{ form.has_completed_ofpd|bootstrap }}
+        {% bootstrap_field form.email %}
+        {% bootstrap_field form.has_completed_ofpd %}
     </fieldset>
 
 
@@ -58,24 +58,24 @@ Report an Invader
         {{ form.point }}
         <div id="map-canvas" class="scroll-space-on-mobile" style="height:500px"></div>
         <br />
-        {{ form.location|bootstrap }}
+        {% bootstrap_field form.location %}
     </fieldset>
 
     <fieldset>
         <legend>Identification</legend>
-        {{ form.has_specimen|bootstrap }}
-        {{ form.reported_category|bootstrap }}
+        {% bootstrap_field form.has_specimen %}
+        {% bootstrap_field form.reported_category %}
         <div id="reported-species">
-            {{ form.reported_species|bootstrap }}
+            {% bootstrap_field form.reported_species %}
         </div>
-        {{ form.description|bootstrap }}
+        {% bootstrap_field form.description %}
     </fieldset>
 
     {% include '_images.html' %}
 
     <fieldset>
         <legend>Questions?</legend>
-        {{ form.questions|bootstrap }}
+        {% bootstrap_field form.questions %}
     </fieldset>
 
     <input type="submit" name="submit" value="Submit" id="submit" class="btn btn-primary"/>
@@ -87,7 +87,7 @@ Report an Invader
 {% block js %}
     {{ block.super }}
 
-    <script src="//maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
             async></script>
 
     <script src="{% static 'js/img.js' %}" async></script>

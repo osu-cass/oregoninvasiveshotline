@@ -6,10 +6,10 @@ $(document).ready(function(){
      */
     $('.formset-adder').on('click', function(e){
         e.preventDefault();
-        var formset = $(this).closest(".formset");
-        var copy = formset.find('.formset-row:first').clone(true, true);
+        const formset = $(this).closest(".formset");
+        const copy = formset.find('.formset-row:first').clone(true, true);
         // figure out what number to use for this new formset
-        var n = formset.find('.formset-row').length - 1; // minus 1 because of the hidden empty_form
+        const n = formset.find('.formset-row').length - 1; // minus 1 because of the hidden empty_form
         // update the name/ids on the clone
         copy.html(copy.html().replace(/__prefix__/g, n))
         // add it to the formset
@@ -17,7 +17,7 @@ $(document).ready(function(){
         copy.show()
 
         // update the django management form so it knows a new form was added
-        var total_forms = formset.find('*[name$="TOTAL_FORMS"]');
+        const total_forms = formset.find('*[name$="TOTAL_FORMS"]');
         total_forms.val(1+parseInt(total_forms.val(), 10))
 
         // fire off a custom event to notify listeners that something was added
@@ -59,7 +59,7 @@ function generateIcon(url){
 
 /*Just DRY up the Google map option stuff */
 function getDefaultMapOptions(){
-    var mapOptions = {
+    const mapOptions = {
         center: {
             // this is approximately the center of oregon, and looks good at zoom level 7
             lat: 44, lng: -120.578333
@@ -74,7 +74,7 @@ function getDefaultMapOptions(){
         mapOptions.zoom = parseInt(Cookies.get("zoom"), 10)
     }
     if(Cookies.get("center") != undefined){
-        var parts = Cookies.get("center").split(",")
+        const parts = Cookies.get("center").split(",")
         mapOptions.center.lat = parseFloat(parts[0])
         mapOptions.center.lng = parseFloat(parts[1])
     }

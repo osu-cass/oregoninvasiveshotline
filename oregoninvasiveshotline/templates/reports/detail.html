@@ -2,6 +2,7 @@
 
 {% load permissions %}
 {% load static %}
+{% load django_bootstrap5 %}
 
 
 {% block title %}
@@ -40,13 +41,13 @@ Report #{{ report.pk }} - {{ report }}
 
             {% if user.is_active %}
                 {% if report.is_public %}
-                    <span class="glyphicon glyphicon-eye-open" title="Public"></span>
+                    <span class="bi bi-eye" title="Public"></span>
                 {% endif %}
                 {% if report.actual_species %}
-                    <span class="glyphicon glyphicon-ok" title="Confirmed"></span>
+                    <span class="bi bi-check-circle" title="Confirmed"></span>
                 {% endif %}
                 {% if report.is_archived %}
-                    <span class="glyphicon glyphicon-oil" title="Archived"></span>
+                    <span class="bi bi-archive" title="Archived"></span>
                 {% endif %}
             {% endif %}
         </p>
@@ -66,7 +67,7 @@ Report #{{ report.pk }} - {{ report }}
         <div class="comment-list">
             {% for comment in comments %}
                 <div id="comment-{{ comment.pk }}" class="comment">
-                    <img src="{{ comment.created_by.get_avatar_url }}" class="pull-left" width="64" height="64" />
+                    <img src="{{ comment.created_by.get_avatar_url }}" class="pull-left" width="64" height="64" alt="Avatar of commenter" />
                     {% if comment.created_by.is_active %}
                         {{ comment.body|urlize|linebreaksbr }}
                     {% else %}
@@ -125,9 +126,13 @@ Report #{{ report.pk }} - {{ report }}
         {% if report.claimed_by and report.claimed_by == user %}
             <div class="report-management clearfix sidebar-block">
                 <h4>Report Management {% if report.claimed_by == user %}<small><a href="{% url 'reports-unclaim' report.pk %}">(unclaim)</a></small>{% endif %}</h4>
-                <ul class="nav nav-tabs" id="management-tabs">
-                    <li class="active"><a data-toggle="tab" href="#confirm"><span class="glyphicon glyphicon-grain"></span> Species</a></li>
-                    <li><a data-toggle="tab" href="#invite"><span class="glyphicon glyphicon-phone-alt"></span> Invite {% if invites %}<small>({{ invites|length }})</small>{% endif %}</a></li>
+                <ul class="nav nav-pills" id="management-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#confirm"><span class="bi bi-bar-chart-fill"></span> Species</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#invite"><span class="bi bi-telephone-fill"></span> Invite {% if invites %}<small>({{ invites|length }})</small>{% endif %}</a>
+                    </li>
                 </ul>
 
                 <div class="tab-content">
@@ -149,24 +154,24 @@ Report #{{ report.pk }} - {{ report }}
                                     {% endif %}
                                 </div>
                             {% endif %}
-                            {{ management_form.edrr_status|bootstrap }}
-                            {{ management_form.category|bootstrap }}
+                            {% bootstrap_field management_form.edrr_status %}
+                            {% bootstrap_field management_form.category %}
                             <div id="reported-species">
-                                {{ management_form.actual_species|bootstrap }}
+                                {% bootstrap_field management_form.actual_species %}
                                 <p>&mdash; or &mdash; create a new species</p>
                                 <table>
                                     <tr>
-                                        <td>{{ management_form.new_species|bootstrap }}</td>
+                                        <td>{% bootstrap_field management_form.new_species %}</td>
                                         <td>&nbsp;</td>
-                                        <td>{{ management_form.severity|bootstrap }}</td>
+                                        <td>{% bootstrap_field management_form.severity %}</td>
                                     </tr>
                                 </table>
                             </div>
                             <hr />
-                            {{ management_form.is_public|bootstrap }}
-                            {{ management_form.is_archived|bootstrap }}
+                            {% bootstrap_field management_form.is_public %}
+                            {% bootstrap_field management_form.is_archived %}
                             <input type="hidden" name="submit_flag" value="{{ management_form.SUBMIT_FLAG }}" />
-                            <input type="submit" value="Submit" name="submit" class="btn btn-primary"/>
+                            {% bootstrap_button button_type="submit" content="Submit" class="btn btn-primary" %}
                         </form>
                     </div>
                     <div class="public-form tab-pane" id="invite">
@@ -185,9 +190,9 @@ Report #{{ report.pk }} - {{ report }}
                                 </div>
                             {% endif %}
                             {% csrf_token %}
-                            {{ invite_form|bootstrap }}
+                            {% bootstrap_form invite_form %}
                             <input type="hidden" name="submit_flag" value="{{ invite_form.SUBMIT_FLAG }}" />
-                            <input type="submit" value="Submit" name="submit" class="btn btn-primary"/>
+                            {% bootstrap_button button_type="submit" content="Submit" class="btn btn-primary" %}
                         </form>
                     </div>
                 </div>
@@ -203,7 +208,7 @@ Report #{{ report.pk }} - {{ report }}
         {% elif report.claimed_by and report.claimed_by != user %}
             <div class="credit clearfix sidebar-block">
                 <h4>Expert Reviewer</h4>
-                <img src="{{ report.claimed_by.get_avatar_url }}" class="pull-left" width="64" height="64" />
+                <img src="{{ report.claimed_by.get_avatar_url }}" class="pull-left" width="64" height="64" alt="Avatar of Reviewer" />
                 <p><strong><a href="{% url 'users-detail' report.claimed_by.pk %}">{{ report.claimed_by.get_proper_name }}</a></strong> <br />{{ report.claimed_by.affiliations|linebreaksbr }}</p>
             </div>
         {% endif %}
@@ -239,7 +244,7 @@ Report #{{ report.pk }} - {{ report }}
 {% block js %}
     {{ block.super }}
 
-    <script src="//maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
             async></script>
     <script>
         function initMap() {
