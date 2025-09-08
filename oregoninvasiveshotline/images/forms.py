@@ -50,17 +50,6 @@ class BaseImageFormSet(BaseModelFormSet):
         self.fk = fk
         super().save(commit)
 
-
-# NOTE: The get_image_formset function was refactored to a direct
-#       modelformset_factory call to fix issues with passing the `extra`
-#       argument to the formset constructor. The original comment is preserved below.
-#
-#       """
-#       This is annoying, but because ImageForm takes arguments in the __init__
-#       method, we have to alter the formset's form on the fly
-#
-#       http://stackoverflow.com/a/813647/2733517
-#       """
 ImageFormSet = modelformset_factory(
     Image,
     form=ImageForm,

@@ -151,7 +151,6 @@ def create(request):
     """
     Render the public form for submitting reports
     """
-    
 
     if request.POST:
         form = ReportForm(request.POST, request.FILES)
