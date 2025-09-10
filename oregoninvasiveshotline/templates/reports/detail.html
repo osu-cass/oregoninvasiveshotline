@@ -267,13 +267,16 @@ Report #{{ report.pk }} - {{ report }}
 
     <script>var category_id_to_species_id = {{ category_id_to_species_id|safe }};</script>
     <script src="{% static 'js/species_selector.js' %}" async></script>
-    <script src="{% static 'js/galleria.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/galleria.min.js"></script>
     <script>
         $(document).ready(function() {
-            if($('.galleria').length){
-                Galleria.loadTheme('{% static "js/galleria.classic.min.js" %}');
+            if ($('.galleria').length) {
+                // Load the Galleria classic theme from jsDelivr
+                Galleria.loadTheme('https://cdn.jsdelivr.net/npm/galleria@1.6.1/dist/galleria.classic.min.js');
+
+                // Initialize Galleria
                 Galleria.run('.galleria', {
-                    "lightbox": true
+                    lightbox: true
                 });
             }
             $('.galleria').show();
