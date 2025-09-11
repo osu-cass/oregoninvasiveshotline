@@ -23,6 +23,12 @@ To use the provided Docker container definitions:
 docker compose up -d --build
 ```
 
+It may also be necessary to re-run the bootstrap script if it fails initially:
+
+```bash
+docker compose up -d bootstrap
+```
+
 View the website at http://localhost:8000
 
 To authenticate with the provided default user:
@@ -30,10 +36,21 @@ To authenticate with the provided default user:
     username: foobar@example.com
     password: foobar
 
-A Google API Key is needed for the mapping features in this project. In
-development environments (native or docker) you should export an environment variable, eg:
+> [!NOTE]
+> This user may not appear in your database. An admin user can be created manually by submitting a report, updating it's permissions in the database, choosing the forgot password option, then grabbing the link from the console.
 
-    export GOOGLE_API_KEY='{ key }'
+### API Keys
+
+You must configure a few API keys for this project. To create them, make files with the exact names below in the `docker/secrets` folder.
+
+- `db_password.txt`
+	- Recommended: `invasives`
+- `google_api_key.txt`
+	- Create an API key on https://mapsplatform.google.com/. It should look something like `AIzaSyDQwAloK4wKTeKqKJ4oK4wKTeKqKJ4oK4w`.
+- `secret_key.txt`
+	- Create a secret key. For development, you can use whatever random string. In production, use a secure random string.
+
+### Miscellaneous
 
 To prepare the database you may use, e.g., the `import_database` command to install a copy of production data.
 
@@ -43,7 +60,7 @@ To run the test library:
 
 ## Deploying
 
-This project using the Emcee tooling to define and orchestrate resource provisioning and deployment.
+This project uses the Emcee tooling to define and orchestrate resource provisioning and deployment.
 See the AWS cloudformation templates in `cloudformation` and the command definitions in `commands.py`
 for more information.
 
