@@ -44,7 +44,7 @@ Report an Invader
         <p>Drag the pin where you found the specimen (zoom in to provide the most accurate location) or enter an address or nearby intersection below:</p>
         <p>
           <div class="form-group address">
-            <label>Address</label>
+            <label for="address">Address</label>
             <input class="form-control" type="text" id="address">
               <span style="display:none" class="loader"></span>
             </input>
@@ -78,7 +78,7 @@ Report an Invader
         {% bootstrap_field form.questions %}
     </fieldset>
 
-    <input type="submit" name="submit" value="Submit" id="submit" class="btn btn-primary"/>
+    <input type="submit" value="Submit" class="btn btn-primary"/>
     <a href="{% url 'reports-list' %}" class="btn btn-warning">Cancel</a>
     <div id="previews"></div>
 </form>

@@ -13,7 +13,7 @@ from oregoninvasiveshotline.utils.test.user import UserMixin
 from oregoninvasiveshotline.reports.models import Report
 
 from .fields import ClearableImageInput
-from .forms import BaseImageFormSet, ImageForm, get_image_formset
+from .forms import BaseImageFormSet, ImageForm, ImageFormSet
 from .models import Image
 
 
@@ -52,10 +52,9 @@ class BaseImageFormSetTest(TestCase, UserMixin):
         self.assertEqual(Image.objects.filter(report=report, created_by=user).count(), 1)
 
 
-class GetImageFormSetTest(TestCase, UserMixin):
-    def test(self):
+class ImageFormSetTest(TestCase, UserMixin):
+    def test_form_kwargs(self):
         user = self.create_user(username="admin@example.com", is_staff=True)
-        ImageFormSet = get_image_formset(user=user)
         formset = ImageFormSet({
             "form-TOTAL_FORMS": "1",
             "form-INITIAL_FORMS": "0",
@@ -64,7 +63,7 @@ class GetImageFormSetTest(TestCase, UserMixin):
             "form-0-image_data_uri": "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=",
             "form-0-name": "Hello world",
             "form-0-visibility": Image.PUBLIC,
-        })
+        }, form_kwargs={'user': user})
         self.assertTrue(formset.is_valid())
         report = make(Report, point=ORIGIN)
         formset.save(fk=report, user=user)

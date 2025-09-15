@@ -20,7 +20,7 @@ from oregoninvasiveshotline.utils.db import will_be_deleted_with
 from oregoninvasiveshotline.comments.forms import CommentForm
 from oregoninvasiveshotline.comments.models import Comment
 from oregoninvasiveshotline.comments.perms import can_create_comment
-from oregoninvasiveshotline.images.forms import get_image_formset
+from oregoninvasiveshotline.images.forms import ImageFormSet
 from oregoninvasiveshotline.images.models import Image
 from oregoninvasiveshotline.species.models import Category, Severity, category_id_to_species_id_json
 from oregoninvasiveshotline.users.utils import get_tab_counts
@@ -151,7 +151,6 @@ def create(request):
     """
     Render the public form for submitting reports
     """
-    ImageFormSet = get_image_formset()
 
     if request.POST:
         form = ReportForm(request.POST, request.FILES)
@@ -224,11 +223,10 @@ def detail(request, report_id):
 
     # process the comment form only if they are allowed to leave comments
     if can_create_comment(request.user, report):
-        ImageFormSet = get_image_formset(user=request.user)
         PartialCommentForm = functools.partial(CommentForm, user=request.user, report=report)
 
         if request.POST and submit_flag == CommentForm.SUBMIT_FLAG:
-            image_formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())
+            image_formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none(), form_kwargs={'user': request.user})
             comment_form = PartialCommentForm(request.POST, request.FILES)
             if comment_form.is_valid() and image_formset.is_valid():
                 comment = comment_form.save()
@@ -243,7 +241,7 @@ def detail(request, report_id):
 
         else:
             comment_form = PartialCommentForm()
-            image_formset = ImageFormSet(queryset=Image.objects.none())
+            image_formset = ImageFormSet(queryset=Image.objects.none(), form_kwargs={'user': request.user})
 
     # handle all the management forms
     if can_manage_report(request.user, report):
