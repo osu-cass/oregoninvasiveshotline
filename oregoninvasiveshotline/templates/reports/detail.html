@@ -9,7 +9,13 @@
 Report #{{ report.pk }} - {{ report }}
 {% endblock %}
 {% block content %}
-
+{% block css %}
+    {{ block.super }}
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/combine/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.css,npm/@fancyapps/ui@6.0/dist/carousel/carousel.css"
+    />
+{% endblock %}
 <div class="row">
     <div class="col-md-8">
         <div class="report-heading clearfix">
@@ -55,9 +61,16 @@ Report #{{ report.pk }} - {{ report }}
         <blockquote>{{ report.description|default:"No description provided"|linebreaksbr }}</blockquote>
 
         {% if images %}
-            <div class="galleria" style="display: none;">
+            <div class="f-carousel" id="myCarousel">
                 {% for image in images %}
-                    <img src="{{ image.image.url }}" alt="{{ image.name }}" />
+                    <div 
+                   		data-src="{{ image.image.url }}"
+                    	data-thumb-src="{{ image.image.url }}"
+                     	class="f-carousel__slide"
+                      data-fancybox="gallery"
+                    >
+                    	<img src="{{ image.image.url }}" alt="{{ image.name }}" />
+                    </div>
                 {% endfor %}
             </div>
         {% endif %}
@@ -267,17 +280,17 @@ Report #{{ report.pk }} - {{ report }}
 
     <script>var category_id_to_species_id = {{ category_id_to_species_id|safe }};</script>
     <script src="{% static 'js/species_selector.js' %}" async></script>
-    <script src="{% static 'js/galleria.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/combine/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.umd.js,npm/@fancyapps/ui@6.0/dist/carousel/carousel.umd.js"></script>
+    <!--<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.lazyload.umd.js"></script>-->
     <script>
+    		Carousel(document.getElementById("myCarousel"), {}, {
+				    // LazyLoad,
+				    Arrows,
+				    Thumbs
+		    }).init();
+				Fancybox.bind("[data-fancybox]", {});
+				
         $(document).ready(function() {
-            if($('.galleria').length){
-                Galleria.loadTheme('{% static "js/galleria.classic.min.js" %}');
-                Galleria.run('.galleria', {
-                    "lightbox": true
-                });
-            }
-            $('.galleria').show();
-
             $('#add-comment a').click(function(e){
                 e.preventDefault();
                 $('#add-comment').css("visibility", "hidden");

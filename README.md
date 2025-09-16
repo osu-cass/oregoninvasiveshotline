@@ -13,6 +13,8 @@ about the species that was reported
 - Google Maps
 - Bootstrap 5
 
+Packages are managed with a jsDelivr script link in `templates/base.html`.
+
 ## Getting started
 
 Ensure that you have Docker and Docker Compose installed in your host's environment.

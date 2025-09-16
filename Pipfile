@@ -26,4 +26,4 @@ setuptools = "*"
 [dev-packages]
 coverage = "*"
 flake8 = "*"
-model_mommy = "*"
+model-bakery = "*"

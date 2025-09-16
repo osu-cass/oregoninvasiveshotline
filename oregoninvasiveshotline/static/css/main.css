@@ -5,8 +5,6 @@ html, body {
     font-family: Verdana, Geneva, sans-serif;
 }
 
-
-
 body.white {
     background:#fff;
     filter:none;
@@ -114,9 +112,6 @@ select[multiple] {
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
     padding-top:10px;
-}
-
-.arrow {
 }
 
 #headline {
@@ -248,10 +243,6 @@ select[multiple] {
 
 .sidebar div:first-child {
     margin-top:0;
-}
-
-.galleria {
-    height:400px;
 }
 
 #add-comment {
@@ -526,4 +517,31 @@ blockquote {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+#myCarousel {
+  --f-arrow-pos: 10px;
+  --f-arrow-bg: rgba(255,255,255,1);
+  --f-arrow-hover-bg: rgba(255,255,255,1);
+  --f-arrow-color: #333;
+  --f-arrow-width: 40px;
+  --f-arrow-height: 40px;
+  --f-arrow-svg-width: 20px;
+  --f-arrow-svg-height: 20px;
+  --f-arrow-svg-stroke-width: 2px;
+  --f-arrow-border-radius: 50%;
+
+  height: 400px;
+}
+
+#myCarousel .f-carousel__slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#myCarousel img {
+  max-width: 100%;
+  max-height: 100%;
+  height: auto;
 }
