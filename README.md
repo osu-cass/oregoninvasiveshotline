@@ -2,7 +2,7 @@
 
 This project allows members of the public to submit reports of invasive species for experts to
 review. Experts can login and review the reports, comment on them, and make a final determination
-about the species that was reported
+about the species that was reported.
 
 ## Technology stack
 

@@ -20,7 +20,9 @@ Provide a clear description of the enhancement and why you think it would be val
 
 ### Submitting Pull Requests
 
-If you'd like to contribute code, that's fantastic! Here’s how you can do it:
+If you'd like to contribute code, that's fantastic! First, ensure that an issue exists for the enhancement you want to implement. If not, please create one.
+
+From there, follow these steps:
 
 1.  **Fork the repository** and clone it to your local machine.
 2.  **Set up your development environment**. Follow the `Getting Started` guide in the `README.md`
@@ -37,7 +39,7 @@ make test_container
 *   The PR title should be descriptive.
 *   The PR description should explain the "what" and "why" of the changes.
 *   Ensure all automated checks are passing.
-*   If your PR addresses an open issue, please link it in the description (e.g., `Closes #123`).
+*   Please link an open issue with your PR it in the description (e.g., `Closes #123`).
 *   Be prepared to address feedback from the maintainers.
 
 Thank you again for your interest in contributing!
