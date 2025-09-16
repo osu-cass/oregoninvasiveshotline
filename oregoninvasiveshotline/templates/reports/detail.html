@@ -11,10 +11,10 @@ Report #{{ report.pk }} - {{ report }}
 {% block content %}
 {% block css %}
     {{ block.super }}
-    <link
+    <!--<link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/combine/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.css,npm/@fancyapps/ui@6.0/dist/carousel/carousel.css"
-    />
+    />-->
 {% endblock %}
 <div class="row">
     <div class="col-md-8">
@@ -280,7 +280,7 @@ Report #{{ report.pk }} - {{ report }}
 
     <script>var category_id_to_species_id = {{ category_id_to_species_id|safe }};</script>
     <script src="{% static 'js/species_selector.js' %}" async></script>
-    <script src="https://cdn.jsdelivr.net/combine/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.umd.js,npm/@fancyapps/ui@6.0/dist/carousel/carousel.umd.js"></script>
+    <!--<script src="https://cdn.jsdelivr.net/combine/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.umd.js,npm/@fancyapps/ui@6.0/dist/carousel/carousel.umd.js"></script>-->
     <!--<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.lazyload.umd.js"></script>-->
     <script>
     		Carousel(document.getElementById("myCarousel"), {}, {

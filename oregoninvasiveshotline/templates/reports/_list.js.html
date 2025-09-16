@@ -56,36 +56,7 @@
       });
   }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/choices.js@11.1.0/public/assets/scripts/choices.min.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const categoriesElement = document.querySelector(
-      'select[name="categories"]'
-    );
-    if (categoriesElement) {
-      const choicesCategories = new Choices(categoriesElement);
-
-      const clonedCategoriesInput = categoriesElement
-        .closest(".choices__inner")
-        .querySelector(".choices__input--cloned");
-      // We need to add the id to the input element for accessibility
-      if (clonedCategoriesInput)
-        clonedCategoriesInput.id = "id_categories_input";
-    }
-
-    const countiesElement = document.querySelector('select[name="counties"]');
-    if (countiesElement) {
-      const choicesCounties = new Choices(countiesElement);
-
-      const clonedCountiesInput = countiesElement
-        .closest(".choices__inner")
-        .querySelector(".choices__input--cloned");
-      if (clonedCountiesInput) {
-        clonedCountiesInput.id = "id_counties_input";
-      }
-    }
-  });
-</script>
+<!--<script src="https://cdn.jsdelivr.net/npm/choices.js@11.1.0/public/assets/scripts/choices.min.js"></script>-->
 <script>
   $(document).ready(function () {
     $(".modal-remote").on("click", function (e) {

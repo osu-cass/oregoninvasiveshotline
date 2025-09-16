@@ -1,0 +1,44 @@
+{
+  "name": "oregoninvasiveshotline",
+  "private": true,
+  "type": "module",
+  "version": "1.16.2",
+  "description": "Oregon Invasives Hotline",
+  "homepage": "https://oregoninvasiveshotline.org",
+  "repository": "https://github.com/PSU-OIT-ARC/oregoninvasiveshotline",
+  "bugs": "https://github.com/PSU-OIT-ARC/oregoninvasiveshotline/issues",
+  "author": "PSU Web Development Team <webteam@pdx.edu>",
+  "contributors": [
+    {
+      "name": "Brandon Conway",
+      "email": "conwayb@pdx.edu"
+    },
+    {
+      "name": "Thom Linton",
+      "email": "tlinton@pdx.edu"
+    }
+  ],
+  "scripts": {
+    "build": "npx rollup -c"
+  },
+  "dependencies": {
+    "@fancyapps/ui": "^6.0.32",
+    "@popperjs/core": "^2.11.8",
+    "@rollup/plugin-commonjs": "^28.0.6",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@sentry/browser": "~10.5.0",
+    "@sentry/tracing": "~7.120.4",
+    "bootstrap": "~5.3.7",
+    "bootstrap-icons": "^1.13.1",
+    "choices.js": "^11.1.0",
+    "galleria": "~1.6.1",
+    "jquery": "~3.7.1",
+    "jquery-migrate": "~3.5.2",
+    "js-cookie": "~3.0.5",
+    "vite": "^7.1.5"
+  },
+  "devDependencies": {
+    "@rollup/plugin-terser": "^0.4.4",
+    "rollup-plugin-postcss": "^4.0.2"
+  }
+}

@@ -12,7 +12,7 @@ from .species import views as species
 from .users import views as users
 from .views import HomeView, AdminPanelView
 
-
+ 
 urlpatterns = [
     # Redirects for the old site
     re_path(r'^reports/(?P<report_id>\d+)/?$', lambda request, report_id: redirect('reports-detail', report_id)),
