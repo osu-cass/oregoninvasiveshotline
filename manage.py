@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 import os
 import sys
+import django_stubs_ext
+
+django_stubs_ext.monkeypatch()
 
 
 if __name__ == '__main__':
