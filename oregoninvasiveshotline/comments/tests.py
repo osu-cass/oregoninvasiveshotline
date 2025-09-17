@@ -1,4 +1,3 @@
-from unittest.mock import Mock
 
 from django.core import mail
 from django.contrib.gis.geos import Point

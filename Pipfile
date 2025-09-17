@@ -25,5 +25,5 @@ setuptools = "*"
 
 [dev-packages]
 coverage = "*"
-flake8 = "*"
 model-bakery = "*"
+ruff = "*"

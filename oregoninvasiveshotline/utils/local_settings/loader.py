@@ -42,7 +42,8 @@ class Loader(Base):
             - settings from file
 
         """
-        is_valid_key = lambda k: k.isupper() and not k.startswith('_')
+        def is_valid_key(k):
+            return k.isupper() and not k.startswith('_')
 
         # Base settings, including `LocalSetting`s, loaded from the
         # Django settings module.

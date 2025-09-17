@@ -8,11 +8,9 @@ from django.db.models.signals import post_save
 from django.urls import reverse
 from django.conf import settings
 
-from oregoninvasiveshotline.utils.settings import get_setting
 from oregoninvasiveshotline.utils.images import generate_thumbnail
 from oregoninvasiveshotline.visibility import Visibility
 from oregoninvasiveshotline.images.models import Image
-from oregoninvasiveshotline.users.models import User
 
 from .utils import generate_icon, icon_file_name
 

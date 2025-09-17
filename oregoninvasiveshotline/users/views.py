@@ -3,7 +3,6 @@ import random
 
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.core.exceptions import ValidationError
 from django.core.signing import BadSignature
 from django.views.generic import DetailView
 from django.contrib.auth import login as django_login

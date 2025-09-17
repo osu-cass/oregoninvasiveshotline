@@ -9,18 +9,14 @@ from emcee.runner.utils import confirm
 from emcee.app.config import YAMLAppConfiguration
 from emcee import printer
 
-from emcee.commands.transport import *
 from emcee.commands.files import copy_file
-from emcee.commands.deploy import deploy, list_builds
 
-from emcee.provision.base import provision_host, patch_host
+from emcee.provision.base import provision_host
 from emcee.provision.docker import provision_docker, authenticate_ghcr
-from emcee.provision.secrets import provision_secret, show_secret
+from emcee.provision.secrets import provision_secret
 
-from emcee.deploy.docker import publish_images
 from emcee.deploy import deployer, docker, DeploymentCheckError
 
-from emcee.backends.aws.infrastructure.commands import *
 from emcee.backends.aws.provision.volumes import (provision_volume,
                                                   provision_swapfile)
 

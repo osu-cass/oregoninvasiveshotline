@@ -1,5 +1,5 @@
 import urllib.parse
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from django.conf import settings
 from django.core import mail
@@ -15,7 +15,7 @@ from oregoninvasiveshotline.utils.test.user import UserMixin
 from oregoninvasiveshotline.notifications.models import UserNotificationQuery
 from oregoninvasiveshotline.reports.models import Invite, Report
 
-from .forms import PublicLoginForm, UserForm, UserSearchForm
+from .forms import UserForm, UserSearchForm
 from .utils import get_tab_counts
 from .models import User
 

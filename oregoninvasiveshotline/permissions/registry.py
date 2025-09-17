@@ -161,7 +161,8 @@ class PermissionsRegistry:
             # A fake view that, when called with the current request,
             # triggers Django's redirect-to-login functionality.
             force_login_view = login_required(lambda _: None)
-            unauthenticated_handler = lambda r: force_login_view(r)
+            def unauthenticated_handler(request):
+                return force_login_view(request)
         else:
             if isinstance(unauthenticated_handler, str):
                 unauthenticated_handler = import_string(unauthenticated_handler)
@@ -233,7 +234,8 @@ class PermissionsRegistry:
                 return False
             if not allow_anonymous and user.is_anonymous:
                 return False
-            test = lambda: perm_func(user) if instance is NO_VALUE else perm_func(user, instance)
+            def test():
+                return perm_func(user) if instance is NO_VALUE else perm_func(user, instance)
             return (
                 allow_staff and user.is_staff or
                 allow_superuser and user.is_superuser or

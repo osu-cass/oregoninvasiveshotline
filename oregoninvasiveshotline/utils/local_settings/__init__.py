@@ -10,13 +10,22 @@ from .strategy import INIJSONStrategy
 from .util import get_file_name
 
 # Exported (but unused locally)
-from .checker import Checker  # noqa: exported
-from .exc import SettingsFileNotFoundError  # noqa: exported
-from .settings import Settings  # noqa: exported
-from .types import LocalSetting, SecretSetting  # noqa: exported
-from .util import NO_DEFAULT  # noqa: exported
-from .__main__ import make_local_settings  # noqa: exported
+from .checker import Checker
+from .exc import SettingsFileNotFoundError
+from .settings import Settings
+from .types import LocalSetting, SecretSetting
+from .util import NO_DEFAULT
+from .__main__ import make_local_settings
 
+__all__ = [
+    "Checker",
+    "SettingsFileNotFoundError",
+    "Settings",
+    "LocalSetting",
+    "SecretSetting",
+    "NO_DEFAULT",
+    "make_local_settings",
+]
 
 def load_and_check_settings(base_settings, file_name=None, section=None, base_path=None,
                             strategy_type=INIJSONStrategy, disable=None, prompt=None,

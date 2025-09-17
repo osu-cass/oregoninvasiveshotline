@@ -3,7 +3,6 @@ from django.template.loader import render_to_string
 from rest_framework import serializers
 import pytz
 
-from oregoninvasiveshotline.reports.models import Report
 
 
 class ReportSerializer(serializers.Serializer):

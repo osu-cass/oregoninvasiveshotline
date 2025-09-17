@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import os.path
 
-from django.utils.translation import gettext_lazy as _
-from django.urls import reverse_lazy
 from celery.schedules import crontab
 
 from emcee.runner.config import YAMLCommandConfiguration

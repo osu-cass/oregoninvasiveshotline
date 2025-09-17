@@ -1,7 +1,5 @@
 import posixpath
-import tempfile
 import binascii
-import shutil
 import codecs
 import json
 import csv
@@ -14,7 +12,6 @@ from django.utils import timezone
 from django.conf import settings
 from django.core import mail
 from django.core.exceptions import NON_FIELD_ERRORS
-from django.core.files.base import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.contrib.gis.geos import Point
 from django.db.models.signals import post_save
