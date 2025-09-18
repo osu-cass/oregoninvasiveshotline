@@ -6,6 +6,7 @@ from importlib.resources import files
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from configparser import NoSectionError, RawConfigParser
+from typing import Optional
 
 from six import raise_from, with_metaclass
 
@@ -81,7 +82,7 @@ class Strategy(with_metaclass(ABCMeta)):
 
         return file_name, section
 
-    def get_default_section(self, file_name):
+    def get_default_section(self, file_name) -> Optional[str]:
         return None
 
     def decode_value(self, value):
@@ -173,7 +174,7 @@ class INIStrategy(Strategy):
             value = settings[name]
             log.info('Saved %s to %s as: %s', name, file_name, value)
 
-    def get_default_section(self, file_name):
+    def get_default_section(self, file_name) -> str:
         """Returns first non-DEFAULT section; falls back to DEFAULT."""
         if not os.path.isfile(file_name):
             return 'DEFAULT'

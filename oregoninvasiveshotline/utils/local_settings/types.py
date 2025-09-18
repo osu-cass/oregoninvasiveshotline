@@ -1,4 +1,5 @@
 import json
+from typing import Any
 
 from .exc import NoDefaultError, NoValueError
 from .util import NO_DEFAULT
@@ -18,7 +19,14 @@ class LocalSetting(object):
 
     """
 
-    def __init__(self, default=NO_DEFAULT, prompt=True, doc=None, validator=None):
+    def __init__(
+            self,
+            default: Any = NO_DEFAULT,
+            prompt: bool = True,
+            doc: str | None = None,
+            validator: Any = None,
+        ) -> None:
+
         self.default = default
         self.derived_default = NO_DEFAULT
         if default is not NO_DEFAULT:
