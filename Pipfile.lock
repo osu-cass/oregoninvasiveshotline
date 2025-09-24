@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "d7675ae79fb30d72f5aae4c652df8d0f3f6b56c1ee3ddb4047285dd7861f6198"
+            "sha256": "218cfa758e11f40ff912dfb7f0e2aa5e6ee38576aa9827d913fffb971d2c02dd"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -347,11 +347,11 @@
         },
         "click": {
             "hashes": [
-                "sha256:27c491cc05d968d271d5a1db13e3b5a184636d9d930f148c50b038f0d0646202",
-                "sha256:61a3265b914e850b85317d0b3109c7f8cd35a670f963866005d6ef1d5175a12b"
+                "sha256:9b9f285302c6e3064f4330c05f05b81945b2a39544279343e6e7c5f27a9baddc",
+                "sha256:e7b8232224eba16f4ebe410c25ced9f7875cb5f3263ffc93cc3e8da705e229c4"
             ],
             "markers": "python_version >= '3.10'",
-            "version": "==8.2.1"
+            "version": "==8.3.0"
         },
         "click-didyoumean": {
             "hashes": [
@@ -387,15 +387,6 @@
             ],
             "markers": "python_version >= '3.10'",
             "version": "==5.2.6"
-        },
-        "django-stubs-ext": {
-            "hashes": [
-                "sha256:9b4b8ac9d32f7e6c304fd05477f8688fae6ed57f6a0f9f4d074f9e55b5a3da14",
-                "sha256:ecc628df29d36cede638567c4e33ff485dd7a99f1552ad0cece8c60e9c3a8872"
-            ],
-            "index": "pypi",
-            "markers": "python_version >= '3.10'",
-            "version": "==5.2.5"
         },
         "djangorestframework": {
             "hashes": [
@@ -838,14 +829,6 @@
             "markers": "python_version >= '2.6'",
             "version": "==3.1.10"
         },
-        "typing-extensions": {
-            "hashes": [
-                "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466",
-                "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"
-            ],
-            "markers": "python_version >= '3.9'",
-            "version": "==4.15.0"
-        },
         "tzdata": {
             "hashes": [
                 "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8",
@@ -861,13 +844,6 @@
             ],
             "markers": "python_version >= '3.9'",
             "version": "==2.5.0"
-        },
-        "uwsgi": {
-            "hashes": [
-                "sha256:c12aa652124f062ac216077da59f6d247bd7ef938234445881552e58afb1eb5f"
-            ],
-            "index": "pypi",
-            "version": "==2.0.30"
         },
         "vine": {
             "hashes": [

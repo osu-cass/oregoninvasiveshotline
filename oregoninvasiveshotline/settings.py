@@ -289,7 +289,7 @@ settings = load_app_configuration(app_config, globals())
 processors.set_secret_key(config, settings)
 processors.set_database_parameters(config, settings)
 processors.set_sentry_dsn(config, settings, traces_sample_rate=0.1)
-processors.set_smtp_parameters(config, settings)
+processors.set_smtp_parameters(config, settings) 
 
 # Configure Google Maps API key
 GOOGLE_API_KEY = processors.get_secret_value(config, 'GOOGLE_API_KEY')

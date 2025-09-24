@@ -16,11 +16,9 @@ Pillow = "~=11.3.0"
 Django = { version = "~=5.2.0", extras = ["argon2", "bcrypt"]}
 psycopg2-binary = "~=2.9.0"
 celery = "~=5.5.3"
-uWSGI = "~=2.0.0"
 gunicorn = "~=23.0.0"
 djangorestframework = "~=3.16.0"
 sentry-sdk = "~=2.35.0"
-django-stubs-ext = "~=5.2.5"
 setuptools = "~=80.9.0"
 
 [dev-packages]

@@ -115,7 +115,6 @@ def maintenance_mode():
 
 class InvasivesLocalProcessor(docker.LocalProcessor):
     include_app = True
-    include_uwsgi = True
     include_nginx = True
 
 

@@ -70,6 +70,7 @@ services:
     environment:
       - EMCEE_CMD_ENV=docker
       - APP_SERVICE=wsgi
+      - APP_ENVIRONMENT=development
     networks:
       - default
     ports:

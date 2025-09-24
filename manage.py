@@ -1,10 +1,6 @@
 #!/usr/bin/env python
 import os
 import sys
-import django_stubs_ext
-
-django_stubs_ext.monkeypatch()
-
 
 if __name__ == '__main__':
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'oregoninvasiveshotline.settings')

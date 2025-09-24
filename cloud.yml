@@ -47,7 +47,6 @@ services:
     - /etc/passwd:/etc/passwd:ro
     - /vol/store/media:/vol/store/media
     - /vol/www/oregoninvasiveshotline:/vol/www/oregoninvasiveshotline
-    - ./uwsgi:/uwsgi
     - ./:/app
     environment:
     - EMCEE_CMD_ENV=cloud
