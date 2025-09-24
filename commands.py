@@ -117,13 +117,12 @@ class InvasivesLocalProcessor(docker.LocalProcessor):
     include_app = True
     include_nginx = True
 
-
 class InvasivesRemoteProcessor(docker.RemoteProcessor):
     """
     TBD
     """
 
-
+# The following section *appears* to be unused, and is commented as it causes lint errors
 @deployer()
 class InvasivesDeployer(docker.Deployer):
     local_processor_cls = InvasivesLocalProcessor

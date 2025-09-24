@@ -56,7 +56,7 @@ class LocalSetting(object):
         return self._value is not NO_DEFAULT or self.has_default
 
     def _get_default(self):
-        if self.derived_default:
+        if isinstance(self.derived_default, LocalSetting):
             default = self.derived_default.value
         else:
             default = self._default
