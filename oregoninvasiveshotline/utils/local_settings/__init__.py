@@ -91,7 +91,7 @@ def load_and_check_settings(base_settings, file_name=None, section=None, base_pa
         # Loading/checking of local settings was aborted with Ctrl-C.
         # This isn't an error, but we don't want to continue.
         if not quiet:
-            printer.print_warning('\nAborted loading/checking of local settings')
+            printer.print_warning('\nAborted loading/checking of local settings') # type: ignore this is defined but dynamically generated
         sys.exit(0)
     if loader.section:
         file_name = '{loader.file_name}#{loader.section}'.format(loader=loader)
@@ -100,7 +100,7 @@ def load_and_check_settings(base_settings, file_name=None, section=None, base_pa
     if not success:
         raise SettingsFileDidNotPassCheck(file_name)
     if not quiet:
-        printer.print_success('Settings loaded successfully from {0}'.format(file_name))
+        printer.print_success('Settings loaded successfully from {0}'.format(file_name)) # type: ignore this is defined but dynamically generated
     return settings
 
 

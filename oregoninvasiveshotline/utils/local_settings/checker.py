@@ -40,7 +40,7 @@ class Checker(Base):
             self.strategy.write_settings(settings_to_write, self.file_name, self.section)
         if missing:
             for name, local_setting in missing.items():
-                printer.print_error('Local setting `{name}` must be set'.format(name=name))
+                printer.print_error('Local setting `{name}` must be set'.format(name=name)) # type: ignore this is defined but dynamically generated
             return False
         return True
 
@@ -86,7 +86,7 @@ class Checker(Base):
                             None, settings_to_write, missing)
 
                 if self.prompt:
-                    printer.print_header('=' * 79)
+                    printer.print_header('=' * 79) # type: ignore this is defined but dynamically generated
 
                 if local_setting.prompt:  # prompt for value
                     if self.prompt:
@@ -98,7 +98,7 @@ class Checker(Base):
                         '`{name}`'.format(name=name, value=v))
                     if local_setting.derived_default:
                         msg += ' (derived from {0})'.format(default_name)
-                    printer.print_warning(msg)
+                    printer.print_warning(msg) # type: ignore this is defined but dynamically generated
 
                 if is_set:
                     local_setting.value = obj[k] = settings_to_write[name] = v
@@ -110,29 +110,29 @@ class Checker(Base):
     def prompt_for_value(self, name, local_setting):
         v, is_set = NO_DEFAULT, False
         while not is_set:  # Keep prompting until valid value is set
-            printer.print_header(
+            printer.print_header( # type: ignore this is defined but dynamically generated
                 'Enter a value for the local setting `{name}` (as JSON)'.format(name=name))
             if local_setting.doc:
-                printer.print_header(local_setting.doc)
+                printer.print_header(local_setting.doc) # type: ignore this is defined but dynamically generated
             if local_setting.has_default:
                 msg = 'Hit enter to use default: `{0!r}`'.format(local_setting.default)
                 if local_setting.derived_default:
                     default_name = self.registry[local_setting.derived_default]
                     msg += ' (derived from {0})'.format(default_name)
-                printer.print_header(msg)
+                printer.print_header(msg) # type: ignore this is defined but dynamically generated
             v = input('> ').strip()
             if v:
                 try:
                     v = self.strategy.decode_value(v)
                 except ValueError as e:
-                    printer.print_error(e)
+                    printer.print_error(e) # type: ignore this is defined but dynamically generated
                 else:
                     is_set = local_setting.validate(v)
                     if not is_set:
-                        printer.print_error('`{0}` is not a valid value for {1}'.format(v, name))
+                        printer.print_error('`{0}` is not a valid value for {1}'.format(v, name)) # type: ignore this is defined but dynamically generated
             elif local_setting.has_default:
                 v, is_set = local_setting.default, True
-                printer.print_info('Using default value for `{0}`'.format(name))
+                printer.print_info('Using default value for `{0}`'.format(name)) # type: ignore this is defined but dynamically generated
             else:
-                printer.print_error('You must enter a value for `{0}`'.format(name))
+                printer.print_error('You must enter a value for `{0}`'.format(name)) # type: ignore this is defined but dynamically generated
         return v, is_set
