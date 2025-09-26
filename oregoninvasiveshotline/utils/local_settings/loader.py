@@ -12,7 +12,7 @@ from .strategy import INIJSONStrategy
 
 class Loader(Base):
 
-    def __init__(self, file_name, section=None, registry=None, strategy_type=INIJSONStrategy):
+    def __init__(self, file_name: str, section=None, registry=None, strategy_type=INIJSONStrategy):
         super(Loader, self).__init__(file_name, section, registry, strategy_type)
 
     def load_and_check(self, base_settings, prompt=None):

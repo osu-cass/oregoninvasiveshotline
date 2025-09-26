@@ -1,6 +1,7 @@
 import re
 from collections.abc import Mapping, Sequence
 from itertools import chain
+from typing_extensions import Any, MutableMapping, MutableSequence
 
 from .util import NO_DEFAULT, NO_DEFAULT as PLACEHOLDER
 
@@ -49,6 +50,11 @@ class DottedAccessMixin:
     1
 
     """
+    def __getitem__(self, key: Any) -> Any:
+        ...
+
+    def __setitem__(self, key: Any, value: Any) -> None:
+        ...
 
     def contains_dotted(self, name):
         try:
@@ -106,7 +112,7 @@ class DottedAccessMixin:
 
         return value
 
-    def _create_segment(self, obj, segment, next_segment):
+    def _create_segment(self, obj: MutableMapping | MutableSequence, segment, next_segment):
         """Create ``obj[segment]`` if missing.
 
         The default value for a missing segment is based on the *next*
@@ -121,10 +127,10 @@ class DottedAccessMixin:
             value = [PLACEHOLDER] * (next_segment + 1)
         else:
             value = Settings()
-        if isinstance(obj, Mapping):
+        if isinstance(obj, MutableMapping):
             if segment not in obj:
                 obj[segment] = value
-        elif isinstance(obj, Sequence):
+        elif isinstance(obj, MutableSequence):
             old_len = len(obj)
             new_len = segment + 1
             if new_len > old_len:
@@ -249,7 +255,7 @@ class DottedAccessMixin:
         Otherwise, return it as is.
 
         """
-        if re.search('^\d+$', name):
+        if re.search(r'^\d+$', name):
             if len(name) > 1 and name[0] == '0':
                 # Don't treat strings beginning with "0" as ints
                 return name
@@ -359,14 +365,14 @@ class Settings(dict, DottedAccessMixin):
     # implementations were copied from collections.MutableMapping in the
     # standard library and tweaked slightly.
 
-    def setdefault(self, name, default=None):
+    def setdefault(self, name: str, default: Any | None = None):
         try:
             return self[name]
         except KeyError:
             self[name] = default
         return self[name]
 
-    def update(*args, **kwargs):
+    def update(self, *args, **kwargs):
         if len(args) > 2:
             raise TypeError(
                 'update() takes at most 2 positional arguments ({} given)'.format(len(args)))
@@ -377,8 +383,12 @@ class Settings(dict, DottedAccessMixin):
         if isinstance(other, Mapping):
             for name in other:
                 self[name] = other[name]
+        # In theory this branch has no real need to exist (as anything with .keys should be an instance of Mapping).
+        
+        # However, it's possible that the object has a .keys() method but is not an instance of Mapping.
+        # Unsure why this would happen, but the code did it before and changing it might break something.
         elif hasattr(other, 'keys'):
-            for name in other.keys():
+            for name in other.keys(): # type: ignore[attr-defined]
                 self[name] = other[name]
         else:
             for name, value in other:

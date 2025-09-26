@@ -10,7 +10,7 @@ from .util import NO_DEFAULT, is_a_tty
 
 class Checker(Base):
 
-    def __init__(self, file_name, section=None, registry=None, strategy_type=INIJSONStrategy,
+    def __init__(self, file_name: str, section=None, registry=None, strategy_type=INIJSONStrategy,
                  prompt=None):
         super(Checker, self).__init__(file_name, section, registry, strategy_type)
         if prompt is None:

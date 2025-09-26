@@ -21,7 +21,7 @@ class ColorPrinterMeta(type):
             setattr(cls, 'print_{0}'.format(color), _print)
             setattr(cls, 'string_{0}'.format(color), _string)
 
-        for color in cls.colors:
+        for color in cls.colors: # type: ignore defined in child class
             _make_methods(color)
 
 
