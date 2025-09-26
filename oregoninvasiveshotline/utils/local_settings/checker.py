@@ -1,6 +1,7 @@
 import sys
 from collections.abc import Mapping, Sequence
 from typing import Type
+from typing_extensions import Any, MutableMapping
 
 from .base import Base
 from .color_printer import color_printer as printer
@@ -58,8 +59,8 @@ class Checker(Base):
             else:
                 self.registry[v] = name
 
-    def _check(self, obj, prefix, settings_to_write, missing):
-        if isinstance(obj, Mapping):
+    def _check(self, obj: MutableMapping | Sequence | Any, prefix: str | None, settings_to_write: dict[str, Any], missing: dict[str, Any]):
+        if isinstance(obj, MutableMapping):
             items = sorted(obj.items(), key=lambda item: item[0])
         elif isinstance(obj, Sequence) and not isinstance(obj, str):
             items = zip(range(len(obj)), obj)
@@ -67,7 +68,7 @@ class Checker(Base):
             return {}, {}
 
         for k, v in items:
-            name = k if not prefix else '{0}.{1}'.format(prefix, k)
+            name = str(k) if not prefix else '{0}.{1}'.format(prefix, k)
             if not isinstance(v, LocalSetting):
                 self._check(v, name, settings_to_write, missing)
             elif k not in settings_to_write:
@@ -76,6 +77,7 @@ class Checker(Base):
                 # default.
                 is_set = False
                 local_setting = v
+                default_name = None
 
                 if local_setting.derived_default:
                     # Ensure this setting's default is set if it's also a local setting
@@ -96,11 +98,11 @@ class Checker(Base):
                     msg = (
                         'Using default value `{value!r}` for local setting '
                         '`{name}`'.format(name=name, value=v))
-                    if local_setting.derived_default:
+                    if local_setting.derived_default and default_name:
                         msg += ' (derived from {0})'.format(default_name)
                     printer.print_warning(msg) # type: ignore this is defined but dynamically generated
 
-                if is_set:
+                if is_set and isinstance(obj, MutableMapping):
                     local_setting.value = obj[k] = settings_to_write[name] = v
                 else:
                     missing[name] = v
