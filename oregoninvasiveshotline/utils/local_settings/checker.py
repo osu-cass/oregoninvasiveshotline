@@ -1,5 +1,6 @@
 import sys
 from collections.abc import Mapping, Sequence
+from typing import Type
 
 from .base import Base
 from .color_printer import color_printer as printer
@@ -10,7 +11,7 @@ from .util import NO_DEFAULT, is_a_tty
 
 class Checker(Base):
 
-    def __init__(self, file_name: str, section=None, registry=None, strategy_type=INIJSONStrategy,
+    def __init__(self, file_name: str, section=None, registry=None, strategy_type: Type[INIJSONStrategy] = INIJSONStrategy,
                  prompt=None):
         super(Checker, self).__init__(file_name, section, registry, strategy_type)
         if prompt is None:
