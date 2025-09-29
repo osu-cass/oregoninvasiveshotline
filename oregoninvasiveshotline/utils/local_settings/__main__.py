@@ -15,8 +15,9 @@ class ArgParser(argparse.ArgumentParser):
 
     def error(self, message):
         message = '{self.prog} error: {message}\n'.format(**locals())
-        message = printer.string_error(message) # type: ignore this is defined but dynamically generated
-        self.print_usage(sys.stderr) # type: ignore this is defined but dynamically generated
+        # These methods are generated dynamically, so the linter can't detect them. See color_printer.py for info.
+        message = printer.string_error(message) # pyright: ignore
+        self.print_usage(sys.stderr) # pyright: ignore
         self.exit(2, message)
 
 
@@ -72,7 +73,8 @@ def make_local_settings(argv=None):
         path = os.path.join(os.getcwd(), package, 'settings.py')
         if os.path.exists(path):
             args.base_settings_module = '{package}.settings'.format(package=package)
-            printer.print_info( # type: ignore this is defined but dynamically generated
+            # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+            printer.print_info( # pyright: ignore
                 'Using {0.base_settings_module} as base settings module'.format(args))
         else:
             parser.error('Could not guess which base settings module to use; specify with -b')
@@ -97,7 +99,8 @@ def make_local_settings(argv=None):
 
     if os.path.exists(file_name):
         if args.overwrite:
-            printer.print_warning('Overwriting', file_name) # type: ignore this is defined but dynamically generated
+            # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+            printer.print_warning('Overwriting', file_name) # pyright: ignore
             os.remove(file_name)
 
     # This will create the file if it doesn't exist. The extends

@@ -6,6 +6,8 @@ from six import add_metaclass
 
 from .util import is_a_tty
 
+# This file generates classes dynamically, meaning pyright will not be able to infer the types of the generated classes.
+# Instead, you must manually ignore the type errors it creates.
 
 class ColorPrinterMeta(type):
 

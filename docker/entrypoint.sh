@@ -11,7 +11,7 @@ fi
 if [[ ${APP_SERVICE} == "wsgi" ]]; then
     if [[ ${EMCEE_CMD_ENV} == "docker" ]]; then
         if [[ ${APP_ENVIRONMENT} == "development" ]]; then
-            ${APP_ENV}/bin/pip install -r /app/docker/requirements-prod.txt
+            ${APP_ENV}/bin/pip install -r /app/docker/requirements-dev.txt
             ${APP_ENV}/bin/gunicorn -b 0.0.0.0:8000 --reload oregoninvasiveshotline.wsgi
         else
             ${APP_ENV}/bin/gunicorn -b 0.0.0.0:8000 oregoninvasiveshotline.wsgi
