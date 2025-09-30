@@ -17,9 +17,11 @@
         <!-- the first form yielded is the empty form. We use that as a template for the JS, so make it hidden -->
         <div class="formset">
             {% for subform in formset.iter_with_empty_form_first %}
-                <div class="formset-row d-flex gap-3 align-items-start"
-                    {% if forloop.counter0 == 0 %}style="display: none !important;"{% endif %}>
-                    
+            <div class="formset-row d-flex flex-wrap flex-md-nowrap gap-1 gap-md-3"
+                 {% if forloop.counter0 == 0 %}style="display: none !important;"{% endif %}>
+            
+                <!-- Image upload and delete button in one row on mobile -->
+                <div class="d-flex flex-row gap-1 justify-content-between flex-grow-1 flex-md-grow-0">
                     <div class="formset-image">
                         {% if subform.image.errors %}
                             <div class="text-danger">
@@ -31,22 +33,26 @@
                         {% endif %}
                         {% bootstrap_field subform.image label_class="visually-hidden" %}
                     </div>
-
-                    <div class="formset-name flex-grow-1">
-                        {% bootstrap_field subform.name %}
-                    </div>
-
-                    {% if subform.visibility %}
-                        <div class="formset-visibility">
-                            {% bootstrap_field subform.visibility %}
-                        </div>
-                    {% endif %}
-
-                    <div class="formset-delete">
+            
+                    <div class="formset-delete d-flex flex-column justify-content-start">
                         {{ subform.image_id }}
                         {% bootstrap_field subform.DELETE %}
                     </div>
                 </div>
+            
+                <!-- Name (caption) field full width on mobile, inline on desktop -->
+                <div class="formset-name flex-grow-1 w-100 w-md-auto">
+                    {% bootstrap_field subform.name %}
+                </div>
+            
+                <!-- Optional visibility field -->
+                {% if subform.visibility %}
+                    <div class="formset-visibility">
+                        {% bootstrap_field subform.visibility %}
+                    </div>
+                {% endif %}
+            
+            </div>
             {% endfor %}
         </div>
 
