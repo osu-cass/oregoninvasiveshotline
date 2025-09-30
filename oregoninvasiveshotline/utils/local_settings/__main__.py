@@ -83,7 +83,8 @@ def make_local_settings(argv=None):
         file_name = args.file_name
         if not args.type:
             strategy_type = guess_strategy_type(file_name)
-            strategy = strategy_type()
+            if strategy_type is not None:
+                strategy = strategy_type()
     elif args.env:
         file_name = 'local.{0.env}.{ext}'.format(args, ext=strategy.file_types[0])
     else:

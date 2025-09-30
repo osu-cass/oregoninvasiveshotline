@@ -1,4 +1,5 @@
 from collections.abc import Mapping, MutableSequence, Sequence
+from typing import MutableMapping, cast
 
 from django.utils.module_loading import import_string
 
@@ -130,7 +131,7 @@ class Loader(Base):
             if changed:
                 _interpolated.append((obj, new_value))
                 obj = new_value
-        elif isinstance(obj, Mapping):
+        elif isinstance(obj, MutableMapping):
             for k, v in obj.items():
                 obj[k], _interpolated = self._interpolate_values_inner(v, settings, _interpolated)
         elif isinstance(obj, MutableSequence):
@@ -141,12 +142,13 @@ class Loader(Base):
             for v in obj:
                 item, _interpolated = self._interpolate_values_inner(v, settings, _interpolated)
                 items.append(item)
-            obj = obj.__class__(items)
+            cls = cast(type[list], obj.__class__)
+            obj = cls(items)
 
         return obj, _interpolated or None
 
     def _interpolate_keys(self, obj, settings):
-        if isinstance(obj, Mapping):
+        if isinstance(obj, MutableMapping):
             replacements = {}
             for k, v in obj.items():
                 if isinstance(k, str):
@@ -190,8 +192,8 @@ class Loader(Base):
             if not swap_map:
                 continue
             current_val = settings.get_dotted(name)
-            if not isinstance(current_val, Sequence):
-                raise TypeError('SWAP only works with list-type settings')
+            if not isinstance(current_val, MutableSequence):
+                raise TypeError('SWAP only works with mutable list-type settings')
             for old_item, new_item in swap_map.items():
                 k = current_val.index(old_item)
                 current_val[k] = new_item

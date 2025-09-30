@@ -63,7 +63,7 @@ class DottedAccessMixin:
             return False
         return True
 
-    def get_dotted(self, name, default=NO_DEFAULT):
+    def get_dotted(self, name, default: Any = NO_DEFAULT):
         try:
             return self._traverse(name)
         except KeyError:
