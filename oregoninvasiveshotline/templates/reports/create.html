@@ -77,9 +77,11 @@ Report an Invader
         <legend>Questions?</legend>
         {% bootstrap_field form.questions %}
     </fieldset>
+    <div class="d-flex justify-content-end pb-2">
+        <a href="{% url 'reports-list' %}" class="btn btn-warning">Cancel</a>
+        <input type="submit" value="Submit" class="btn btn-primary ms-2"/>
+    </div>
 
-    <input type="submit" value="Submit" class="btn btn-primary"/>
-    <a href="{% url 'reports-list' %}" class="btn btn-warning">Cancel</a>
     <div id="previews"></div>
 </form>
 {% endblock %}
