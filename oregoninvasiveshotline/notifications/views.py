@@ -74,7 +74,7 @@ def list_(request):
     else:
         form = UserSubscriptionDeleteForm(user=request.user)
     context = {'form': form}
-    context.update(tab_context)
+    context.update(tab_context)  # pyright: ignore
     return render(request, 'notifications/list.html', context)
 
 

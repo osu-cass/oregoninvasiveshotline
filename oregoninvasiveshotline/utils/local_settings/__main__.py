@@ -64,6 +64,8 @@ def make_local_settings(argv=None):
 
     args = parser.parse_args(argv)
 
+    strategy = None
+
     if args.type:
         strategy_type = get_file_type_map()[args.type]
         strategy = strategy_type()
@@ -86,6 +88,7 @@ def make_local_settings(argv=None):
             if strategy_type is not None:
                 strategy = strategy_type()
     elif args.env:
+        assert strategy is not None
         file_name = 'local.{0.env}.{ext}'.format(args, ext=strategy.file_types[0])
     else:
         parser.error('Either env or file name must be specified')
@@ -109,6 +112,7 @@ def make_local_settings(argv=None):
     settings = {}
     if args.extends:
         settings['extends'] = args.extends
+    assert strategy is not None
     strategy.write_settings(settings, file_name, section)
 
     # Load base settings from settings module while A) ensuring that
@@ -122,7 +126,7 @@ def make_local_settings(argv=None):
     if original_disable_value is not None:
         os.environ['LOCAL_SETTINGS_CONFIG_DISABLE'] = original_disable_value
 
-    loader = Loader(file_name, section, strategy_type=strategy_type)
+    loader = Loader(file_name, section, strategy_type=strategy_type)  # pyright: ignore
     loader.load_and_check(base_settings, prompt=True)
 
 

@@ -37,25 +37,25 @@ class ImageFormTest(TestCase, UserMixin):
 class BaseImageFormSetTest(TestCase, UserMixin):
     def test_user_and_fk_gets_passed_to_save_new(self):
         ImageFormSet = modelformset_factory(Image, form=ImageForm, formset=BaseImageFormSet, can_delete=True)
-        formset = ImageFormSet({
+        formset: BaseImageFormSet = ImageFormSet({
             "form-TOTAL_FORMS": "1",
             "form-INITIAL_FORMS": "0",
             "form-MIN_NUM_FORMS": "0",
             "form-MAX_NUM_FORMS": "1000",
             "form-0-image_data_uri": "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=",
             "form-0-name": "Hello world",
-        })
+        })  # pyright: ignore[reportAssignmentType]
         self.assertTrue(formset.is_valid())
         report = make(Report, point=ORIGIN)
         user = self.create_user(username="foo@example.com")
-        formset.save(fk=report, user=user)
+        formset.save_all(fk=report, user=user)
         self.assertEqual(Image.objects.filter(report=report, created_by=user).count(), 1)
 
 
 class ImageFormSetTest(TestCase, UserMixin):
     def test_form_kwargs(self):
         user = self.create_user(username="admin@example.com", is_staff=True)
-        formset = ImageFormSet({
+        formset: BaseImageFormSet = ImageFormSet({
             "form-TOTAL_FORMS": "1",
             "form-INITIAL_FORMS": "0",
             "form-MIN_NUM_FORMS": "0",
@@ -63,10 +63,10 @@ class ImageFormSetTest(TestCase, UserMixin):
             "form-0-image_data_uri": "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=",
             "form-0-name": "Hello world",
             "form-0-visibility": Image.PUBLIC,
-        }, form_kwargs={'user': user})
+        }, form_kwargs={'user': user})  # pyright: ignore[reportAssignmentType]
         self.assertTrue(formset.is_valid())
         report = make(Report, point=ORIGIN)
-        formset.save(fk=report, user=user)
+        formset.save_all(fk=report, user=user)
         self.assertEqual(Image.objects.filter(report=report, created_by=user, visibility=Image.PUBLIC).count(), 1)
 
 
@@ -98,7 +98,7 @@ class ClearableImageInputTest(TestCase):
         img_uri = "data:image/gif;base64," + self.b64
         form = self.Form({"name": "", "image_data_uri": img_uri})
         self.assertFalse(form.is_valid())
-        signed_path = form.fields['image'].widget.signed_path
+        signed_path = form.fields['image'].widget.signed_path  # pyright: ignore
 
         form = self.Form({"name": "hello", "image_signed_path": signed_path})
         self.assertTrue(form.is_valid())
@@ -121,13 +121,13 @@ class ClearableImageInputTest(TestCase):
         img_uri = "invalid"
         form = self.Form({"name": "", "image_data_uri": img_uri})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.fields['image'].widget.signed_path, None)
+        self.assertEqual(form.fields['image'].widget.signed_path, None)  # pyright: ignore
 
         # post a valid image
         img_uri = "data:image/gif;base64," + self.b64
         form = self.Form({"name": "", "image_data_uri": img_uri})
         self.assertFalse(form.is_valid())
-        signed_path = form.fields['image'].widget.signed_path
+        signed_path = form.fields['image'].widget.signed_path  # pyright: ignore
         self.assertIn(signed_path, str(form))
 
         # post the signed_path back
@@ -138,5 +138,5 @@ class ClearableImageInputTest(TestCase):
         img_uri = "data:image/gif;base64," + self.other_b64
         form = self.Form({"name": "hello", "image_signed_path": signed_path, "image_data_uri": img_uri})
         self.assertTrue(form.is_valid())
-        self.assertNotEqual(signed_path, form.fields['image'].widget.signed_path)
-        self.assertEqual(open(form.fields['image'].widget.signed_path.split(":")[0], 'rb').read(), b64decode(self.other_b64))
+        self.assertNotEqual(signed_path, form.fields['image'].widget.signed_path)  # pyright: ignore
+        self.assertEqual(open(form.fields['image'].widget.signed_path.split(":")[0], 'rb').read(), b64decode(self.other_b64))  # pyright: ignore

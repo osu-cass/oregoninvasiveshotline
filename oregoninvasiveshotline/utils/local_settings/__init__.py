@@ -80,7 +80,7 @@ def load_and_check_settings(base_settings, file_name=None, section=None, base_pa
         file_name = get_file_name()
     if ':' in file_name:
         package, path = file_name.split(':', 1)
-        file_name = files(package).joinpath(path)
+        file_name = str(files(package).joinpath(path))
     if not os.path.isabs(file_name):
         base_path = base_path or os.getcwd()
         file_name = os.path.normpath(os.path.join(base_path, file_name))

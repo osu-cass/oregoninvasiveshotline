@@ -44,7 +44,7 @@ class BaseImageFormSet(BaseModelFormSet):
         setattr(form.instance, self.fk.__class__.__name__.lower(), self.fk)
         super().save_new(form, commit)
 
-    def save(self, user, fk, commit=True):
+    def save_all(self, user, fk, commit=True):
         self.user = user
         self.fk = fk
         super().save(commit)

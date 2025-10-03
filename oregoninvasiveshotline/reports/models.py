@@ -137,7 +137,8 @@ class Report(models.Model):
 
         if image is None:
             # Fall back to images attached to this report's comments
-            q = Image.objects.filter(comment__in=self.comment_set.values_list('pk', flat=True))
+            from oregoninvasiveshotline.comments.models import Comment
+            q = Image.objects.filter(comment__in=Comment.objects.filter(report=self).values_list('pk', flat=True))
             q = q.filter(visibility=Visibility.PUBLIC).order_by('-created_on')
             image = q.first()
 

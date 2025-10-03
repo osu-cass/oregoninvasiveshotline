@@ -99,9 +99,9 @@ class LocalSettingsConfigParser(RawConfigParser):
     def options(self, section):
         # Order [DEFAULT] options before section options; the default
         # implementation orders them after.
-        options = dict(self.defaults())
+        options = self._defaults.copy() # pyright: ignore - use internal _sections to avoid recursion
         try:
-            options.update(self[section]) 
+            options.update(self._sections[section]) # pyright: ignore - use internal _sections to avoid recursion
         except KeyError:
             raise_from(NoSectionError(section), None)
         return list(options.keys())

@@ -1,7 +1,7 @@
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from itertools import chain
-from typing_extensions import Any, MutableMapping, MutableSequence
+from typing import Any, MutableMapping, MutableSequence
 
 from .util import NO_DEFAULT, NO_DEFAULT as PLACEHOLDER
 
@@ -372,7 +372,7 @@ class Settings(dict, DottedAccessMixin):
             self[name] = default
         return self[name]
 
-    def update(self, *args, **kwargs):
+    def update(*args, **kwargs): # pyright: ignore - taking self as the first arg breaks this
         if len(args) > 2:
             raise TypeError(
                 'update() takes at most 2 positional arguments ({} given)'.format(len(args)))
@@ -388,10 +388,10 @@ class Settings(dict, DottedAccessMixin):
         # However, it's possible that the object has a .keys() method but is not an instance of Mapping.
         # Unsure why this would happen, but the code did it before and changing it might break something.
         elif hasattr(other, 'keys'):
-            for name in other.keys(): # type: ignore[attr-defined]
+            for name in other.keys(): # pyright: ignore - see above
                 self[name] = other[name]
         else:
-            for name, value in other:
+            for name, value in other: # pyright: ignore - probably not an interable, but don't wan to change functionality
                 self[name] = value
         for name, value in kwargs.items():
             self[name] = value

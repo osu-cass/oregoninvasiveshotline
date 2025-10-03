@@ -34,7 +34,7 @@ class UserMixin:
         return user
 
     def login_user(self, username: str, password: str):
-        logged_in = self.client.login(username=username, password=password)
+        logged_in = self.client.login(username=username, password=password)  # pyright: ignore
         if not logged_in:
             raise CouldNotLogInError('{}:{}'.format(username, password))
 

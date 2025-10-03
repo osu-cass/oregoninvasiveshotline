@@ -1,6 +1,7 @@
 import os.path
 import pathlib
 import time
+from typing import TYPE_CHECKING
 
 from emcee.runner.config import YAMLCommandConfiguration
 from emcee.runner import command, configs, config
@@ -19,6 +20,9 @@ from emcee.deploy import deployer, docker, DeploymentCheckError
 
 from emcee.backends.aws.provision.volumes import (provision_volume,
                                                   provision_swapfile)
+
+if TYPE_CHECKING:
+    from typing import Type
 
 configs.load(YAMLCommandConfiguration)
 
@@ -122,12 +126,25 @@ class InvasivesRemoteProcessor(docker.RemoteProcessor):
     TBD
     """
 
+    def is_stack_active(self) -> bool:
+        return super().is_stack_active()
+
+    def deploy_stack(self, stackfile: str | None = None) -> None:
+        return super().deploy_stack(stackfile)
+
+    def scale_stack_service(self, service: str, scale: int, wait: bool = False) -> bool:
+        return super().scale_stack_service(service, scale, wait)
+
+    def pull_stack_images(self) -> None:
+        return super().pull_stack_images()
+
 # The following section *appears* to be unused, and is commented as it causes lint errors
 @deployer()
 class InvasivesDeployer(docker.Deployer):
-    local_processor_cls = InvasivesLocalProcessor
-    remote_processor_cls = InvasivesRemoteProcessor
-    app_config_cls = YAMLAppConfiguration
+    local_processor_cls: 'Type[InvasivesLocalProcessor]' = InvasivesLocalProcessor
+    remote_processor_cls: 'Type[InvasivesRemoteProcessor]' = InvasivesRemoteProcessor
+    remote_processor: "InvasivesRemoteProcessor"
+    app_config_cls: 'Type[YAMLAppConfiguration]' = YAMLAppConfiguration
 
     def bootstrap_application(self):
         if not self.remote_processor.is_stack_active():

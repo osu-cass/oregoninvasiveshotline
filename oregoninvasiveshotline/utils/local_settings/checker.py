@@ -1,7 +1,7 @@
 import sys
 from collections.abc import Mapping, Sequence
 from typing import Type
-from typing_extensions import Any, MutableMapping
+from typing import Any, MutableMapping
 
 from .base import Base
 from .color_printer import color_printer as printer

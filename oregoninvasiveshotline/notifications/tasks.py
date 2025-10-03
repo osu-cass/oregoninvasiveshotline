@@ -1,3 +1,4 @@
+from typing import cast
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
 from django.urls import reverse
@@ -17,8 +18,8 @@ def notify_new_subscription_owner(subscription_id, assigner_id):
     subscription = UserNotificationQuery.objects.get(pk=subscription_id)
     assigner = User.objects.get(pk=assigner_id)
 
-    subject = get_setting('NOTIFICATIONS.notify_new_owner__subject')
-    from_email = get_setting('NOTIFICATIONS.from_email')
+    subject = cast(str, get_setting('NOTIFICATIONS.notify_new_owner__subject'))
+    from_email = cast(str, get_setting('NOTIFICATIONS.from_email'))
     next_url = reverse('reports-list') + '?' + subscription.query
 
     if subscription.user.is_active:
