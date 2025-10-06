@@ -1,20 +1,35 @@
 name: Pyright Check & Ruff Lint
-on: pull_request
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+
 jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
-            - name: Install Python
-              uses: actions/setup-python@v5
-              with:
-                  python-version: "3.12"
-            - name: Install dependencies
-              run: |
-                  python -m pip install --upgrade pip
-                  pip install ruff
-            # Update output format to enable automatic inline annotations.
-            - name: Run Ruff
-              run: ruff check --output-format=github .
-            - name: "Run pyright"
-              uses: jakebailey/pyright-action@v2
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pipenv ruff
+          pipenv install --dev
+
+      # Add the Pipenv venv bin to PATH so pyright sees all packages
+      - name: Add Pipenv venv to PATH
+        run: echo "$(pipenv --venv)/bin" >> $GITHUB_PATH
+
+      - name: Run Ruff
+        run: ruff check --output-format=github .
+
+      - name: Run Pyright
+        uses: jakebailey/pyright-action@v2
