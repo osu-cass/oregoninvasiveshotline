@@ -17,7 +17,7 @@ help:
 test:  ## Runs tests in current environment
 	$(pipenv_bin)/python manage.py test --keepdb --failfast
 test_container:  ## Runs tests in docker environment
-	docker-compose run --user=invasives --rm -e EMCEE_CMD_ENV=docker -e EMCEE_APP_CONFIG=app.test.yml -e APP_SERVICE=test app
+	docker compose run --user=invasives --rm -e EMCEE_CMD_ENV=docker -e EMCEE_APP_CONFIG=app.test.yml -e APP_SERVICE=test app
 shell:
 	$(pipenv_bin)/python manage.py shell
 run:
