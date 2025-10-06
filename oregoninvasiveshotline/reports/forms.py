@@ -1,5 +1,5 @@
 from collections import namedtuple
-from typing import Any, cast, List, Tuple
+from typing import Any, cast
 
 from django.core.validators import validate_email
 from django.db import transaction

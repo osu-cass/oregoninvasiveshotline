@@ -288,7 +288,7 @@ elif config.env in ['dev', 'docker']:
 settings = load_app_configuration(app_config, globals())
 processors.set_secret_key(config, settings)
 processors.set_database_parameters(config, settings)
-processors.set_sentry_dsn(config, settings, traces_sample_rate=0.1) # pyright: ignore[arg-type] library autoinfers the type of traces_sample_rate as int, which is incorrect
+processors.set_sentry_dsn(config, settings, traces_sample_rate=0.1) # pyright: ignore[reportArgumentType] library autoinfers the type of traces_sample_rate as int, which is incorrect
 processors.set_smtp_parameters(config, settings) 
 
 # Configure Google Maps API key

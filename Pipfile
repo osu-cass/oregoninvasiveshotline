@@ -18,6 +18,7 @@ psycopg2-binary = "~=2.9.0"
 celery = "~=5.5.3"
 gunicorn = "~=23.0.0"
 djangorestframework = "~=3.16.0"
+django-bootstrap5 = "~=25.2"
 sentry-sdk = "~=2.35.0"
 setuptools = "~=80.9.0"
 

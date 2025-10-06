@@ -1,6 +1,5 @@
 import inspect
 import logging
-from collections import namedtuple
 from functools import wraps
 from typing import Any
 

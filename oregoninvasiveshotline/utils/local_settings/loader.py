@@ -1,4 +1,4 @@
-from collections.abc import Mapping, MutableSequence, Sequence
+from collections.abc import MutableSequence, Sequence
 from typing import MutableMapping, cast
 
 from django.utils.module_loading import import_string

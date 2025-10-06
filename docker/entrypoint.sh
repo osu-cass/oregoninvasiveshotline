@@ -15,6 +15,7 @@ if [[ ${APP_SERVICE} == "wsgi" ]]; then
             ${APP_ENV}/bin/gunicorn -b 0.0.0.0:8000 --reload oregoninvasiveshotline.wsgi
         else
             ${APP_ENV}/bin/gunicorn -b 0.0.0.0:8000 oregoninvasiveshotline.wsgi
+        fi
     else
         ${APP_ENV}/bin/gunicorn -b 0.0.0.0:8000 oregoninvasiveshotline.wsgi
         # exec ${APP_ENV}/bin/uwsgi --include /uwsgi/uwsgi.ini
