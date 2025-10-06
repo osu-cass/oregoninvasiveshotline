@@ -33,10 +33,12 @@ jobs:
 
             - name: Run Pyright
               uses: jakebailey/pyright-action@v2
-    run-tests:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v4
+    # Currently broken, see logs https://github.com/osu-cass/oregoninvasiveshotline/actions/runs/18291615676/job/52080025060?pr=6
+    # The current docker container binds the test container a user, which it seems like GitHub doesn't support.
+    # run-tests:
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - uses: actions/checkout@v4
 
-            - name: Run Tests
-              run: make test_container
+    #         - name: Run Tests
+    #           run: make test_container
