@@ -2,13 +2,13 @@ from ..perms import permissions
 from .models import User
 
 
-@permissions.register
+@permissions.register  # pyright: ignore
 def can_create_user(user):
     # only staffers can create users
     return user.is_staff
 
 
-@permissions.register(model=User)
+@permissions.register(model=User)  # pyright: ignore
 def can_edit_user(user, other_user):
     # you can edit yourself
     if user.pk == other_user.pk:
@@ -19,13 +19,13 @@ def can_edit_user(user, other_user):
         return True
 
 
-@permissions.register
+@permissions.register  # pyright: ignore
 def can_list_users(user):
     # only staffers can list all the users
     return user.is_staff
 
 
-@permissions.register(model=User)
+@permissions.register(model=User)  # pyright: ignore
 def can_delete_user(user, other_user):
     # you can't delete yourself!
     if user.pk == other_user.pk:
@@ -35,7 +35,7 @@ def can_delete_user(user, other_user):
     return user.is_staff
 
 
-@permissions.register(model=User)
+@permissions.register(model=User)  # pyright: ignore
 def can_view_user(user, other_user):
     # you can always view yourself
     if user.pk == other_user.pk:

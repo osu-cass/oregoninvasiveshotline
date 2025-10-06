@@ -13,6 +13,6 @@ class MainAppConfig(AppConfig):
         # with unusable password. Anyone with an is_active account should be able to
         # reset their password
         def get_users(self, email):
-            return get_user_model()._default_manager.filter(email__iexact=email, is_active=True)
+            return get_user_model()._default_manager.filter(email__iexact=email, is_active=True).iterator()
 
         PasswordResetForm.get_users = get_users

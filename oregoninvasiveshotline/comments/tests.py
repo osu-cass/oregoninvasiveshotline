@@ -1,4 +1,3 @@
-from unittest.mock import Mock
 
 from django.core import mail
 from django.contrib.gis.geos import Point
@@ -79,6 +78,7 @@ class CommentFormTest(TransactionTestCase, UserMixin):
         with transaction.atomic():
             form.save()
 
+        assert report.claimed_by is not None
         self.assertIn(report.claimed_by.email, [email.to[0] for email in mail.outbox])
 
     def test_email_sent_out_for_new_comment_to_all_invited_experts(self):

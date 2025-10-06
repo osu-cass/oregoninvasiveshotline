@@ -1,7 +1,5 @@
 import posixpath
-import tempfile
 import binascii
-import shutil
 import codecs
 import json
 import csv
@@ -14,7 +12,6 @@ from django.utils import timezone
 from django.conf import settings
 from django.core import mail
 from django.core.exceptions import NON_FIELD_ERRORS
-from django.core.files.base import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.contrib.gis.geos import Point
 from django.db.models.signals import post_save
@@ -46,12 +43,12 @@ class SuppressPostSaveMixin:
 
     @classmethod
     def setUpClass(cls):
-        super().setUpClass()
+        super().setUpClass()  # pyright: ignore
         post_save.disconnect(receiver__generate_icon, sender=Report)
 
     @classmethod
     def tearDownClass(cls):
-        super().tearDownClass()
+        super().tearDownClass()  # pyright: ignore
         post_save.connect(receiver__generate_icon, sender=Report)
 
 
@@ -447,10 +444,12 @@ class CreateViewTest(TestCase):
         }
 
         response = self.client.post(reverse("reports-create"), data)
-        self.assertRedirects(response, reverse("reports-detail", args=[Report.objects.order_by("-pk").first().pk]))
+        report = Report.objects.order_by("-pk").first()
+        assert report is not None
+        self.assertRedirects(response, reverse("reports-detail", args=[report.pk]))
         session = self.client.session
         # make sure the report_ids in the session gets updated
-        self.assertIn(Report.objects.order_by("-pk").first().pk, session['report_ids'])
+        self.assertIn(report.pk, session['report_ids'])
 
 
 class DetailViewTest(TestCase, UserMixin):
@@ -977,7 +976,7 @@ class UnclaimViewTest(TestCase, UserMixin):
         response = self.client.get(reverse("reports-unclaim", args=[report.pk]))
         self.assertEqual(response.status_code, 403)
 
-        report.claimed_by = self.user
+        report.claimed_by = self.user  # pyright: ignore
         report.save()
         response = self.client.get(reverse("reports-unclaim", args=[report.pk]))
         self.assertEqual(response.status_code, 200)

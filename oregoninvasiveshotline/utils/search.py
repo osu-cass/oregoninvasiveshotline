@@ -24,7 +24,7 @@ class SearchForm(forms.Form):
             logger.debug("No query given to 'SearchForm.search', returning queryset.")
             return queryset
 
-        query = self.cleaned_data.get('q')
+        query = str(self.cleaned_data.get('q'))
         search_vector = SearchVector(*self.get_search_fields())
         search_query = SearchQuery(query, search_type='phrase')
         queryset = queryset.annotate(

@@ -1,24 +1,21 @@
 import inspect
 import logging
-from collections import namedtuple
 from functools import wraps
+from typing import Any
 
 import django.conf
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
-try:
-    from django.utils.module_loading import import_string
-except ImportError:
-    from django.utils.module_loading import import_by_path as import_string
+from django.utils.module_loading import import_string
 
 try:
     import rest_framework
+    from rest_framework.request import Request as DRFRequest
 except ImportError:
     rest_framework = None
-else:
-    from rest_framework.request import Request as DRFRequest
+    DRFRequest = None
 
 from .exc import DuplicatePermissionError, NoSuchPermissionError, PermissionsError
 from .meta import PermissionsMeta
@@ -28,10 +25,22 @@ from .templatetags.permissions import register
 log = logging.getLogger(__name__)
 
 
-Entry = namedtuple('Entry', (
-    'name', 'perm_func', 'view_decorator', 'model', 'allow_staff', 'allow_superuser',
-    'allow_anonymous', 'unauthenticated_handler', 'request_types', 'views'
-))
+class Entry:
+    def __init__(self, name, perm_func, view_decorator, model, allow_staff, allow_superuser,
+                 allow_anonymous, unauthenticated_handler, request_types, views):
+        self.name = name
+        self.perm_func = perm_func
+        self.view_decorator = view_decorator
+        self.model = model
+        self.allow_staff = allow_staff
+        self.allow_superuser = allow_superuser
+        self.allow_anonymous = allow_anonymous
+        self.unauthenticated_handler = unauthenticated_handler
+        self.request_types = request_types
+        self.views = views
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Any:
+        return self.perm_func(*args, **kwargs)
 
 
 NO_VALUE = object()
@@ -160,8 +169,10 @@ class PermissionsRegistry:
 
             # A fake view that, when called with the current request,
             # triggers Django's redirect-to-login functionality.
-            force_login_view = login_required(lambda _: None)
-            unauthenticated_handler = lambda r: force_login_view(r)
+            force_login_view = login_required(lambda _: HttpResponse())
+            def default_unauthenticated_handler(request):
+                return force_login_view(request)
+            unauthenticated_handler = default_unauthenticated_handler
         else:
             if isinstance(unauthenticated_handler, str):
                 unauthenticated_handler = import_string(unauthenticated_handler)
@@ -233,7 +244,8 @@ class PermissionsRegistry:
                 return False
             if not allow_anonymous and user.is_anonymous:
                 return False
-            test = lambda: perm_func(user) if instance is NO_VALUE else perm_func(user, instance)
+            def test():
+                return perm_func(user) if instance is NO_VALUE else perm_func(user, instance)
             return (
                 allow_staff and user.is_staff or
                 allow_superuser and user.is_superuser or

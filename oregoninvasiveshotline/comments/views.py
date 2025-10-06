@@ -3,9 +3,10 @@ import functools
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
-from oregoninvasiveshotline.images.forms import ImageFormSet
+from oregoninvasiveshotline.images.forms import BaseImageFormSet, ImageFormSet
 from oregoninvasiveshotline.images.models import Image
 
 from .forms import CommentForm
@@ -20,7 +21,7 @@ def edit(request, comment_id):
         request.user = report.created_by
 
     if request.user.is_anonymous:
-        return login_required(lambda request: None)(request)
+        return login_required(lambda request: HttpResponse())(request)
 
     if not can_edit_comment(request.user, comment):
         raise PermissionDenied()
@@ -28,15 +29,15 @@ def edit(request, comment_id):
     PartialCommentForm = functools.partial(CommentForm, user=request.user, report=comment.report, instance=comment)
     if request.POST:
         form = PartialCommentForm(request.POST)
-        formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.filter(comment=comment), form_kwargs={'user': request.user})
+        formset: BaseImageFormSet = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.filter(comment=comment), form_kwargs={'user': request.user})  # pyright: ignore[reportAssignmentType]
         if form.is_valid() and formset.is_valid():
             form.save()
-            formset.save(user=comment.created_by, fk=comment)
+            formset.save_all(user=comment.created_by, fk=comment)
             messages.success(request, "Comment Edited")
             return redirect("reports-detail", comment.report.pk)
     else:
         form = PartialCommentForm()
-        formset = ImageFormSet(queryset=Image.objects.filter(comment=comment), form_kwargs={'user': request.user})
+        formset: BaseImageFormSet = ImageFormSet(queryset=Image.objects.filter(comment=comment), form_kwargs={'user': request.user})  # pyright: ignore[reportAssignmentType]
 
     return render(request, "comments/edit.html", {
         "comment": comment,

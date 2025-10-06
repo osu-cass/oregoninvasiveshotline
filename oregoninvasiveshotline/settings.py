@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import os.path
 
-from django.utils.translation import gettext_lazy as _
-from django.urls import reverse_lazy
 from celery.schedules import crontab
 
 from emcee.runner.config import YAMLCommandConfiguration
@@ -290,8 +288,8 @@ elif config.env in ['dev', 'docker']:
 settings = load_app_configuration(app_config, globals())
 processors.set_secret_key(config, settings)
 processors.set_database_parameters(config, settings)
-processors.set_sentry_dsn(config, settings, traces_sample_rate=0.1)
-processors.set_smtp_parameters(config, settings)
+processors.set_sentry_dsn(config, settings, traces_sample_rate=0.1) # pyright: ignore[reportArgumentType] library autoinfers the type of traces_sample_rate as int, which is incorrect
+processors.set_smtp_parameters(config, settings) 
 
 # Configure Google Maps API key
 GOOGLE_API_KEY = processors.get_secret_value(config, 'GOOGLE_API_KEY')

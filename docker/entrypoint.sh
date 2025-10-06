@@ -10,10 +10,15 @@ fi
 # Select the entrypoint given the APP_SERVICE
 if [[ ${APP_SERVICE} == "wsgi" ]]; then
     if [[ ${EMCEE_CMD_ENV} == "docker" ]]; then
-        ${APP_ENV}/bin/pip install -r /app/docker/requirements-dev.txt
-        ${APP_ENV}/bin/gunicorn -b 0.0.0.0:8000 --reload oregoninvasiveshotline.wsgi
+        if [[ ${APP_ENVIRONMENT} == "development" ]]; then
+            ${APP_ENV}/bin/pip install -r /app/docker/requirements-dev.txt
+            ${APP_ENV}/bin/gunicorn -b 0.0.0.0:8000 --reload oregoninvasiveshotline.wsgi
+        else
+            ${APP_ENV}/bin/gunicorn -b 0.0.0.0:8000 oregoninvasiveshotline.wsgi
+        fi
     else
-        exec ${APP_ENV}/bin/uwsgi --include /uwsgi/uwsgi.ini
+        ${APP_ENV}/bin/gunicorn -b 0.0.0.0:8000 oregoninvasiveshotline.wsgi
+        # exec ${APP_ENV}/bin/uwsgi --include /uwsgi/uwsgi.ini
     fi
 elif [[ ${APP_SERVICE} == "celery" ]]; then
     exec ${APP_ENV}/bin/celery -A oregoninvasiveshotline worker -l INFO

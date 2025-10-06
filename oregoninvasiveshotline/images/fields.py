@@ -96,6 +96,7 @@ class ClearableImageInput(ClearableFileInput):
                             if upload:
                                 f.write(upload.read())
                             else:
+                                assert data_uri is not None
                                 f.write(b64decode(data_uri[data_uri.find(",")+1:]))
                         except Error:
                             pass
@@ -107,7 +108,7 @@ class ClearableImageInput(ClearableFileInput):
                     upload = UploadedFile(open(path, "rb"), name=path, size=os.path.getsize(path))
                     # tack on a URL attribute so the parent Widget thinks it
                     # has an initial value
-                    upload.url = settings.MEDIA_URL + os.path.relpath(upload.file.name, settings.MEDIA_ROOT)
+                    setattr(upload, 'url', settings.MEDIA_URL + os.path.relpath(upload.file.name, settings.MEDIA_ROOT))
 
             self._cached_value = upload
 
