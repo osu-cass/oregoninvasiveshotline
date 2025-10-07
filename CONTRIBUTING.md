@@ -20,7 +20,7 @@ Provide a clear description of the enhancement and why you think it would be val
 
 ### Submitting Pull Requests
 
-If you'd like to contribute code, that's fantastic! First, ensure that an issue exists for the enhancement you want to implement. If not, please create one.
+If you'd like to contribute code, that's fantastic! First, ensure that an issue exists for the enhancement you want to implement. If not, please create one. If it's a small change, you can also submit a pull request directly without creating an issue, but be aware that your pull request may not be accepted if it's not aligned to our project's direction. Creating an issue first is recommended to ensure that your contribution aligns with our project's direction.
 
 From there, follow these steps:
 
