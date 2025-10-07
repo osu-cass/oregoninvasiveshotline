@@ -67,6 +67,26 @@ Several workflows trigger email notifications based on specific criteria. All su
 are implemented and orchestrated using Celery-based tasks in order that they are performed
 out-of-band with respect to the request/response cycle.
 
+### Static Code Analysis
+
+This project uses `ruff` and `pyright` for static code analysis. These commands must be run from within a WSL (Windows Subsystem for Linux) environment after activating the project's virtual environment:
+
+```bash
+pipenv shell
+```
+
+To run `ruff`:
+
+```bash
+ruff check .
+```
+
+To run `pyright`:
+
+```bash
+pyright
+```
+
 ### Application behavior
 
 This project uses an unconventional approach to its use of the built-in Django user and
