@@ -39,13 +39,12 @@ services:
   bootstrap:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/bootstrap/Dockerfile
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}
     environment:
       - EMCEE_CMD_ENV=docker
-      - APP_SERVICE=bootstrap
     networks:
       - default
     volumes:
@@ -63,13 +62,12 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/app/Dockerfile
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}
     environment:
       - EMCEE_CMD_ENV=docker
-      - APP_SERVICE=wsgi
       - APP_ENVIRONMENT=development
     networks:
       - default
@@ -93,13 +91,12 @@ services:
   celery:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/celery/Dockerfile
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}
     environment:
       - EMCEE_CMD_ENV=docker
-      - APP_SERVICE=celery
     networks:
       - default
     volumes:

@@ -1,0 +1,55 @@
+FROM python:3.12-slim-bookworm
+LABEL org.opencontainers.image.source=https://github.com/osu-cass/oregoninvasiveshotline
+
+# Install project dependencies
+RUN apt update -y && apt install -y \
+    build-essential \
+    binutils libgdal-dev proj-bin
+
+# Set build arguments
+ARG APP_PYTHON=python3
+ARG APP_ENV=/opt/venv
+ARG APP_REQUIREMENTS=requirements.txt
+
+# Do we even need these args??
+ARG APP_USER=invasives
+ARG APP_USER_ID=1000
+ARG APP_GROUP=invasives
+ARG APP_GROUP_ID=1000
+
+# Export build arguments as environment variables
+ENV APP_PYTHON=${APP_PYTHON}
+ENV APP_ENV=${APP_ENV}
+
+ENV APP_USER=${APP_USER}
+ENV APP_USER_ID=${APP_USER_ID}
+ENV APP_GROUP=${APP_GROUP}
+ENV APP_GROUP_ID=${APP_GROUP_ID}
+
+# Configure user
+RUN groupadd -g ${APP_GROUP_ID} "${APP_GROUP}" || echo "Group already exists"
+RUN useradd -d /opt -m -g "${APP_GROUP}" -u ${APP_USER_ID} "${APP_USER}" || echo "User already exists"
+
+# Prepare application-local path
+RUN chown ${APP_USER}:${APP_GROUP} /opt
+
+# Prepare virtual environment
+COPY --chown=${APP_USER}:${APP_GROUP} /Pipfile /opt/
+COPY --chown=${APP_USER}:${APP_GROUP} /Pipfile.lock /opt/
+
+# Install package and venv manager
+RUN pip install pipenv
+
+# Configure python virtual environment
+USER ${APP_USER}
+WORKDIR /opt
+
+RUN ${APP_PYTHON} -m venv ${APP_ENV}
+RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv sync
+# RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv check
+RUN ${APP_ENV}/bin/pip cache purge
+
+WORKDIR /app
+
+# Instructions specific to this dockerfile
+CMD ["bash", "-c", "${APP_ENV}/bin/python manage.py migrate --no-input && ${APP_ENV}/bin/python manage.py collectstatic --no-input"]

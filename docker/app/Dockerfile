@@ -1,17 +1,17 @@
 FROM python:3.12-slim-bookworm
-LABEL org.opencontainers.image.authors="tlinton@pdx.edu"
-LABEL org.opencontainers.image.source=https://github.com/PSU-OIT-ARC/oregoninvasiveshotline
+LABEL org.opencontainers.image.source=https://github.com/osu-cass/oregoninvasiveshotline
 
 # Install project dependencies
 RUN apt update -y && apt install -y \
-  build-essential \
-  binutils libgdal-dev proj-bin
+    build-essential \
+    binutils libgdal-dev proj-bin
 
 # Set build arguments
 ARG APP_PYTHON=python3
 ARG APP_ENV=/opt/venv
 ARG APP_REQUIREMENTS=requirements.txt
 
+# Do we even need these args??
 ARG APP_USER=invasives
 ARG APP_USER_ID=1000
 ARG APP_GROUP=invasives
@@ -37,7 +37,7 @@ RUN chown ${APP_USER}:${APP_GROUP} /opt
 COPY --chown=${APP_USER}:${APP_GROUP} /Pipfile /opt/
 COPY --chown=${APP_USER}:${APP_GROUP} /Pipfile.lock /opt/
 
-#
+# Install package and venv manager
 RUN pip install pipenv
 
 # Configure python virtual environment
@@ -49,7 +49,8 @@ RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv sync
 # RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv check
 RUN ${APP_ENV}/bin/pip cache purge
 
-# Install container entrypoint
 WORKDIR /app
-COPY /docker/entrypoint.sh /entrypoint.sh
+
+# Instructions specific to this dockerfile
+COPY docker/app/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
