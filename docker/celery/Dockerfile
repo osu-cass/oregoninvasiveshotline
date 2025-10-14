@@ -9,7 +9,6 @@ RUN apt update -y && apt install -y \
 # Set build arguments
 ARG APP_PYTHON=python3
 ARG APP_ENV=/opt/venv
-ARG APP_REQUIREMENTS=requirements.txt
 
 # Do we even need these args??
 ARG APP_USER=invasives
@@ -46,7 +45,7 @@ WORKDIR /opt
 
 RUN ${APP_PYTHON} -m venv ${APP_ENV}
 RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv sync
-# RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv check
+    # RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv check
 RUN ${APP_ENV}/bin/pip cache purge
 
 WORKDIR /app

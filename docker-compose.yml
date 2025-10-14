@@ -66,6 +66,7 @@ services:
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}
+        - APP_ENVIRONMENT=development
     environment:
       - EMCEE_CMD_ENV=docker
       - APP_ENVIRONMENT=development

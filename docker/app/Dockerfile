@@ -9,7 +9,6 @@ RUN apt update -y && apt install -y \
 # Set build arguments
 ARG APP_PYTHON=python3
 ARG APP_ENV=/opt/venv
-ARG APP_REQUIREMENTS=requirements.txt
 
 # Do we even need these args??
 ARG APP_USER=invasives
@@ -45,12 +44,19 @@ USER ${APP_USER}
 WORKDIR /opt
 
 RUN ${APP_PYTHON} -m venv ${APP_ENV}
-RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv sync
+# Instructions specific to this dockerfile
+# Only this one needs to install dev deps
+RUN if [ "$APP_ENVIRONMENT" = "development" ]; then \
+        echo "Installing dev dependencies"; \
+        PIPENV_CUSTOM_VENV_NAME=/opt/venv pipenv sync -d; \
+    else \
+        echo "Installing prod dependencies"; \
+        PIPENV_CUSTOM_VENV_NAME=/opt/venv pipenv sync; \
+    fi
 # RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv check
 RUN ${APP_ENV}/bin/pip cache purge
 
 WORKDIR /app
 
-# Instructions specific to this dockerfile
 COPY docker/app/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

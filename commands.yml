@@ -11,7 +11,9 @@ iam:
   gid: 1100
 docker:
   dockerfiles:
-    - docker/Dockerfile
+    - docker/app/Dockerfile
+    - docker/bootstrap/Dockerfile
+    - docker/celery/Dockerfile
 remote:
   path:
     root: ${remote.deploy_root}/oregoninvasiveshotline

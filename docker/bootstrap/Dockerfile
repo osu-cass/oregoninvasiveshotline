@@ -9,7 +9,6 @@ RUN apt update -y && apt install -y \
 # Set build arguments
 ARG APP_PYTHON=python3
 ARG APP_ENV=/opt/venv
-ARG APP_REQUIREMENTS=requirements.txt
 
 # Do we even need these args??
 ARG APP_USER=invasives
