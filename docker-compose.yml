@@ -63,8 +63,8 @@ services:
       - ${VOLUME_PATH}/static:/static
       - ./:/app
     depends_on:
-        postgres:
-            condition: service_healthy
+      postgres:
+        condition: service_healthy
     secrets:
       - SecretKey
       - DBPassword
@@ -94,8 +94,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+      celery:
+        condition: service_started
+      bootstrap:
+          condition: service_completed_successfully
     secrets:
       - SecretKey
       - DBPassword
@@ -118,7 +120,8 @@ services:
       - ${VOLUME_PATH}/media:/media
       - ./:/app
     depends_on:
-      - app
+      rabbitmq:
+        condition: service_healthy
     secrets:
       - SecretKey
       - DBPassword
