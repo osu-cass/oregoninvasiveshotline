@@ -24,6 +24,11 @@ services:
       - ${VOLUME_PATH}/dumps:/archive
     ports:
       - 5439:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U invasives"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:4.1-alpine
@@ -35,6 +40,11 @@ services:
     # on container delete/init cycle.
     #   Refs: https://github.com/docker-library/rabbitmq/issues/106#issuecomment-241882358
     hostname: 'rabbitmq-dev'
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   bootstrap:
     build:
@@ -53,7 +63,8 @@ services:
       - ${VOLUME_PATH}/static:/static
       - ./:/app
     depends_on:
-      - postgres
+        postgres:
+            condition: service_healthy
     secrets:
       - SecretKey
       - DBPassword
@@ -81,8 +92,10 @@ services:
       - ./:/app
       # - ./media:/media
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     secrets:
       - SecretKey
       - DBPassword
