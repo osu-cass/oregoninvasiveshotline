@@ -1,7 +1,7 @@
 secrets:
-  SecretKey:
+  SECRET_KEY:
     file: docker/secrets/secret_key.txt
-  DBPassword:
+  DB_PASSWORD:
     file: docker/secrets/db_password.txt
   GOOGLE_API_KEY:
     file: docker/secrets/google_api_key.txt
@@ -24,6 +24,11 @@ services:
       - ${VOLUME_PATH}/dumps:/archive
     ports:
       - 5439:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U invasives -d invasives"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:4.1-alpine
@@ -36,30 +41,6 @@ services:
     #   Refs: https://github.com/docker-library/rabbitmq/issues/106#issuecomment-241882358
     hostname: 'rabbitmq-dev'
 
-  bootstrap:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-      args:
-        - APP_USER_ID=${USER_ID}
-        - APP_GROUP_ID=${GROUP_ID}
-    environment:
-      - EMCEE_CMD_ENV=docker
-      - APP_SERVICE=bootstrap
-    networks:
-      - default
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - ${VOLUME_PATH}/media:/media
-      - ${VOLUME_PATH}/static:/static
-      - ./:/app
-    depends_on:
-      - postgres
-    secrets:
-      - SecretKey
-      - DBPassword
-    user: '${USER_ID}'
-
   app:
     build:
       context: .
@@ -67,13 +48,15 @@ services:
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}
+        - INSTALL_DEV=true
+    env_file:
+      - .env.docker
     environment:
-      - EMCEE_CMD_ENV=docker
       - APP_SERVICE=wsgi
     networks:
       - default
     ports:
-      - 8000:8000
+      - ${APP_PORT:-8000}:8000
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${VOLUME_PATH}/media:/media
@@ -81,11 +64,13 @@ services:
       - ./:/app
       # - ./media:/media
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
     secrets:
-      - SecretKey
-      - DBPassword
+      - SECRET_KEY
+      - DB_PASSWORD
       - GOOGLE_API_KEY
     user: '${USER_ID}'
 
@@ -96,8 +81,10 @@ services:
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}
+        - INSTALL_DEV=true
+    env_file:
+      - .env.docker
     environment:
-      - EMCEE_CMD_ENV=docker
       - APP_SERVICE=celery
     networks:
       - default
@@ -108,6 +95,6 @@ services:
     depends_on:
       - app
     secrets:
-      - SecretKey
-      - DBPassword
+      - SECRET_KEY
+      - DB_PASSWORD
     user: '${USER_ID}'

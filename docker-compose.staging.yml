@@ -20,18 +20,18 @@ services:
     # override hostname to prevent reinitialization of data
     # on container delete/init cycle.
     #   Refs: https://github.com/docker-library/rabbitmq/issues/106#issuecomment-241882358
-    hostname: 'rabbitmq-dev'
+    hostname: 'rabbitmq-staging'
 
   app:
-    image: ghcr.io/osu-cass/oregoninvasiveshotline:latest
+    image: ghcr.io/osu-cass/oregoninvasiveshotline:develop
     env_file:
-      - .env.production
+      - .env.staging
     environment:
       - APP_SERVICE=wsgi
     networks:
       - default
     ports:
-      - ${APP_PORT:-8002}:8000
+      - ${APP_PORT:-8001}:8000
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${VOLUME_PATH}/media:/media
@@ -46,9 +46,9 @@ services:
     user: '${USER_ID}'
 
   celery:
-    image: ghcr.io/osu-cass/oregoninvasiveshotline:latest
+    image: ghcr.io/osu-cass/oregoninvasiveshotline:develop
     env_file:
-      - .env.production
+      - .env.staging
     environment:
       - APP_SERVICE=celery
     networks:
