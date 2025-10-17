@@ -372,5 +372,5 @@ if sentry_dsn:
         ],
         environment=env('SENTRY_ENVIRONMENT', default=DJANGO_ENV),
         traces_sample_rate=env('SENTRY_TRACES_SAMPLE_RATE'),
-        send_default_pii=True
+        send_default_pii=False
     )
