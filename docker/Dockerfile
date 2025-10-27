@@ -54,7 +54,13 @@ RUN if [ "$INSTALL_DEV" = "true" ]; then \
 # RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv check
 RUN ${APP_ENV}/bin/pip cache purge
 
-# Install container entrypoint
+# Copy application code
+# NOTE: In development, docker-compose.yml mounts ./:/app as a volume, which
+# overrides this copied code to enable live code editing.  In production, this
+# copied code is used directly.
 WORKDIR /app
+COPY --chown=${APP_USER}:${APP_GROUP} . /app/
+
+# Install container entrypoint
 COPY /docker/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
