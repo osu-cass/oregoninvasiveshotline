@@ -44,7 +44,6 @@ RUN pip install pipenv
 USER ${APP_USER}
 WORKDIR /opt
 
-ARG INSTALL_DEV=false
 RUN ${APP_PYTHON} -m venv ${APP_ENV}
 RUN if [ "$INSTALL_DEV" = "true" ]; then \
       PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv sync --dev; \

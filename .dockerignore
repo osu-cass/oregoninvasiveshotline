@@ -29,6 +29,7 @@ ENV
 .env
 .env.*
 !.env.docker
+!.env.test
 docker-compose.yml
 docker-compose.override.yml
 
