@@ -1,0 +1,28 @@
+---
+name: Cleanup PR Images
+
+on:
+  pull_request:
+    types:
+      - closed
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Delete PR container image
+        uses: actions/delete-package-versions@v5
+        continue-on-error: true
+        with:
+          package-name: oregoninvasiveshotline
+          package-type: container
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-versions-to-keep: 0
+          delete-only-untagged-versions: false
+          version-pattern: '^pr-${{ github.event.pull_request.number }}$'

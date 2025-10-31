@@ -1,0 +1,57 @@
+# Git
+.git
+.gitignore
+.github
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+.eggs
+.pytest_cache
+.coverage
+htmlcov
+*.cover
+
+# Virtual environments
+venv
+env
+ENV
+
+# Development
+.env
+.env.*
+!.env.docker
+!.env.test
+docker-compose.yml
+docker-compose.override.yml
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Documentation
+*.md
+!README.md
+
+# Volumes
+volumes/
+
+# Media (will be mounted as volume)
+media/
+media.template/
+
+# Test files
+*/tests/
+*/test_*.py
+test_*.py

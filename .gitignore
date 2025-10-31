@@ -19,3 +19,6 @@ venv
 
 # Secrets
 docker/secrets/
+
+# Other
+*.swp

@@ -1,33 +1,94 @@
 # -*- coding: utf-8 -*-
+import os
 import os.path
 
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse_lazy
 from celery.schedules import crontab
+import environ
 
-from emcee.runner.config import YAMLCommandConfiguration
-from emcee.runner import configs, config
-from emcee.app.config import YAMLAppConfiguration, load_app_configuration
-from emcee.app import app_configs, app_config, processors
-
-configs.load(YAMLCommandConfiguration)
-app_configs.load(YAMLAppConfiguration)
-
+# Initialize django-environ
+env = environ.Env(
+    # Set default values and casting
+    DEBUG=(bool, False),
+    TEMPLATE_DEBUG=(bool, False),
+    DJANGO_ENV=(str, 'dev'),
+    ALLOWED_HOSTS=(list, []),
+    SECRET_KEY=(str, ''),
+    DB_ENGINE=(str, 'django.contrib.gis.db.backends.postgis'),
+    DB_NAME=(str, 'invasives'),
+    DB_USER=(str, 'invasives'),
+    DB_PASSWORD=(str, ''),
+    DB_HOST=(str, 'localhost'),
+    DB_PORT=(str, '5432'),
+    EMAIL_BACKEND=(str, 'django.core.mail.backends.console.EmailBackend'),
+    DEFAULT_FROM_EMAIL=(str, 'no-reply@oregoninvasiveshotline.org'),
+    NOTIFICATIONS_FROM_EMAIL=(str, 'no-reply@oregoninvasiveshotline.org'),
+    SERVER_EMAIL=(str, 'no-reply@oregoninvasiveshotline.org'),
+    EMAIL_HOST=(str, ''),
+    EMAIL_PORT=(int, 587),
+    EMAIL_USE_TLS=(bool, True),
+    EMAIL_HOST_USER=(str, ''),
+    EMAIL_HOST_PASSWORD=(str, ''),
+    CELERY_BROKER_URL=(str, 'pyamqp://guest:guest@localhost//'),
+    CELERY_TASK_ALWAYS_EAGER=(bool, False),
+    STATIC_ROOT=(str, ''),
+    MEDIA_ROOT=(str, ''),
+    STATICFILES_STORAGE=(str, 'django.contrib.staticfiles.storage.StaticFilesStorage'),
+    CSRF_COOKIE_HTTPONLY=(bool, True),
+    CSRF_COOKIE_SECURE=(bool, True),
+    SESSION_COOKIE_SECURE=(bool, True),
+    SECURE_PROXY_SSL_HEADER=(str, ''),
+    GOOGLE_API_KEY=(str, ''),
+    GOOGLE_ANALYTICS_TRACKING_ID=(str, ''),
+    SENTRY_DSN=(str, ''),
+    SENTRY_ENVIRONMENT=(str, ''),
+    SENTRY_TRACES_SAMPLE_RATE=(float, 0.1),
+)
 
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 FILE_ROOT = os.path.abspath(os.path.join(BASE_PATH, '..'))
+
+# Read environment variables from .env file
+environ.Env.read_env(os.path.join(FILE_ROOT, '.env'))
+
+# Helper function to read Docker secrets
+def read_secret(secret_name, default=''):
+    """Read a Docker secret from /run/secrets/ or fall back to environment variable."""
+    secret_path = f'/run/secrets/{secret_name}'
+    if os.path.exists(secret_path):
+        with open(secret_path, 'r') as f:
+            return f.read().strip()
+    return env(secret_name, default=default)
+
+# Core Django settings
+DEBUG = env('DEBUG')
+TEMPLATE_DEBUG = env('TEMPLATE_DEBUG', default=DEBUG)
+SECRET_KEY = read_secret('SECRET_KEY', env('SECRET_KEY'))
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+
+# Environment name (for display in templates)
+ENV = env('DJANGO_ENV')
 
 ROOT_URLCONF = "oregoninvasiveshotline.urls"
 WSGI_APPLICATION = "oregoninvasiveshotline.wsgi.application"
 SITE_ID = 1
 
 # Email/correspondence settings
-SERVER_EMAIL = "do-not-reply@oregoninvasiveshotline.org"
-DEFAULT_FROM_EMAIL = SERVER_EMAIL
+SERVER_EMAIL = env('SERVER_EMAIL')
+DEFAULT_FROM_EMAIL = env('DEFAULT_FROM_EMAIL')
 ADMINS = [["PSU Web & Mobile Team", "webteam@pdx.edu"]]
 MANAGERS = [["PSU Web & Mobile Team", "webteam@pdx.edu"]]
 EMAIL_SUBJECT_PREFIX = "[Oregon Invasive Hotline] "
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = env('EMAIL_BACKEND')
+
+# SMTP Settings (if using SMTP backend)
+if env('EMAIL_HOST'):
+    EMAIL_HOST = env('EMAIL_HOST')
+    EMAIL_PORT = env('EMAIL_PORT')
+    EMAIL_USE_TLS = env('EMAIL_USE_TLS')
+    EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -47,14 +108,17 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# CSRF Defaults
-CSRF_COOKIE_HTTPONLY = True
-CSRF_COOKIE_SECURE = True
+# CSRF and Security Settings
+CSRF_COOKIE_HTTPONLY = env('CSRF_COOKIE_HTTPONLY')
+CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
+SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
 
-STATIC_ROOT = os.path.join(FILE_ROOT, 'static')
+# Static and Media Files
+STATIC_ROOT = env('STATIC_ROOT', default=os.path.join(FILE_ROOT, 'static'))
 STATIC_URL = '/static/'
-MEDIA_ROOT = os.path.join(FILE_ROOT, 'media')
+MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(FILE_ROOT, 'media'))
 MEDIA_URL = '/media/'
+STATICFILES_STORAGE = env('STATICFILES_STORAGE')
 
 # Logging configuration
 FIRST_PARTY_LOGGER = {
@@ -171,10 +235,12 @@ MIDDLEWARE = [
 
 DATABASES = {
     'default': {
-        'ENGINE': "django.contrib.gis.db.backends.postgis",
-        'NAME': "invasives",
-        'USER': "invasives",
-        'PASSWORD': "invasives",
+        'ENGINE': env('DB_ENGINE'),
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': read_secret('DB_PASSWORD', env('DB_PASSWORD')),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT'),
         'ATOMIC_REQUESTS': True
     }
 }
@@ -189,9 +255,11 @@ REST_FRAMEWORK = {
     ]
 }
 
+# Celery Configuration
+CELERY_BROKER_URL = env('CELERY_BROKER_URL')
 CELERY_ENABLE_UTC = True
 CELERY_TIMEZONE = TIME_ZONE
-CELERY_TASK_ALWAYS_EAGER = False
+CELERY_TASK_ALWAYS_EAGER = env('CELERY_TASK_ALWAYS_EAGER')
 CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_SEND_TASK_ERROR_EMAILS = True
 
@@ -228,11 +296,11 @@ ICON_DEFAULT_COLOR = "#999999"
 ICON_DIR = "generated_icons"
 ICON_TYPE = "png"
 
-GOOGLE_ANALYTICS_TRACKING_ID = None
-GOOGLE_API_KEY = None
+GOOGLE_ANALYTICS_TRACKING_ID = env('GOOGLE_ANALYTICS_TRACKING_ID', default=None)
+GOOGLE_API_KEY = read_secret('GOOGLE_API_KEY', env('GOOGLE_API_KEY'))
 
 NOTIFICATIONS = {
-    'from_email': "webmaster@localhost",
+    'from_email': env('NOTIFICATIONS_FROM_EMAIL'),
     'login_link__subject': "Oregon Invasives Hotline - Login Link",
     'new_report__subject': "Oregon Invasives Hotline - Thank you for your report",
     'notify_new_owner__subject': "A subscription has been assigned to you on Oregon Invasives Hotline",
@@ -241,21 +309,24 @@ NOTIFICATIONS = {
     'invite_reviewer__subject': "Oregon Invasives Hotline - Submission Review Request"
 }
 
-# Configure environment-specific configuration
-if config.env in ['stage', 'prod']:
+# Configure environment-specific settings
+DJANGO_ENV = env('DJANGO_ENV')
+
+if DJANGO_ENV in ['stage', 'staging', 'prod', 'production']:
     # Instruct Django to inspect HTTP header to help determine
     # whether the request was made securely
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    ssl_header = env('SECURE_PROXY_SSL_HEADER', default='')
+    if ssl_header:
+        header_parts = ssl_header.split(',')
+        if len(header_parts) == 2:
+            SECURE_PROXY_SSL_HEADER = (header_parts[0].strip(), header_parts[1].strip())
 
     # Set compatibility password hasher
     PASSWORD_HASHERS.append(
         'oregoninvasiveshotline.hashers.RubyPasswordHasher'
     )
 
-    # Configure Google Analytics account
-    GOOGLE_ANALYTICS_TRACKING_ID = "UA-57378202-5"
-
-elif config.env in ['dev', 'docker']:
+elif DJANGO_ENV in ['dev', 'docker', 'test']:
     # Configure 'INTERNAL_IPS' to support development environments
     import ipaddress
 
@@ -286,12 +357,20 @@ elif config.env in ['dev', 'docker']:
 
     INTERNAL_IPS = CIDRList()
 
-# Configure application secrets
-settings = load_app_configuration(app_config, globals())
-processors.set_secret_key(config, settings)
-processors.set_database_parameters(config, settings)
-processors.set_sentry_dsn(config, settings, traces_sample_rate=0.1)
-processors.set_smtp_parameters(config, settings)
+# Sentry Configuration (if configured)
+sentry_dsn = env('SENTRY_DSN', default='')
+if sentry_dsn:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+    from sentry_sdk.integrations.celery import CeleryIntegration
 
-# Configure Google Maps API key
-GOOGLE_API_KEY = processors.get_secret_value(config, 'GOOGLE_API_KEY')
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        integrations=[
+            DjangoIntegration(),
+            CeleryIntegration(),
+        ],
+        environment=env('SENTRY_ENVIRONMENT', default=DJANGO_ENV),
+        traces_sample_rate=env('SENTRY_TRACES_SAMPLE_RATE'),
+        send_default_pii=False
+    )

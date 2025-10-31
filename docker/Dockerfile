@@ -11,6 +11,7 @@ RUN apt update -y && apt install -y \
 ARG APP_PYTHON=python3
 ARG APP_ENV=/opt/venv
 ARG APP_REQUIREMENTS=requirements.txt
+ARG INSTALL_DEV=false
 
 ARG APP_USER=invasives
 ARG APP_USER_ID=1000
@@ -37,7 +38,6 @@ RUN chown ${APP_USER}:${APP_GROUP} /opt
 COPY --chown=${APP_USER}:${APP_GROUP} /Pipfile /opt/
 COPY --chown=${APP_USER}:${APP_GROUP} /Pipfile.lock /opt/
 
-#
 RUN pip install pipenv
 
 # Configure python virtual environment
@@ -45,11 +45,21 @@ USER ${APP_USER}
 WORKDIR /opt
 
 RUN ${APP_PYTHON} -m venv ${APP_ENV}
-RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv sync
+RUN if [ "$INSTALL_DEV" = "true" ]; then \
+      PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv sync --dev; \
+    else \
+      PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv sync; \
+    fi
 # RUN PIPENV_CUSTOM_VENV_NAME=${APP_ENV} pipenv check
 RUN ${APP_ENV}/bin/pip cache purge
 
-# Install container entrypoint
+# Copy application code
+# NOTE: In development, docker-compose.yml mounts ./:/app as a volume, which
+# overrides this copied code to enable live code editing.  In production, this
+# copied code is used directly.
 WORKDIR /app
+COPY --chown=${APP_USER}:${APP_GROUP} . /app/
+
+# Install container entrypoint
 COPY /docker/entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]

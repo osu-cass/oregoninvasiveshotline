@@ -1,0 +1,60 @@
+secrets:
+  SECRET_KEY:
+    file: docker/secrets/secret_key.txt
+  DB_PASSWORD:
+    file: docker/secrets/db_password.txt
+  GOOGLE_API_KEY:
+    file: docker/secrets/google_api_key.txt
+
+networks:
+  default:
+    driver: bridge
+
+services:
+  rabbitmq:
+    image: rabbitmq:4.1-alpine
+    networks:
+      - default
+    volumes:
+      - ${VOLUME_PATH}/rabbitmq:/var/lib/rabbitmq
+    hostname: ${RABBITMQ_HOSTNAME:-rabbitmq-server}
+
+  app:
+    image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline:latest}
+    env_file:
+      - .env
+    environment:
+      - APP_SERVICE=wsgi
+    networks:
+      - default
+    ports:
+      - ${APP_PORT:-8000}:8000
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${VOLUME_PATH}/media:/media
+      - ${VOLUME_PATH}/static:/static
+    depends_on:
+      - rabbitmq
+    secrets:
+      - SECRET_KEY
+      - DB_PASSWORD
+      - GOOGLE_API_KEY
+    user: '${USER_ID}'
+
+  celery:
+    image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline:latest}
+    env_file:
+      - .env
+    environment:
+      - APP_SERVICE=celery
+    networks:
+      - default
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${VOLUME_PATH}/media:/media
+    depends_on:
+      - app
+    secrets:
+      - SECRET_KEY
+      - DB_PASSWORD
+    user: '${USER_ID}'
