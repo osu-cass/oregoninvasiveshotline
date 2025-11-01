@@ -70,6 +70,11 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 # Environment name (for display in templates)
 ENV = env('DJANGO_ENV')
 
+# Expose Sentry settings for templates and context processors
+SENTRY_DSN = env('SENTRY_DSN', default='')
+SENTRY_ENVIRONMENT = env('SENTRY_ENVIRONMENT', default=ENV)
+SENTRY_TRACES_SAMPLE_RATE = env('SENTRY_TRACES_SAMPLE_RATE', default=0.05)
+
 ROOT_URLCONF = "oregoninvasiveshotline.urls"
 WSGI_APPLICATION = "oregoninvasiveshotline.wsgi.application"
 SITE_ID = 1
@@ -358,7 +363,7 @@ elif DJANGO_ENV in ['dev', 'docker', 'test']:
     INTERNAL_IPS = CIDRList()
 
 # Sentry Configuration (if configured)
-sentry_dsn = env('SENTRY_DSN', default='')
+sentry_dsn = SENTRY_DSN
 if sentry_dsn:
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
@@ -370,7 +375,7 @@ if sentry_dsn:
             DjangoIntegration(),
             CeleryIntegration(),
         ],
-        environment=env('SENTRY_ENVIRONMENT', default=DJANGO_ENV),
-        traces_sample_rate=env('SENTRY_TRACES_SAMPLE_RATE'),
+        environment=SENTRY_ENVIRONMENT,
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
         send_default_pii=False
     )
