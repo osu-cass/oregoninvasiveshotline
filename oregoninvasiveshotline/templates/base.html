@@ -12,6 +12,9 @@
                 <meta charset="UTF-8">
                 <meta http-equiv="X-UA-Compatible" content="IE=edge">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
+                {% if TRACE_ID %}
+                <meta name="sentry-trace" content="{{ TRACE_ID }}" />
+                {% endif %}
             {% endblock %}
 
             <title>{% block title %}Oregon Invasives Hotline{% endblock %}</title>
@@ -123,27 +126,24 @@
         {% endblock %}
 
         {% block js %}
-          <script src="{% static 'js/sentry.browser.min.js' %}"></script>
-          {# Initializes sentry client #}
-          <script type="text/javascript">
-            Sentry.init({
-              dsn: "https://263913aeb1264f1bbc40c1b35dda9933@o50547.ingest.sentry.io/153798",
-              release: "{{ RELEASE }}",
-              environment: "{{ ENVIRONMENT }}",
-              tracesSampleRate: 0.05,
-              attachStacktrace: true
-            });
-            {# Links current user to the frontend context #}
-            {% if request.user.is_authenticated %}
-              Sentry.setUser({ email: "{{ request.user.email }}" });
-            {% endif %}
-          </script>
-          {# Links backend trace_id to frontend context #}
-          {% if TRACE_ID %}
-            <meta name="sentry-trace" content="{{ TRACE_ID }}" />
-          {% endif %}
-          <script src="https://cdn.jsdelivr.net/combine/npm/jquery@3.7/dist/jquery.min.js,npm/bootstrap@5.3/dist/js/bootstrap.bundle.min.js,npm/choices.js@11.1/public/assets/scripts/choices.min.js,npm/js-cookie@3.0/dist/js.cookie.min.js,npm/@sentry/browser@10.11/build/npm/cjs/index.min.js,npm/@sentry/tracing@7.120/cjs/index.min.js"></script>
-          <script src="{% static 'js/main.js' %}"></script>
+        <script src="https://cdn.jsdelivr.net/combine/npm/jquery@3.7/dist/jquery.min.js,npm/bootstrap@5.3/dist/js/bootstrap.bundle.min.js,npm/choices.js@11.1/public/assets/scripts/choices.min.js,npm/js-cookie@3.0/dist/js.cookie.min.js,npm/@sentry/browser@10.11/build/npm/cjs/index.min.js,npm/@sentry/tracing@7.120/cjs/index.min.js"></script>
+        {% if SENTRY_DSN %}
+        <script type="text/javascript">
+            if (window.Sentry && typeof window.Sentry.init === 'function') {
+                Sentry.init({
+                    dsn: "{{ SENTRY_DSN }}",
+                    release: "{{ RELEASE }}",
+                    environment: "{{ ENVIRONMENT }}",
+                    tracesSampleRate: {{ SENTRY_TRACES_SAMPLE_RATE }},
+                    attachStacktrace: true
+                });
+                {% if request.user.is_authenticated %}
+                Sentry.setUser({ email: "{{ request.user.email }}" });
+                {% endif %}
+            }
+        </script>
+        {% endif %}
+        <script src="{% static 'js/main.js' %}"></script>
         {% endblock %}
 
         {% google_analytics %}
