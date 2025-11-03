@@ -3,16 +3,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
-[[source]]
-url = "https://packages.wdt.pdx.edu/simple"
-verify_ssl = true
-name = "wdt"
-
 [packages]
-psu-oit-wdt-emcee = {version = "~=1.2.0.dev2", extras = ["aws"], index = "wdt" }
+django-environ = "~=0.12.0"
 pytz = "*"
-markdown = "~=3.8.2"
-Pillow = "~=11.3.0"
+markdown = "~=3.9.0"
+Pillow = "~=12.0.0"
 Django = { version = "~=5.2.0", extras = ["argon2", "bcrypt"]}
 psycopg2-binary = "~=2.9.0"
 celery = "~=5.5.3"

@@ -21,5 +21,7 @@ venv
 docker/secrets/
 
 # Editor Configs
-
 .zed/
+
+# Other
+*.swp

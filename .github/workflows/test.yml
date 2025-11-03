@@ -1,0 +1,45 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Create Docker secrets directory
+        run: |
+          mkdir -p docker/secrets
+          echo "test-secret-key-for-ci" > docker/secrets/secret_key.txt
+          echo "invasives" > docker/secrets/db_password.txt
+          echo "" > docker/secrets/google_api_key.txt
+          chmod 600 docker/secrets/*.txt
+
+      - name: Set up environment variables
+        run: |
+          echo "USER_ID=$(id -u)" >> $GITHUB_ENV
+          echo "GROUP_ID=$(id -g)" >> $GITHUB_ENV
+          echo "VOLUME_PATH=./volumes" >> $GITHUB_ENV
+
+      - name: Create volume directories
+        run: |
+          mkdir -p ${VOLUME_PATH}/{media,static}
+          chown -R ${USER_ID}:${GROUP_ID} ${VOLUME_PATH}/media ${VOLUME_PATH}/static
+
+      - name: Run tests
+        run: make test_container
+
+      - name: Clean up
+        if: always()
+        run: docker compose down -v
