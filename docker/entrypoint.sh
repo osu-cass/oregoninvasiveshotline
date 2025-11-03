@@ -15,7 +15,7 @@ if [[ ${APP_SERVICE} == "wsgi" ]]; then
       ${APP_ENV}/bin/gunicorn \
         --access-logfile '-' \
         --error-logfile '-' \
-        --log-file "-" \
+        --log-file '-' \
         --access-logformat '%({x-forwarded-for}i)s %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"' \
         --forwarded-allow-ips="${LOAD_BALANCER_IPS:-127.0.0.1}" \
         -w 4 \
