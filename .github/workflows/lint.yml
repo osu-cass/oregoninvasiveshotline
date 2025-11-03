@@ -1,4 +1,4 @@
-name: Run Tests, Pyright Check & Ruff Lint
+name: Pyright Check & Ruff Lint
 
 on:
     push:
