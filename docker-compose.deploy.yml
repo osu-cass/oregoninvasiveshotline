@@ -25,12 +25,16 @@ services:
       - default
     ports:
       - ${APP_PORT:-8000}:80
+    environment:
+      - LOAD_BALANCER_IPS=${LOAD_BALANCER_IPS:-}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${VOLUME_PATH}/media:/media:ro
       - ${VOLUME_PATH}/static:/static:ro
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./docker/nginx/docker-entrypoint.sh:/docker-entrypoint-custom.sh:ro
       - ./docker/nginx/maintenance.conf:/etc/nginx/conf.d/maintenance.conf:ro
+    entrypoint: ["/docker-entrypoint-custom.sh"]
     depends_on:
       - app
     restart: unless-stopped
