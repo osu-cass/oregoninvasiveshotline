@@ -134,7 +134,7 @@
                     dsn: "{{ SENTRY_DSN }}",
                     release: "{{ RELEASE }}",
                     environment: "{{ ENVIRONMENT }}",
-                    tracesSampleRate: {{ SENTRY_TRACES_SAMPLE_RATE|default:0.05 }},
+                    tracesSampleRate: {{ SENTRY_TRACES_SAMPLE_RATE }},
                     attachStacktrace: true
                 });
                 {% if request.user.is_authenticated %}
