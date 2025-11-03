@@ -20,5 +20,5 @@ fi
 # Substitute environment variables in the template
 envsubst '${LOAD_BALANCER_IPS}' < /etc/nginx/templates/default.conf.template > /etc/nginx/conf.d/default.conf
 
-# Execute the original nginx entrypoint
-exec /docker-entrypoint.sh "$@"
+# Execute the original nginx entrypoint with nginx daemon command
+exec /docker-entrypoint.sh nginx -g "daemon off;"
