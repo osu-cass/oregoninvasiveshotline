@@ -73,7 +73,7 @@ ENV = env('DJANGO_ENV')
 # Expose Sentry settings for templates and context processors
 SENTRY_DSN = env('SENTRY_DSN', default='')
 SENTRY_ENVIRONMENT = env('SENTRY_ENVIRONMENT', default=ENV)
-SENTRY_TRACES_SAMPLE_RATE = env('SENTRY_TRACES_SAMPLE_RATE', default=0.05)
+SENTRY_TRACES_SAMPLE_RATE = env('SENTRY_TRACES_SAMPLE_RATE')
 
 ROOT_URLCONF = "oregoninvasiveshotline.urls"
 WSGI_APPLICATION = "oregoninvasiveshotline.wsgi.application"
