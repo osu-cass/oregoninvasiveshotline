@@ -19,6 +19,26 @@ services:
       - ${VOLUME_PATH}/rabbitmq:/var/lib/rabbitmq
     hostname: ${RABBITMQ_HOSTNAME:-rabbitmq-server}
 
+  nginx:
+    image: nginx:alpine
+    networks:
+      - default
+    ports:
+      - ${APP_PORT:-8000}:80
+    environment:
+      - LOAD_BALANCER_IPS=${LOAD_BALANCER_IPS:-}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${VOLUME_PATH}/media:/media:ro
+      - ${VOLUME_PATH}/static:/static:ro
+      - ./docker/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./docker/nginx/docker-entrypoint.sh:/docker-entrypoint-custom.sh:ro
+      - ./docker/nginx/maintenance.conf:/etc/nginx/conf.d/maintenance.conf:ro
+    entrypoint: ["/docker-entrypoint-custom.sh"]
+    depends_on:
+      - app
+    restart: unless-stopped
+
   app:
     image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline:latest}
     env_file:
@@ -27,8 +47,6 @@ services:
       - APP_SERVICE=wsgi
     networks:
       - default
-    ports:
-      - ${APP_PORT:-8000}:8000
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${VOLUME_PATH}/media:/media
