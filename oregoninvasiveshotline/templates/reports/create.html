@@ -83,6 +83,25 @@ Report an Invader
     </div>
 
     <div id="previews"></div>
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Submission Without Images</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Including high-quality images is highly recommended as they are the most important part of your report. Photos allow experts to quickly identify the species and confirm the sighting.
+                <br /><br />
+                Do you really want to submit without them?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="confirmSubmit" class="btn btn-primary">Yes, Submit</button>
+            </div>
+            </div>
+        </div>
+    </div>
 </form>
 {% endblock %}
 
@@ -242,5 +261,39 @@ Report an Invader
               return true;
             });
         }
+    </script>
+    <script>
+        let confirmedNoImages = false;
+        document.addEventListener("DOMContentLoaded", () => {
+            const form = document.getElementById("reports-form")
+            const modal = new bootstrap.Modal(document.getElementById("confirmModal"))
+            const confirmSubmit = document.getElementById("confirmSubmit")
+
+            form.addEventListener("submit", (e) => {
+                if (confirmedNoImages) {
+                    return;
+                }
+                
+                let hasImage = false;
+                const formData = new FormData(form)
+
+                for (const [key, value] of formData) {
+                    if (key.startsWith("form-") && key.endsWith("-image_data_uri") && value && value.startsWith("data:image")) {
+                        hasImage = true;
+                        break;
+                    }
+                }
+
+                if (!hasImage) {
+                    e.preventDefault()
+                    modal.show()
+                }
+
+            })
+
+            confirmSubmit.addEventListener("click", () => {
+                form.submit()
+            })
+        })
     </script>
 {% endblock %}
