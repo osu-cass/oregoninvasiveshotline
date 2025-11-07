@@ -45,6 +45,7 @@ env = environ.Env(
     SENTRY_DSN=(str, ''),
     SENTRY_ENVIRONMENT=(str, ''),
     SENTRY_TRACES_SAMPLE_RATE=(float, 0.1),
+    SECURE_HSTS_SECONDS=(int, 31536000),
 )
 
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -256,6 +257,12 @@ CONTENT_SECURITY_POLICY = {
         "upgrade-insecure-requests": True,
     }
 }
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = env('SECURE_HSTS_SECONDS')
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
 
 DATABASES = {
     'default': {
