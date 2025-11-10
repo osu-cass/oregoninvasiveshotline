@@ -50,22 +50,20 @@ You must configure a few API keys for this project. To create them, make files w
 - `secret_key.txt`
 	- Create a secret key. For development, you can use whatever random string. In production, use a secure random string.
 
-### Miscellaneous
-
-To prepare the database you may use, e.g., the `import_database` command to install a copy of production data.
+### Testing
 
 To run the test library:
-
-    make test_container
+```bash
+make test_container
+```
+    
+Tests will also run automatically on pull requests.
 
 ## Deploying
 
-This project uses the Emcee tooling to define and orchestrate resource provisioning and deployment.
-See the AWS cloudformation templates in `cloudformation` and the command definitions in `commands.py`
-for more information.
+This project is deployed using docker. use the `docker-compose.production.yml` file with docker compose.
 
-API keys for stage and production environments are stored and fetched from AWS key store; you will be
-prompted to supply these keys the first time you provision infrastructure for a given environment.
+Containers are built using GitHub Actions.
 
 ## General notes
 
@@ -81,6 +79,16 @@ This project ships with a celerybeat configuration which handles scheduling of s
 Several workflows trigger email notifications based on specific criteria. All such notifications
 are implemented and orchestrated using Celery-based tasks in order that they are performed
 out-of-band with respect to the request/response cycle.
+
+### Running django commands
+
+Django ships with a set of commands that can be run from the command line. Due to the nature of this application, docker must be first started up, and then commands should be ran with `docker exec`.
+
+For example:
+```bash
+docker compose up -d
+docker compose exec app sh -c '${APP_ENV}/bin/python manage.py COMMAND HERE'
+```
 
 ### Application behavior
 
