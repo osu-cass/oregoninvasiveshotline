@@ -1,3 +1,11 @@
+---
+name: Basic PR
+about: A sample pull request template for the Oregon Invasive Species Hotline
+title: ''
+labels: ''
+assignees: ''
+---
+
 ## Description
 <!-- Brief description of what this PR accomplishes and why it's needed. -->
 
