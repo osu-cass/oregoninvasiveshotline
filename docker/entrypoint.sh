@@ -7,7 +7,7 @@ mkdir -p /media/tmp /media/generated_icons /media/generated_thumbnails
 # Select the entrypoint given the APP_SERVICE
 if [[ ${APP_SERVICE} == "wsgi" ]]; then
     # Run migrations and collect static files before starting the app
-    ${APP_ENV}/bin/python manage.py migrate --no-input
+    ${APP_ENV}/bin/python manage.py migrate --no-input --fake-initial
     ${APP_ENV}/bin/python manage.py collectstatic --no-input
     if [[ ${DJANGO_ENV} == "docker" ]]; then
       ${APP_ENV}/bin/gunicorn -b 0.0.0.0:8000 --reload oregoninvasiveshotline.wsgi
