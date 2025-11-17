@@ -82,13 +82,15 @@ out-of-band with respect to the request/response cycle.
 
 ### Running django commands
 
-Django ships with a set of commands that can be run from the command line. Due to the nature of this application, docker must be first started up, and then commands should be ran with `docker exec`.
+Django ships with a set of commands that can be run from the command line. If using a Windows machine, it is reccomended to run these commands in wsl. All users should use pipenv.
 
 For example:
 ```bash
-docker compose up -d
-docker compose exec app sh -c '${APP_ENV}/bin/python manage.py COMMAND HERE'
+pipenv shell
+python3 manage.py COMMAND HERE
 ```
+
+[See all commands here.](https://docs.djangoproject.com/en/5.2/ref/django-admin/)
 
 ### Application behavior
 
