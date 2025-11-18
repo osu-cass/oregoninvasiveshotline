@@ -121,4 +121,4 @@ Expand this dropdown to see the service architecture when working in development
 Expand this dropdown to see the service architecture when working in production.
 </summary>
 <img src="./readme-media/service-architecture-production.png" />
-</details>gi
+</details>
