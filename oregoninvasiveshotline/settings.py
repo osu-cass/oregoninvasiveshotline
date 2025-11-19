@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from django.urls import reverse_lazy
 from celery.schedules import crontab
 import environ
+from csp.constants import SELF, UNSAFE_INLINE, NONE
 
 # Initialize django-environ
 env = environ.Env(
@@ -44,6 +45,7 @@ env = environ.Env(
     SENTRY_DSN=(str, ''),
     SENTRY_ENVIRONMENT=(str, ''),
     SENTRY_TRACES_SAMPLE_RATE=(float, 0.1),
+    SECURE_HSTS_SECONDS=(int, 31536000),
 )
 
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -215,6 +217,7 @@ INSTALLED_APPS = [
 
     "rest_framework",
     "django_bootstrap5",
+    "csp",
 
     "django.contrib.admin",
     "django.contrib.auth",
@@ -224,10 +227,11 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.sites",
     "django.contrib.flatpages",
-    "django.contrib.gis"
+    "django.contrib.gis",
 ]
 
 MIDDLEWARE = [
+    "csp.middleware.CSPMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -237,6 +241,28 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.http.ConditionalGetMiddleware"
 ]
+
+CONTENT_SECURITY_POLICY = {
+    "DIRECTIVES": {
+        "default-src": [SELF],
+        "script-src": [SELF, "https://cdn.jsdelivr.net"],
+        "style-src": [SELF, UNSAFE_INLINE],
+        "img-src": [SELF, "data:", "https:"],
+        "font-src": [SELF],
+        "connect-src": [SELF],
+        "object-src": [NONE],
+        "base-uri": [SELF],
+        "form-action": [SELF],
+        "frame-ancestors": [NONE],
+        "upgrade-insecure-requests": True,
+    }
+}
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = env('SECURE_HSTS_SECONDS')
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
 
 DATABASES = {
     'default': {

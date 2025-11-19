@@ -16,6 +16,7 @@ djangorestframework = "~=3.16.0"
 sentry-sdk = "~=2.35.0"
 django-bootstrap5 = "~=25.2"
 setuptools = "*"
+django-csp = "*"
 
 [dev-packages]
 coverage = "*"
