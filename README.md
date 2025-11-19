@@ -42,6 +42,20 @@ To prepare the database you may use, e.g., the `import_database` command to inst
 To run the test library:
 
     make test_container
+    
+To access the mail server, navigate to http://localhost:8025.
+
+The docker compose also comes with pgAdmin, but it's disabled by default as many developers already have a postgres admin tool installed.
+To run pgAdmin, use the following command:
+```bash
+# Launch just pgAdmin
+docker-compose --profile dev-tools up pgadmin
+
+# Launch all containers and pgAdmin
+docker-compose --profile dev-tools up
+```
+
+Then, it's accessible via http://localhost:5050.
 
 ## Deploying
 
@@ -88,3 +102,23 @@ model as a string like "querystring=foobar&category-4=142".
 When a report is submitted, a new `ReportSearchForm` is instantiated and passed the decoded GET
 parameters that were saved in the `UserNotificationQuery` model; if the `search` method on the
 form finds results matching the newly submitted report a notification is sent to the user.
+
+# Service Architecture
+
+## In development
+
+<details>
+<summary>
+Expand this dropdown to see the service architecture when working in development.
+</summary>
+<img src="./readme-media/service-architecture-development.png" />
+</details>
+
+## In production
+
+<details>
+<summary>
+Expand this dropdown to see the service architecture when working in production.
+</summary>
+<img src="./readme-media/service-architecture-production.png" />
+</details>
