@@ -17,29 +17,7 @@ about the species that was reported.
 
 Ensure that you have Docker and Docker Compose installed in your host's environment.
 
-To use the provided Docker container definitions:
-
-```bash
-docker compose up -d --build
-```
-
-It may also be necessary to re-run the bootstrap script if it fails initially:
-
-```bash
-docker compose up -d bootstrap
-```
-
-View the website at http://localhost:8000
-
-To authenticate with the provided default user:
-
-    username: foobar@example.com
-    password: foobar
-
-> [!NOTE]
-> This user may not appear in your database. An admin user can be created manually by submitting a report, updating it's permissions in the database, choosing the forgot password option, then grabbing the link from the console.
-
-### API Keys
+### Setting up Secrets
 
 You must configure a few API keys for this project. To create them, make files with the exact names below in the `docker/secrets` folder.
 
@@ -49,6 +27,16 @@ You must configure a few API keys for this project. To create them, make files w
 	- Create an API key on https://mapsplatform.google.com/. It should look something like `AIzaSyDQwAloK4wKTeKqKJ4oK4wKTeKqKJ4oK4w`.
 - `secret_key.txt`
 	- Create a secret key. For development, you can use whatever random string. In production, use a secure random string.
+
+### Starting Docker
+
+To use the provided Docker container definitions:
+
+```bash
+docker compose up
+```
+
+View the website at http://localhost:8000.
 
 ### Testing
 
