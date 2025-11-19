@@ -5,6 +5,9 @@ import os.path
 from celery.schedules import crontab
 import environ
 
+# Due to an issue with the types of env(), when passing a default you must add a pyright ignore statement
+# This is because it has a type defualt of NoValue, which the type that is being passed in will not satisfy
+
 # Initialize django-environ
 env = environ.Env(
     # Set default values and casting

@@ -29,6 +29,7 @@ def edit(request, comment_id):
     PartialCommentForm = functools.partial(CommentForm, user=request.user, report=comment.report, instance=comment)
     if request.POST:
         form = PartialCommentForm(request.POST)
+        # ImageFormSet effectively extends BaseImageFormSet but is Any, so we coerce it to the type we want and ignore the type error
         formset: BaseImageFormSet = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.filter(comment=comment), form_kwargs={'user': request.user})  # pyright: ignore[reportAssignmentType]
         if form.is_valid() and formset.is_valid():
             form.save()
@@ -37,6 +38,7 @@ def edit(request, comment_id):
             return redirect("reports-detail", comment.report.pk)
     else:
         form = PartialCommentForm()
+        # see above comment for ignore reasoning
         formset: BaseImageFormSet = ImageFormSet(queryset=Image.objects.filter(comment=comment), form_kwargs={'user': request.user})  # pyright: ignore[reportAssignmentType]
 
     return render(request, "comments/edit.html", {
