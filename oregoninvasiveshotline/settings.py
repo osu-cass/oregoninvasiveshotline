@@ -74,8 +74,8 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 ENV = env('DJANGO_ENV')
 
 # Expose Sentry settings for templates and context processors
-SENTRY_DSN = env('SENTRY_DSN', default='')
-SENTRY_ENVIRONMENT = env('SENTRY_ENVIRONMENT', default=ENV)
+SENTRY_DSN = env('SENTRY_DSN', default='') # pyright: ignore
+SENTRY_ENVIRONMENT = env('SENTRY_ENVIRONMENT', default=ENV) # pyright: ignore
 SENTRY_TRACES_SAMPLE_RATE = env('SENTRY_TRACES_SAMPLE_RATE')
 
 ROOT_URLCONF = "oregoninvasiveshotline.urls"
@@ -402,7 +402,7 @@ if sentry_dsn:
             DjangoIntegration(),
             CeleryIntegration(),
         ],
-        environment=SENTRY_ENVIRONMENT,
-        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        environment=SENTRY_ENVIRONMENT, # pyright: ignore
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE, # pyright: ignore
         send_default_pii=False
     )
