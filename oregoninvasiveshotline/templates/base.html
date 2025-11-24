@@ -126,9 +126,9 @@
         {% endblock %}
 
         {% block js %}
-        <script nonce="{{request.csp_nonce}}" src="https://cdn.jsdelivr.net/combine/npm/jquery@3.7/dist/jquery.min.js,npm/bootstrap@5.3/dist/js/bootstrap.bundle.min.js,npm/choices.js@11.1/public/assets/scripts/choices.min.js,npm/js-cookie@3.0/dist/js.cookie.min.js,npm/@sentry/browser@10.11/build/npm/cjs/index.min.js,npm/@sentry/tracing@7.120/cjs/index.min.js"></script>
+        <script nonce="{{request.csp_nonce}} src="https://cdn.jsdelivr.net/combine/npm/jquery@3.7/dist/jquery.min.js,npm/bootstrap@5.3/dist/js/bootstrap.bundle.min.js,npm/choices.js@11.1/public/assets/scripts/choices.min.js,npm/js-cookie@3.0/dist/js.cookie.min.js,npm/@sentry/browser@10.11/build/npm/cjs/index.min.js,npm/@sentry/tracing@7.120/cjs/index.min.js"></script>
         {% if SENTRY_DSN %}
-        <script type="text/javascript">
+        <script nonce="{{request.csp_nonce}}" type="text/javascript">
             if (window.Sentry && typeof window.Sentry.init === 'function') {
                 Sentry.init({
                     dsn: "{{ SENTRY_DSN }}",
@@ -143,7 +143,7 @@
             }
         </script>
         {% endif %}
-        <script src="{% static 'js/main.js' %}"></script>
+        <script nonce="{{request.csp_nonce}}" src="{% static 'js/main.js' %}"></script>
         {% endblock %}
 
         {% google_analytics %}

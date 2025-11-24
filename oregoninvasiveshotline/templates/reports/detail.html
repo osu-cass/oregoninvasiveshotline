@@ -278,7 +278,7 @@ Report #{{ report.pk }} - {{ report }}
         }
     </script>
 
-    <script>var category_id_to_species_id = {{ category_id_to_species_id|safe }};</script>
+    <script nonce="{{request.csp_nonce}}">var category_id_to_species_id = {{ category_id_to_species_id|safe }};</script>
     <script nonce="{{request.csp_nonce}}" src="{% static 'js/species_selector.js' %}" async></script>
     <script nonce="{{request.csp_nonce}}" src="https://cdn.jsdelivr.net/combine/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.umd.js,npm/@fancyapps/ui@6.0/dist/carousel/carousel.umd.js"></script>
     <!--<script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0/dist/carousel/carousel.lazyload.umd.js"></script>-->
