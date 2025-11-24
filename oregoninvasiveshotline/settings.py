@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from django.urls import reverse_lazy
 from celery.schedules import crontab
 import environ
-from csp.constants import SELF, UNSAFE_INLINE, NONE
+from csp.constants import SELF, UNSAFE_INLINE, NONE, NONCE
 
 # Initialize django-environ
 env = environ.Env(
@@ -245,11 +245,11 @@ MIDDLEWARE = [
 CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": [SELF],
-        "script-src": [SELF, "https://cdn.jsdelivr.net"],
-        "style-src": [SELF, UNSAFE_INLINE],
+        "script-src": [SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", NONCE],
+        "style-src": [SELF, "https://cdn.jsdelivr.net", UNSAFE_INLINE],
         "img-src": [SELF, "data:", "https:"],
-        "font-src": [SELF],
-        "connect-src": [SELF],
+        "font-src": [SELF, "https://cdn.jsdelivr.net"],
+        "connect-src": [SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com"],
         "object-src": [NONE],
         "base-uri": [SELF],
         "form-action": [SELF],
