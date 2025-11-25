@@ -40,7 +40,7 @@ def generate_icon(output_path,
         |    |
         | $$ |
         |_  _|
-          \/
+         \\/
 
     They are constructed in the following way:
 
