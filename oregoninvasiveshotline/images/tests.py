@@ -37,6 +37,7 @@ class ImageFormTest(TestCase, UserMixin):
 class BaseImageFormSetTest(TestCase, UserMixin):
     def test_user_and_fk_gets_passed_to_save_new(self):
         ImageFormSet = modelformset_factory(Image, form=ImageForm, formset=BaseImageFormSet, can_delete=True)
+        # This rejects the type change as ImageFormSet does not properly receive a name.
         formset: BaseImageFormSet = ImageFormSet({
             "form-TOTAL_FORMS": "1",
             "form-INITIAL_FORMS": "0",
@@ -55,6 +56,7 @@ class BaseImageFormSetTest(TestCase, UserMixin):
 class ImageFormSetTest(TestCase, UserMixin):
     def test_form_kwargs(self):
         user = self.create_user(username="admin@example.com", is_staff=True)
+        # This rejects the type change as ImageFormSet does not properly receive a name.
         formset: BaseImageFormSet = ImageFormSet({
             "form-TOTAL_FORMS": "1",
             "form-INITIAL_FORMS": "0",
@@ -98,7 +100,8 @@ class ClearableImageInputTest(TestCase):
         img_uri = "data:image/gif;base64," + self.b64
         form = self.Form({"name": "", "image_data_uri": img_uri})
         self.assertFalse(form.is_valid())
-        signed_path = form.fields['image'].widget.signed_path  # pyright: ignore
+        # Attribute exists at runtime but isn't defined during typechecking.
+        signed_path = form.fields['image'].widget.signed_path # pyright: ignore 
 
         form = self.Form({"name": "hello", "image_signed_path": signed_path})
         self.assertTrue(form.is_valid())
@@ -121,13 +124,15 @@ class ClearableImageInputTest(TestCase):
         img_uri = "invalid"
         form = self.Form({"name": "", "image_data_uri": img_uri})
         self.assertFalse(form.is_valid())
-        self.assertEqual(form.fields['image'].widget.signed_path, None)  # pyright: ignore
+        # Attribute exists at runtime but isn't defined during typechecking.
+        self.assertEqual(form.fields['image'].widget.signed_path, None) # pyright: ignore
 
         # post a valid image
         img_uri = "data:image/gif;base64," + self.b64
         form = self.Form({"name": "", "image_data_uri": img_uri})
         self.assertFalse(form.is_valid())
-        signed_path = form.fields['image'].widget.signed_path  # pyright: ignore
+        # Attribute exists at runtime but isn't defined during typechecking.
+        signed_path = form.fields['image'].widget.signed_path # pyright: ignore
         self.assertIn(signed_path, str(form))
 
         # post the signed_path back
@@ -138,5 +143,5 @@ class ClearableImageInputTest(TestCase):
         img_uri = "data:image/gif;base64," + self.other_b64
         form = self.Form({"name": "hello", "image_signed_path": signed_path, "image_data_uri": img_uri})
         self.assertTrue(form.is_valid())
-        self.assertNotEqual(signed_path, form.fields['image'].widget.signed_path)  # pyright: ignore
+        self.assertNotEqual(signed_path, form.fields['image'].widget.signed_path) # pyright: ignore
         self.assertEqual(open(form.fields['image'].widget.signed_path.split(":")[0], 'rb').read(), b64decode(self.other_b64))  # pyright: ignore

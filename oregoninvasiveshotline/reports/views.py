@@ -154,6 +154,7 @@ def create(request):
 
     if request.POST:
         form = ReportForm(request.POST, request.FILES)
+        # ImageFormSet inherits type incorrectly so we need to cast it to the correct type
         formset: BaseImageFormSet = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())  # pyright: ignore[reportAssignmentType]
         if form.is_valid() and formset.is_valid():
             report = form.save()
@@ -169,6 +170,7 @@ def create(request):
             response.delete_cookie("zoom", request.get_full_path())
             return response
     else:
+    		# ImageFormSet inherits type incorrectly so we need to cast it to the correct type
         formset: BaseImageFormSet = ImageFormSet(queryset=Image.objects.none())  # pyright: ignore[reportAssignmentType]
         form = ReportForm()
 
@@ -225,6 +227,7 @@ def detail(request, report_id):
         PartialCommentForm = functools.partial(CommentForm, user=request.user, report=report)
 
         if request.POST and submit_flag == CommentForm.SUBMIT_FLAG:
+        # ImageFormSet inherits type incorrectly so we need to cast it to the correct type
             image_formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none(), form_kwargs={'user': request.user})  # pyright: ignore[reportAssignmentType]
             comment_form = PartialCommentForm(request.POST, request.FILES)
             assert comment_form is not None
@@ -242,6 +245,7 @@ def detail(request, report_id):
 
         else:
             comment_form = PartialCommentForm()
+            # ImageFormSet inherits type incorrectly so we need to cast it to the correct type
             image_formset = ImageFormSet(queryset=Image.objects.none(), form_kwargs={'user': request.user})  # pyright: ignore[reportAssignmentType]
 
     # handle all the management forms

@@ -141,12 +141,14 @@ class AuthenticateViewTest(TestCase, UserMixin):
     def test_active_or_invited_users_are_logged_in(self):
         # test for an invited user
         invite = make(Invite, report=make(Report, point=ORIGIN))
+        # pyright ignores this because `make` doesn't provide precise type
         url = invite.user.get_authentication_url()  # pyright: ignore
         response = self.client.get(url)
         self.assertRedirects(response, self.login_redirect_url)
 
         # test for an active user
         user = self.create_user(username="inactive@example.com", is_active=False)
+        # pyright ignores this because `make` doesn't provide precise type
         url = user.get_authentication_url() # pyright: ignore
         response = self.client.get(url)
         self.assertRedirects(response, self.login_redirect_url)
@@ -154,6 +156,7 @@ class AuthenticateViewTest(TestCase, UserMixin):
     def test_report_ids_session_variable_is_populated(self):
         user = self.create_user(username="foo@example.com", is_active=True)
         report = make(Report, created_by=user, point=ORIGIN)
+        # pyright ignores this because `make` doesn't provide precise type
         url = user.get_authentication_url() # pyright: ignore
         response = self.client.get(url)
         self.assertRedirects(response, self.login_redirect_url)
@@ -327,7 +330,8 @@ class UserTest(TestCase, UserMixin):
             last_name="Bar",
             suffix="PHD"
         )
-        self.assertEqual(user.get_proper_name(), "Mr. Foo Bar, PHD")  # pyright: ignore
+        # User object returned by create_user may not have fully inferred type for custom methods
+        self.assertEqual(user.get_proper_name(), "Mr. Foo Bar, PHD") # pyright: ignore
 
         other_user = self.create_user(
             username="fdsa",
@@ -336,6 +340,7 @@ class UserTest(TestCase, UserMixin):
             prefix="",
             suffix=""
         )
+        # User object returned by create_user may not have fully inferred type for custom methods
         self.assertEqual(other_user.get_proper_name(), "Foo Bar")  # pyright: ignore
 
     def test_get_authentication_url_and_authenticate(self):

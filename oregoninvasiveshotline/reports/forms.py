@@ -224,6 +224,7 @@ class ReportSearchForm(SearchForm):
 class ReportForm(forms.ModelForm):
 
     email = forms.EmailField()
+    # Assignment type is correct at runtime.
     prefix = forms.CharField(required=False)  # pyright: ignore[reportAssignmentType]
     first_name = forms.CharField()
     last_name = forms.CharField()

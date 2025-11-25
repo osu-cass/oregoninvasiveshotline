@@ -27,6 +27,7 @@ def can_view_private_report(user, report):
         return True
 
 
+# Ignored the assignment of the decorator as it applies properly at runtime.
 @permissions.register(model=Report)  # pyright: ignore
 def can_adjust_visibility(user, report):
     return user.is_active or Invite.objects.filter(user=user, report=report).exists()

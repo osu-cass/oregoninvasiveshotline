@@ -17,6 +17,7 @@ class ReportSerializer(serializers.Serializer):
     # exist in the local timezone. (2am is skipped when we go DST).
     #
     # so, ensure that this field understands the incoming data are in UTC.
+    # which causes a type error that is ignored
     created_on = serializers.DateTimeField(format='%b %d, %Y',  # pyright: ignore
                                            default_timezone=pytz.utc)
 

@@ -62,7 +62,7 @@ def read_secret(secret_name, default=''):
     if os.path.exists(secret_path):
         with open(secret_path, 'r') as f:
             return f.read().strip()
-    return env(secret_name, default=default) # pyright: ignore works at runtime
+    return env(secret_name, default=default) # pyright: ignore
 
 # Core Django settings
 DEBUG = env('DEBUG')  # pyright: ignore

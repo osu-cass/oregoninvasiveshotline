@@ -1,6 +1,9 @@
 from ..perms import permissions
 from .models import User
 
+# pyright ignores are used because the 'permissions.register' decorator
+# dynamically modifies function signatures or provides runtime context
+# that pyright cannot statically infer, leading to false-positive type errors.
 
 @permissions.register  # pyright: ignore
 def can_create_user(user):
