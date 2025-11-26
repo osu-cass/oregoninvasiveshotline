@@ -246,9 +246,9 @@ CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": [SELF],
         "script-src": [SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", NONCE],
-        "style-src": [SELF, "https://cdn.jsdelivr.net", UNSAFE_INLINE],
+        "style-src": [SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", UNSAFE_INLINE],
         "img-src": [SELF, "data:", "https:"],
-        "font-src": [SELF, "https://cdn.jsdelivr.net"],
+        "font-src": [SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
         "connect-src": [SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com"],
         "object-src": [NONE],
         "base-uri": [SELF],
