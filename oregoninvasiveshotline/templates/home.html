@@ -54,9 +54,9 @@
 {% block js %}
     {{ block.super }}
 
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
+    <script nonce="{{request.csp_nonce}}" src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
             async></script>
-    <script>
+    <script nonce="{{request.csp_nonce}}">
         var reports = {{ reports|jsonify }};
         function initMap() {
             var options = getDefaultMapOptions();
@@ -108,7 +108,7 @@
             });
         }
     </script>
-    <script>
+    <script nonce="{{request.csp_nonce}}">
         $(document).ready(function () {
             $('#map-canvas').click(function(){ window.location='{% url 'reports-list' %}'});
 

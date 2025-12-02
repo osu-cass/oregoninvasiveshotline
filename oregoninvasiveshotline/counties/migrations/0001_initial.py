@@ -25,4 +25,7 @@ class Migration(migrations.Migration):
                 'ordering': ['state', 'name'],
             },
         ),
+        migrations.RunSQL(
+            """CREATE INDEX county_gist ON county USING gist (the_geom);"""
+        )
     ]

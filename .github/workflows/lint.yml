@@ -1,0 +1,44 @@
+name: Pyright Check & Ruff Lint
+
+on:
+    push:
+        branches:
+            - main
+            - develop
+    pull_request:
+
+jobs:
+    format-and-lint:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.12"
+
+            - name: Install dependencies
+              run: |
+                  python -m pip install --upgrade pip
+                  pip install pipenv ruff
+                  pipenv install --dev
+
+            # Add the Pipenv venv bin to PATH so pyright sees all packages
+            - name: Add Pipenv venv to PATH
+              run: echo "$(pipenv --venv)/bin" >> $GITHUB_PATH
+
+            - name: Run Ruff
+              run: ruff check --output-format=github .
+
+            - name: Run Pyright
+              uses: jakebailey/pyright-action@v2
+    # Currently broken, see logs https://github.com/osu-cass/oregoninvasiveshotline/actions/runs/18291615676/job/52080025060?pr=6
+    # The current docker container binds the test container a user, which it seems like GitHub doesn't support.
+    # run-tests:
+    #     runs-on: ubuntu-latest
+    #     steps:
+    #         - uses: actions/checkout@v4
+
+    #         - name: Run Tests
+    #           run: make test_container

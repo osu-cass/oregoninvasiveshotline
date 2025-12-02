@@ -1,10 +1,7 @@
-import base64
 import binascii
-from datetime import datetime, timedelta
 from urllib import parse
 
 from django.contrib.auth.models import AbstractBaseUser, UserManager
-from django.contrib.sites.models import Site
 from django.core.signing import TimestampSigner, SignatureExpired
 from django.urls import reverse
 from django.db import models
