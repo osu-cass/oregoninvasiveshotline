@@ -4,7 +4,7 @@ import os.path
 
 from celery.schedules import crontab
 import environ
-from csp.constants import SELF, UNSAFE_INLINE, NONE
+from csp.constants import SELF, UNSAFE_INLINE, NONE, NONCE
 
 # Due to an issue with the types of env(), when passing a default you must add a pyright ignore statement
 # This is because it has a type defualt of NoValue, which the type that is being passed in will not satisfy
@@ -246,11 +246,11 @@ MIDDLEWARE = [
 CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
         "default-src": [SELF],
-        "script-src": [SELF, "https://cdn.jsdelivr.net"],
-        "style-src": [SELF, UNSAFE_INLINE],
+        "script-src": [SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", NONCE],
+        "style-src": [SELF, "https://cdn.jsdelivr.net", UNSAFE_INLINE],
         "img-src": [SELF, "data:", "https:"],
-        "font-src": [SELF],
-        "connect-src": [SELF],
+        "font-src": [SELF, "https://cdn.jsdelivr.net"],
+        "connect-src": [SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com"],
         "object-src": [NONE],
         "base-uri": [SELF],
         "form-action": [SELF],

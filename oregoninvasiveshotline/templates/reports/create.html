@@ -89,14 +89,14 @@ Report an Invader
 {% block js %}
     {{ block.super }}
 
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
+    <script nonce="{{request.csp_nonce}}" src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
             async></script>
 
-    <script src="{% static 'js/img.js' %}" async></script>
-    <script>var category_id_to_species_id = {{ category_id_to_species_id|safe }};</script>
-    <script src="{% static 'js/species_selector.js' %}" async></script>
+    <script nonce="{{request.csp_nonce}}" src="{% static 'js/img.js' %}" async></script>
+    <script nonce="{{request.csp_nonce}}">var category_id_to_species_id = {{ category_id_to_species_id|safe }};</script>
+    <script nonce="{{request.csp_nonce}}" src="{% static 'js/species_selector.js' %}" async></script>
 
-    <script>
+    <script nonce="{{request.csp_nonce}}">
         function initMap() {
             var options = getDefaultMapOptions();
             var map = new google.maps.Map(document.getElementById('map-canvas'), options);

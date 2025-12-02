@@ -5,7 +5,7 @@
 
 {% block css %}
     {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/flatpages.css' %}" />
+    <link rel="stylesheet" nonce="{{request.csp_nonce}}" href="{% static 'css/flatpages.css' %}" />
 {% endblock %}
 
 {% block title %}{{ flatpage.title }}{% endblock %}

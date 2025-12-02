@@ -1,10 +1,10 @@
 {% load static %}
 
-<script
+<script nonce="{{request.csp_nonce}}"
   src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
   async
 ></script>
-<script>
+<script nonce="{{request.csp_nonce}}">
   function initMap() {
       var reports = {{ reports|jsonify }};
       if (reports.length === 0){
@@ -56,8 +56,8 @@
       });
   }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/choices.js@11.1.0/public/assets/scripts/choices.min.js"></script>
-<script>
+<script nonce="{{request.csp_nonce}}" src="https://cdn.jsdelivr.net/npm/choices.js@11.1.0/public/assets/scripts/choices.min.js"></script>
+<script nonce="{{request.csp_nonce}}">
   document.addEventListener("DOMContentLoaded", function () {
     const categoriesElement = document.querySelector(
       'select[name="categories"]'
@@ -86,7 +86,7 @@
     }
   });
 </script>
-<script>
+<script nonce="{{request.csp_nonce}}">
   $(document).ready(function () {
     $(".modal-remote").on("click", function (e) {
       e.preventDefault();
