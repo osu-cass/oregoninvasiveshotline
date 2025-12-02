@@ -20,7 +20,7 @@ from oregoninvasiveshotline.utils.db import will_be_deleted_with
 from oregoninvasiveshotline.comments.forms import CommentForm
 from oregoninvasiveshotline.comments.models import Comment
 from oregoninvasiveshotline.comments.perms import can_create_comment
-from oregoninvasiveshotline.images.forms import ImageFormSet
+from oregoninvasiveshotline.images.forms import BaseImageFormSet, ImageFormSet
 from oregoninvasiveshotline.images.models import Image
 from oregoninvasiveshotline.species.models import Category, Severity, category_id_to_species_id_json
 from oregoninvasiveshotline.users.utils import get_tab_counts
@@ -154,10 +154,11 @@ def create(request):
 
     if request.POST:
         form = ReportForm(request.POST, request.FILES)
-        formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())
+        # ImageFormSet inherits type incorrectly so we need to cast it to the correct type
+        formset: BaseImageFormSet = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())  # pyright: ignore[reportAssignmentType]
         if form.is_valid() and formset.is_valid():
             report = form.save()
-            formset.save(user=report.created_by, fk=report)
+            formset.save_all(user=report.created_by, fk=report)
             messages.success(request, "Report submitted successfully")
             request.session.setdefault("report_ids", []).append(report.pk)
             request.session.modified = True
@@ -169,7 +170,8 @@ def create(request):
             response.delete_cookie("zoom", request.get_full_path())
             return response
     else:
-        formset = ImageFormSet(queryset=Image.objects.none())
+    		# ImageFormSet inherits type incorrectly so we need to cast it to the correct type
+        formset: BaseImageFormSet = ImageFormSet(queryset=Image.objects.none())  # pyright: ignore[reportAssignmentType]
         form = ReportForm()
 
     return render(request, "reports/create.html", {
@@ -191,15 +193,14 @@ def detail(request, report_id):
 
     if (report.pk in request.session.get("report_ids", []) and
             report.created_by.is_active and
-            report.created_by_id != request.user.pk and
+            report.created_by.pk != request.user.pk and
             not request.user.is_active):
         # if the report was created by an active user and they aren't logged in
-        # as that user, force them to re-login
-        return login_required(lambda request: None)(request)
+        return login_required(lambda request: HttpResponse())(request)
 
     if (report.pk in request.session.get("report_ids", []) and
             not report.created_by.is_active and
-            report.created_by_id != request.user.pk and
+            report.created_by.pk != request.user.pk and
             not request.user.is_active):
         # if the user submitted the report, allow them to masquerade as that
         # user for the life of this request
@@ -208,14 +209,14 @@ def detail(request, report_id):
     if not report.is_public:
         if request.user.is_anonymous:
             messages.info(request, "If this is your report, please use the login system below to authenticate yourself.")
-            return login_required(lambda request: None)(request)
+            return login_required(lambda request: HttpResponse())(request)
         elif not can_view_private_report(request.user, report):
             raise PermissionDenied()
 
     # there are a bunch of forms that can be filled out on this page, by
     # default, they can't be filled out
     comment_form = None
-    image_formset = None
+    image_formset: BaseImageFormSet | None = None
     invite_form = None
     management_form = None
     # this tells us which form was filled out since there are many on the page
@@ -226,11 +227,14 @@ def detail(request, report_id):
         PartialCommentForm = functools.partial(CommentForm, user=request.user, report=report)
 
         if request.POST and submit_flag == CommentForm.SUBMIT_FLAG:
-            image_formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none(), form_kwargs={'user': request.user})
+        # ImageFormSet inherits type incorrectly so we need to cast it to the correct type
+            image_formset = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none(), form_kwargs={'user': request.user})  # pyright: ignore[reportAssignmentType]
             comment_form = PartialCommentForm(request.POST, request.FILES)
+            assert comment_form is not None
+            assert image_formset is not None
             if comment_form.is_valid() and image_formset.is_valid():
                 comment = comment_form.save()
-                image_formset.save(user=comment.created_by, fk=comment)
+                image_formset.save_all(user=comment.created_by, fk=comment)
                 messages.success(request, "Comment Added!")
                 if can_claim_report(request.user, report):
                     if report.claimed_by is None:
@@ -241,7 +245,8 @@ def detail(request, report_id):
 
         else:
             comment_form = PartialCommentForm()
-            image_formset = ImageFormSet(queryset=Image.objects.none(), form_kwargs={'user': request.user})
+            # ImageFormSet inherits type incorrectly so we need to cast it to the correct type
+            image_formset = ImageFormSet(queryset=Image.objects.none(), form_kwargs={'user': request.user})  # pyright: ignore[reportAssignmentType]
 
     # handle all the management forms
     if can_manage_report(request.user, report):

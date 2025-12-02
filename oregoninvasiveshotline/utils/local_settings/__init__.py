@@ -10,13 +10,22 @@ from .strategy import INIJSONStrategy
 from .util import get_file_name
 
 # Exported (but unused locally)
-from .checker import Checker  # noqa: exported
-from .exc import SettingsFileNotFoundError  # noqa: exported
-from .settings import Settings  # noqa: exported
-from .types import LocalSetting, SecretSetting  # noqa: exported
-from .util import NO_DEFAULT  # noqa: exported
-from .__main__ import make_local_settings  # noqa: exported
+from .checker import Checker
+from .exc import SettingsFileNotFoundError
+from .settings import Settings
+from .types import LocalSetting, SecretSetting
+from .util import NO_DEFAULT
+from .__main__ import make_local_settings
 
+__all__ = [
+    "Checker",
+    "SettingsFileNotFoundError",
+    "Settings",
+    "LocalSetting",
+    "SecretSetting",
+    "NO_DEFAULT",
+    "make_local_settings",
+]
 
 def load_and_check_settings(base_settings, file_name=None, section=None, base_path=None,
                             strategy_type=INIJSONStrategy, disable=None, prompt=None,
@@ -71,7 +80,7 @@ def load_and_check_settings(base_settings, file_name=None, section=None, base_pa
         file_name = get_file_name()
     if ':' in file_name:
         package, path = file_name.split(':', 1)
-        file_name = files(package).joinpath(path)
+        file_name = str(files(package).joinpath(path))
     if not os.path.isabs(file_name):
         base_path = base_path or os.getcwd()
         file_name = os.path.normpath(os.path.join(base_path, file_name))
@@ -82,7 +91,8 @@ def load_and_check_settings(base_settings, file_name=None, section=None, base_pa
         # Loading/checking of local settings was aborted with Ctrl-C.
         # This isn't an error, but we don't want to continue.
         if not quiet:
-            printer.print_warning('\nAborted loading/checking of local settings')
+            # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+            printer.print_warning('\nAborted loading/checking of local settings') # pyright: ignore
         sys.exit(0)
     if loader.section:
         file_name = '{loader.file_name}#{loader.section}'.format(loader=loader)
@@ -91,7 +101,8 @@ def load_and_check_settings(base_settings, file_name=None, section=None, base_pa
     if not success:
         raise SettingsFileDidNotPassCheck(file_name)
     if not quiet:
-        printer.print_success('Settings loaded successfully from {0}'.format(file_name))
+        # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+        printer.print_success('Settings loaded successfully from {0}'.format(file_name)) # pyright: ignore
     return settings
 
 

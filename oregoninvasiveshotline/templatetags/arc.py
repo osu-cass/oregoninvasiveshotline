@@ -1,12 +1,8 @@
 import json
-import posixpath
 
 from django import template
 from django.conf import settings
-from django.contrib.auth import REDIRECT_FIELD_NAME
-from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.exceptions import ImproperlyConfigured
-from django.shortcuts import resolve_url
 from django.utils.safestring import mark_safe
 
 try:
@@ -14,7 +10,6 @@ try:
 except ImportError:
     _markdown = None
 
-from oregoninvasiveshotline.utils.settings import get_setting
 
 
 register = template.Library()

@@ -53,6 +53,7 @@ services:
       - .env.docker
     environment:
       - APP_SERVICE=wsgi
+      - APP_ENVIRONMENT=development
     networks:
       - default
     ports:

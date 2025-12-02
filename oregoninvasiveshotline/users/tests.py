@@ -1,5 +1,5 @@
 import urllib.parse
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from django.conf import settings
 from django.core import mail
@@ -15,7 +15,7 @@ from oregoninvasiveshotline.utils.test.user import UserMixin
 from oregoninvasiveshotline.notifications.models import UserNotificationQuery
 from oregoninvasiveshotline.reports.models import Invite, Report
 
-from .forms import PublicLoginForm, UserForm, UserSearchForm
+from .forms import UserForm, UserSearchForm
 from .utils import get_tab_counts
 from .models import User
 
@@ -141,20 +141,23 @@ class AuthenticateViewTest(TestCase, UserMixin):
     def test_active_or_invited_users_are_logged_in(self):
         # test for an invited user
         invite = make(Invite, report=make(Report, point=ORIGIN))
-        url = invite.user.get_authentication_url()
+        # pyright ignores this because `make` doesn't provide precise type
+        url = invite.user.get_authentication_url()  # pyright: ignore
         response = self.client.get(url)
         self.assertRedirects(response, self.login_redirect_url)
 
         # test for an active user
         user = self.create_user(username="inactive@example.com", is_active=False)
-        url = user.get_authentication_url()
+        # pyright ignores this because `make` doesn't provide precise type
+        url = user.get_authentication_url() # pyright: ignore
         response = self.client.get(url)
         self.assertRedirects(response, self.login_redirect_url)
 
     def test_report_ids_session_variable_is_populated(self):
         user = self.create_user(username="foo@example.com", is_active=True)
         report = make(Report, created_by=user, point=ORIGIN)
-        url = user.get_authentication_url()
+        # pyright ignores this because `make` doesn't provide precise type
+        url = user.get_authentication_url() # pyright: ignore
         response = self.client.get(url)
         self.assertRedirects(response, self.login_redirect_url)
         self.assertIn(report.pk, self.client.session['report_ids'])
@@ -327,7 +330,8 @@ class UserTest(TestCase, UserMixin):
             last_name="Bar",
             suffix="PHD"
         )
-        self.assertEqual(user.get_proper_name(), "Mr. Foo Bar, PHD")
+        # User object returned by create_user may not have fully inferred type for custom methods
+        self.assertEqual(user.get_proper_name(), "Mr. Foo Bar, PHD") # pyright: ignore
 
         other_user = self.create_user(
             username="fdsa",
@@ -336,10 +340,11 @@ class UserTest(TestCase, UserMixin):
             prefix="",
             suffix=""
         )
-        self.assertEqual(other_user.get_proper_name(), "Foo Bar")
+        # User object returned by create_user may not have fully inferred type for custom methods
+        self.assertEqual(other_user.get_proper_name(), "Foo Bar")  # pyright: ignore
 
     def test_get_authentication_url_and_authenticate(self):
-        url = self.user.get_authentication_url(next="lame")
+        url = self.user.get_authentication_url(next="lame")  # pyright: ignore
         parts = urllib.parse.urlparse(url)
         self.assertEqual(parts.path, reverse("users-authenticate"))
         query = urllib.parse.parse_qs(parts.query)

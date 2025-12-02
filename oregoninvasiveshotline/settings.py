@@ -2,11 +2,12 @@
 import os
 import os.path
 
-from django.utils.translation import gettext_lazy as _
-from django.urls import reverse_lazy
 from celery.schedules import crontab
 import environ
 from csp.constants import SELF, UNSAFE_INLINE, NONE, NONCE
+
+# Due to an issue with the types of env(), when passing a default you must add a pyright ignore statement
+# This is because it has a type defualt of NoValue, which the type that is being passed in will not satisfy
 
 # Initialize django-environ
 env = environ.Env(
@@ -61,20 +62,20 @@ def read_secret(secret_name, default=''):
     if os.path.exists(secret_path):
         with open(secret_path, 'r') as f:
             return f.read().strip()
-    return env(secret_name, default=default)
+    return env(secret_name, default=default) # pyright: ignore
 
 # Core Django settings
-DEBUG = env('DEBUG')
-TEMPLATE_DEBUG = env('TEMPLATE_DEBUG', default=DEBUG)
-SECRET_KEY = read_secret('SECRET_KEY', env('SECRET_KEY'))
+DEBUG = env('DEBUG')  # pyright: ignore
+TEMPLATE_DEBUG = env('TEMPLATE_DEBUG', default=DEBUG)  # pyright: ignore
+SECRET_KEY = read_secret('SECRET_KEY', str(env('SECRET_KEY')))
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 # Environment name (for display in templates)
 ENV = env('DJANGO_ENV')
 
 # Expose Sentry settings for templates and context processors
-SENTRY_DSN = env('SENTRY_DSN', default='')
-SENTRY_ENVIRONMENT = env('SENTRY_ENVIRONMENT', default=ENV)
+SENTRY_DSN = env('SENTRY_DSN', default='') # pyright: ignore
+SENTRY_ENVIRONMENT = env('SENTRY_ENVIRONMENT', default=ENV) # pyright: ignore
 SENTRY_TRACES_SAMPLE_RATE = env('SENTRY_TRACES_SAMPLE_RATE')
 
 ROOT_URLCONF = "oregoninvasiveshotline.urls"
@@ -121,9 +122,9 @@ CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
 SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
 
 # Static and Media Files
-STATIC_ROOT = env('STATIC_ROOT', default=os.path.join(FILE_ROOT, 'static'))
+STATIC_ROOT = env('STATIC_ROOT', default=os.path.join(FILE_ROOT, 'static'))  # pyright: ignore
 STATIC_URL = '/static/'
-MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(FILE_ROOT, 'media'))
+MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(FILE_ROOT, 'media'))  # pyright: ignore
 MEDIA_URL = '/media/'
 STATICFILES_STORAGE = env('STATICFILES_STORAGE')
 
@@ -269,7 +270,7 @@ DATABASES = {
         'ENGINE': env('DB_ENGINE'),
         'NAME': env('DB_NAME'),
         'USER': env('DB_USER'),
-        'PASSWORD': read_secret('DB_PASSWORD', env('DB_PASSWORD')),
+        'PASSWORD': read_secret('DB_PASSWORD', str(env('DB_PASSWORD'))),
         'HOST': env('DB_HOST'),
         'PORT': env('DB_PORT'),
         'ATOMIC_REQUESTS': True
@@ -327,8 +328,8 @@ ICON_DEFAULT_COLOR = "#999999"
 ICON_DIR = "generated_icons"
 ICON_TYPE = "png"
 
-GOOGLE_ANALYTICS_TRACKING_ID = env('GOOGLE_ANALYTICS_TRACKING_ID', default=None)
-GOOGLE_API_KEY = read_secret('GOOGLE_API_KEY', env('GOOGLE_API_KEY'))
+GOOGLE_ANALYTICS_TRACKING_ID = env('GOOGLE_ANALYTICS_TRACKING_ID', default=None)  # pyright: ignore
+GOOGLE_API_KEY = read_secret('GOOGLE_API_KEY', str(env('GOOGLE_API_KEY')))
 
 NOTIFICATIONS = {
     'from_email': env('NOTIFICATIONS_FROM_EMAIL'),
@@ -346,7 +347,7 @@ DJANGO_ENV = env('DJANGO_ENV')
 if DJANGO_ENV in ['stage', 'staging', 'prod', 'production']:
     # Instruct Django to inspect HTTP header to help determine
     # whether the request was made securely
-    ssl_header = env('SECURE_PROXY_SSL_HEADER', default='')
+    ssl_header = str(env('SECURE_PROXY_SSL_HEADER', default='')) # pyright: ignore works at runtime
     if ssl_header:
         header_parts = ssl_header.split(',')
         if len(header_parts) == 2:
@@ -396,12 +397,12 @@ if sentry_dsn:
     from sentry_sdk.integrations.celery import CeleryIntegration
 
     sentry_sdk.init(
-        dsn=sentry_dsn,
+        dsn=str(sentry_dsn),
         integrations=[
             DjangoIntegration(),
             CeleryIntegration(),
         ],
-        environment=SENTRY_ENVIRONMENT,
-        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE,
+        environment=SENTRY_ENVIRONMENT, # pyright: ignore
+        traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE, # pyright: ignore
         send_default_pii=False
     )

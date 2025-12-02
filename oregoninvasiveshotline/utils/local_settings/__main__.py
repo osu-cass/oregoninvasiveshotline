@@ -15,8 +15,9 @@ class ArgParser(argparse.ArgumentParser):
 
     def error(self, message):
         message = '{self.prog} error: {message}\n'.format(**locals())
-        message = printer.string_error(message)
-        self.print_usage(sys.stderr)
+        # These methods are generated dynamically, so the linter can't detect them. See color_printer.py for info.
+        message = printer.string_error(message) # pyright: ignore
+        self.print_usage(sys.stderr) # pyright: ignore
         self.exit(2, message)
 
 
@@ -63,6 +64,8 @@ def make_local_settings(argv=None):
 
     args = parser.parse_args(argv)
 
+    strategy = None
+
     if args.type:
         strategy_type = get_file_type_map()[args.type]
         strategy = strategy_type()
@@ -72,7 +75,8 @@ def make_local_settings(argv=None):
         path = os.path.join(os.getcwd(), package, 'settings.py')
         if os.path.exists(path):
             args.base_settings_module = '{package}.settings'.format(package=package)
-            printer.print_info(
+            # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+            printer.print_info( # pyright: ignore
                 'Using {0.base_settings_module} as base settings module'.format(args))
         else:
             parser.error('Could not guess which base settings module to use; specify with -b')
@@ -81,8 +85,10 @@ def make_local_settings(argv=None):
         file_name = args.file_name
         if not args.type:
             strategy_type = guess_strategy_type(file_name)
-            strategy = strategy_type()
+            if strategy_type is not None:
+                strategy = strategy_type()
     elif args.env:
+        assert strategy is not None
         file_name = 'local.{0.env}.{ext}'.format(args, ext=strategy.file_types[0])
     else:
         parser.error('Either env or file name must be specified')
@@ -97,7 +103,8 @@ def make_local_settings(argv=None):
 
     if os.path.exists(file_name):
         if args.overwrite:
-            printer.print_warning('Overwriting', file_name)
+            # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+            printer.print_warning('Overwriting', file_name) # pyright: ignore
             os.remove(file_name)
 
     # This will create the file if it doesn't exist. The extends
@@ -105,6 +112,7 @@ def make_local_settings(argv=None):
     settings = {}
     if args.extends:
         settings['extends'] = args.extends
+    assert strategy is not None
     strategy.write_settings(settings, file_name, section)
 
     # Load base settings from settings module while A) ensuring that
@@ -118,7 +126,7 @@ def make_local_settings(argv=None):
     if original_disable_value is not None:
         os.environ['LOCAL_SETTINGS_CONFIG_DISABLE'] = original_disable_value
 
-    loader = Loader(file_name, section, strategy_type=strategy_type)
+    loader = Loader(file_name, section, strategy_type=strategy_type)  # pyright: ignore
     loader.load_and_check(base_settings, prompt=True)
 
 
