@@ -63,16 +63,18 @@ class UserSubscriptionAdminForm(forms.ModelForm):
 class UserSubscriptionDeleteForm(forms.Form):
 
     subscriptions = forms.ModelMultipleChoiceField(
-        required=True, widget=forms.CheckboxSelectMultiple, queryset=None)
+        required=True, widget=forms.CheckboxSelectMultiple, queryset=UserNotificationQuery.objects.none())
 
     def __init__(self, *args, user, **kwargs):
         self.user = user
         super().__init__(*args, **kwargs)
         initial = UserNotificationQuery.objects.filter(user=user)
+        assert isinstance(self.fields['subscriptions'], forms.ModelMultipleChoiceField)
         self.fields['subscriptions'].queryset = initial
 
     def iter_items(self):
-        subscriptions = list(self['subscriptions'])
+        subscriptions = list(self['subscriptions'])  # pyright: ignore
+        assert isinstance(self.fields['subscriptions'], forms.ModelMultipleChoiceField)
         for model, choice in zip(self.fields['subscriptions'].queryset, subscriptions):
             yield model, choice
 

@@ -73,7 +73,7 @@ def list_(request):
             return redirect('notifications-list')
     else:
         form = UserSubscriptionDeleteForm(user=request.user)
-    context = {'form': form}
+    context: dict[str, UserSubscriptionDeleteForm | int] = {'form': form}
     context.update(tab_context)
     return render(request, 'notifications/list.html', context)
 

@@ -1,0 +1,45 @@
+# Mailpit override for staging environment
+# Usage: docker compose -f docker-compose.deploy.yml -f docker-compose.mailpit.yml up -d
+#
+# This adds a mailpit service for email testing and configures the app
+# and celery services to use it instead of a real SMTP server.
+#
+# Access the mailpit web UI at http://localhost:${MAILPIT_PORT:-8025}
+#
+# Environment variables:
+#   MAILPIT_PORT     - Web UI port (default: 8025)
+#   MAILPIT_UI_AUTH  - Basic auth credentials in format "user:password"
+#                      Example: MAILPIT_UI_AUTH=admin:secretpassword
+
+services:
+  mailpit:
+    image: axllent/mailpit:latest
+    networks:
+      - default
+    ports:
+      - ${MAILPIT_PORT:-8025}:8025
+    volumes:
+      - ${VOLUME_PATH}/mailpit:/data
+    environment:
+      - MP_DATABASE=/data/mailpit.db
+      - MP_WEBROOT=/mailpit
+      - MP_UI_AUTH=${MAILPIT_UI_AUTH:-}
+    restart: unless-stopped
+
+  app:
+    environment:
+      - EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+      - EMAIL_HOST=mailpit
+      - EMAIL_PORT=1025
+      - EMAIL_USE_TLS=false
+    depends_on:
+      - mailpit
+
+  celery:
+    environment:
+      - EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+      - EMAIL_HOST=mailpit
+      - EMAIL_PORT=1025
+      - EMAIL_USE_TLS=false
+    depends_on:
+      - mailpit

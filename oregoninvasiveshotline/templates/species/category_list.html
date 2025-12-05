@@ -20,7 +20,7 @@
                 <tr>
                     <td><a href="{% url 'categories-detail' category.pk %}">{{ category.name }}</a></td>
                     <td class="text-right">
-                        <a href="{% url 'categories-delete' category.pk %}" class="text-danger">
+                        <a href="{% url 'categories-delete' category.pk %}" class="text-danger" title="Delete Category">
                             <span class="bi bi-trash"></span>
                         </a>
                     </td>

@@ -13,6 +13,8 @@ about the species that was reported.
 - Google Maps
 - Bootstrap 5
 
+Packages are managed with a jsDelivr script link in `templates/base.html`.
+
 ## Getting started
 
 Ensure that you have Docker and Docker Compose installed in your host's environment.
@@ -47,6 +49,20 @@ make test_container
     
 Tests will also run automatically on pull requests.
 
+To access the mail server, navigate to http://localhost:8025.
+
+The docker compose also comes with pgAdmin, but it's disabled by default as many developers already have a postgres admin tool installed.
+To run pgAdmin, use the following command:
+```bash
+# Launch just pgAdmin
+docker-compose --profile dev-tools up pgadmin
+
+# Launch all containers and pgAdmin
+docker-compose --profile dev-tools up
+```
+
+Then, it's accessible via http://localhost:5050.
+
 ## Deploying
 
 This project is deployed using docker. use the `docker-compose.production.yml` file with docker compose.
@@ -79,6 +95,25 @@ python3 manage.py COMMAND HERE
 ```
 
 [See all commands here.](https://docs.djangoproject.com/en/5.2/ref/django-admin/)
+### Static Code Analysis
+
+This project uses `ruff` and `pyright` for static code analysis. These commands must be run from within a WSL (Windows Subsystem for Linux) environment after activating the project's virtual environment:
+
+```bash
+pipenv shell
+```
+
+To run `ruff`:
+
+```bash
+ruff check .
+```
+
+To run `pyright`:
+
+```bash
+pyright
+```
 
 ### Application behavior
 
@@ -101,3 +136,23 @@ model as a string like "querystring=foobar&category-4=142".
 When a report is submitted, a new `ReportSearchForm` is instantiated and passed the decoded GET
 parameters that were saved in the `UserNotificationQuery` model; if the `search` method on the
 form finds results matching the newly submitted report a notification is sent to the user.
+
+# Service Architecture
+
+## In development
+
+<details>
+<summary>
+Expand this dropdown to see the service architecture when working in development.
+</summary>
+<img src="./readme-media/service-architecture-development.png" />
+</details>
+
+## In production
+
+<details>
+<summary>
+Expand this dropdown to see the service architecture when working in production.
+</summary>
+<img src="./readme-media/service-architecture-production.png" />
+</details>

@@ -1,6 +1,3 @@
-from django.template.loader import render_to_string
-from django.core.mail import send_mail
-from django.urls import reverse
 from django import forms
 
 from oregoninvasiveshotline.utils.search import SearchForm

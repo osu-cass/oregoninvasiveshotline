@@ -9,7 +9,6 @@ class CouldNotLogInError(Exception):
 
 
 class UserMixin:
-
     @cached_property
     def user_model(self):
         return get_user_model()
@@ -34,8 +33,8 @@ class UserMixin:
 
         return user
 
-    def login_user(self, username, password):
-        logged_in = self.client.login(username=username, password=password)
+    def login_user(self, username: str, password: str):
+        logged_in = self.client.login(username=username, password=password)  # pyright: ignore
         if not logged_in:
             raise CouldNotLogInError('{}:{}'.format(username, password))
 

@@ -1,6 +1,6 @@
 from django.test import RequestFactory, TestCase
 from django.urls import reverse
-from model_mommy.mommy import make
+from model_bakery.baker import make
 
 from ..models import Category, Severity, Species
 from ..views import (
@@ -68,9 +68,10 @@ class SpeciesDeleteViewTest(TestCase):
         view = SpeciesDeleteView()
         view.request = request
         view.kwargs = {'pk': new_species.pk}
-        view.object = view.get_object()
-        view.context = view.get_context_data()
-        self.assertTrue(view.context['will_be_deleted_with'])
+        # `object` and `context` attributes are dynamically set which Pyright cannot infer in this manual test setup.
+        view.object = view.get_object()  # pyright: ignore
+        view.context = view.get_context_data()  # pyright: ignore
+        self.assertTrue(view.context['will_be_deleted_with'])  # pyright: ignore
 
 
 class CategoryCreateViewTest(TestCase):
@@ -108,9 +109,10 @@ class CategoryDeleteViewTest(TestCase):
         view = CategoryDeleteView()
         view.request = request
         view.kwargs = {'pk': new_species.category.pk}
-        view.object = view.get_object()
-        view.context = view.get_context_data()
-        self.assertTrue(view.context['will_be_deleted_with'])
+        # `object` and `context` attributes are dynamically set which Pyright cannot infer in this manual test setup.
+        view.object = view.get_object()  # pyright: ignore
+        view.context = view.get_context_data()  # pyright: ignore
+        self.assertTrue(view.context['will_be_deleted_with'])  # pyright: ignore
 
 
 class SeverityCreateViewTest(TestCase):
@@ -148,6 +150,7 @@ class SeverityDeleteViewTest(TestCase):
         view = SeverityDeleteView()
         view.request = request
         view.kwargs = {'pk': new_species.severity.pk}
-        view.object = view.get_object()
-        view.context = view.get_context_data()
-        self.assertTrue(view.context['will_be_deleted_with'])
+        # `object` and `context` attributes are dynamically set which Pyright cannot infer in this manual test setup.
+        view.object = view.get_object()  # pyright: ignore
+        view.context = view.get_context_data()  # pyright: ignore
+        self.assertTrue(view.context['will_be_deleted_with'])  # pyright: ignore

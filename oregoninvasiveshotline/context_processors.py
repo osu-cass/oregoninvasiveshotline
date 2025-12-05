@@ -21,5 +21,7 @@ def defaults(request):
 
         'ENVIRONMENT': settings.ENV,
         'RELEASE': __version__,
-        'TRACE_ID': trace_id
+        'TRACE_ID': trace_id,
+        'SENTRY_DSN': getattr(settings, 'SENTRY_DSN', ''),
+        'SENTRY_TRACES_SAMPLE_RATE': getattr(settings, 'SENTRY_TRACES_SAMPLE_RATE', 0.1)
     }

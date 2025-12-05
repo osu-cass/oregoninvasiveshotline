@@ -8,11 +8,9 @@ from django.db.models.signals import post_save
 from django.urls import reverse
 from django.conf import settings
 
-from oregoninvasiveshotline.utils.settings import get_setting
 from oregoninvasiveshotline.utils.images import generate_thumbnail
 from oregoninvasiveshotline.visibility import Visibility
 from oregoninvasiveshotline.images.models import Image
-from oregoninvasiveshotline.users.models import User
 
 from .utils import generate_icon, icon_file_name
 
@@ -139,7 +137,8 @@ class Report(models.Model):
 
         if image is None:
             # Fall back to images attached to this report's comments
-            q = Image.objects.filter(comment__in=self.comment_set.values_list('pk', flat=True))
+            from oregoninvasiveshotline.comments.models import Comment
+            q = Image.objects.filter(comment__in=Comment.objects.filter(report=self).values_list('pk', flat=True))
             q = q.filter(visibility=Visibility.PUBLIC).order_by('-created_on')
             image = q.first()
 

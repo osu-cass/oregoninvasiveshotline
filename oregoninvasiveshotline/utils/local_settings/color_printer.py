@@ -6,6 +6,8 @@ from six import add_metaclass
 
 from .util import is_a_tty
 
+# This file generates classes dynamically, meaning pyright will not be able to infer the types of the generated classes.
+# Instead, you must manually ignore the type errors it creates.
 
 class ColorPrinterMeta(type):
 
@@ -21,7 +23,7 @@ class ColorPrinterMeta(type):
             setattr(cls, 'print_{0}'.format(color), _print)
             setattr(cls, 'string_{0}'.format(color), _string)
 
-        for color in cls.colors:
+        for color in cls.colors: # pyright: ignore defined in child class
             _make_methods(color)
 
 

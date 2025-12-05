@@ -40,7 +40,7 @@ def generate_icon(output_path,
         |    |
         | $$ |
         |_  _|
-          \/
+         \\/
 
     They are constructed in the following way:
 
@@ -77,11 +77,12 @@ def generate_icon(output_path,
     outline_pixels = outline.load()
     for i in range(outline_width):
         for j in range(outline_height):
-            if outline_pixels[i, j] != transparent:
+        		# Transparent/outline color pixels are unknown, so we ignore them.
+            if outline_pixels[i, j] != transparent:  # pyright: ignore
                 # Since our canvas is transparent, any pixel that isn't
                 # transparent is guaranteed to be an edge and should
                 # have its color changed to the outline color.
-                outline_pixels[i, j] = outline_color
+                outline_pixels[i, j] = outline_color  # pyright: ignore
 
     if inner_icon_path:
         # Before we can use the inner icon, it needs to be pasted into
