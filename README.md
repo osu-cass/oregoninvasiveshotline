@@ -115,6 +115,16 @@ To run `pyright`:
 pyright
 ```
 
+### Creating a Superuser
+
+To create a superuser, run the following command:
+
+```bash
+python manage.py createsuperuser
+```
+
+Alternatively, you can open create a category in the database, submit a report, set the new user's is_active and is_staff attributes to true, and then run a password reset.
+
 ### Application behavior
 
 This project uses an unconventional approach to its use of the built-in Django user and
