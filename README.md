@@ -2,7 +2,7 @@
 
 This project allows members of the public to submit reports of invasive species for experts to
 review. Experts can login and review the reports, comment on them, and make a final determination
-about the species that was reported
+about the species that was reported.
 
 ## Technology stack
 
@@ -19,30 +19,36 @@ Packages are managed with a jsDelivr script link in `templates/base.html`.
 
 Ensure that you have Docker and Docker Compose installed in your host's environment.
 
+### Setting up Secrets
+
+You must configure a few API keys for this project. To create them, make files with the exact names below in the `docker/secrets` folder.
+
+- `db_password.txt`
+	- Recommended: `invasives`
+- `google_api_key.txt`
+	- Create an API key on https://mapsplatform.google.com/. It should look something like `AIzaSyDQwAloK4wKTeKqKJ4oK4wKTeKqKJ4oK4w`.
+- `secret_key.txt`
+	- Create a secret key. For development, you can use whatever random string. In production, use a secure random string.
+
+### Starting Docker
+
 To use the provided Docker container definitions:
 
 ```bash
-docker compose up -d --build
+docker compose up
 ```
 
-View the website at http://localhost:8000
+View the website at http://localhost:8000.
 
-To authenticate with the provided default user:
-
-    username: foobar@example.com
-    password: foobar
-
-A Google API Key is needed for the mapping features in this project. In
-development environments (native or docker) you should export an environment variable, eg:
-
-    export GOOGLE_API_KEY='{ key }'
-
-To prepare the database you may use, e.g., the `import_database` command to install a copy of production data.
+### Testing
 
 To run the test library:
-
-    make test_container
+```bash
+make test_container
+```
     
+Tests will also run automatically on pull requests.
+
 To access the mail server, navigate to http://localhost:8025.
 
 The docker compose also comes with pgAdmin, but it's disabled by default as many developers already have a postgres admin tool installed.
@@ -59,12 +65,9 @@ Then, it's accessible via http://localhost:5050.
 
 ## Deploying
 
-This project using the Emcee tooling to define and orchestrate resource provisioning and deployment.
-See the AWS cloudformation templates in `cloudformation` and the command definitions in `commands.py`
-for more information.
+This project is deployed using docker. use the `docker-compose.production.yml` file with docker compose.
 
-API keys for stage and production environments are stored and fetched from AWS key store; you will be
-prompted to supply these keys the first time you provision infrastructure for a given environment.
+Containers are built using GitHub Actions.
 
 ## General notes
 
@@ -81,6 +84,17 @@ Several workflows trigger email notifications based on specific criteria. All su
 are implemented and orchestrated using Celery-based tasks in order that they are performed
 out-of-band with respect to the request/response cycle.
 
+### Running django commands
+
+Django ships with a set of commands that can be run from the command line. If using a Windows machine, it is reccomended to run these commands in wsl. All users should use pipenv.
+
+For example:
+```bash
+pipenv shell
+python3 manage.py COMMAND HERE
+```
+
+[See all commands here.](https://docs.djangoproject.com/en/5.2/ref/django-admin/)
 ### Static Code Analysis
 
 This project uses `ruff` and `pyright` for static code analysis. These commands must be run from within a WSL (Windows Subsystem for Linux) environment after activating the project's virtual environment:
@@ -100,6 +114,16 @@ To run `pyright`:
 ```bash
 pyright
 ```
+
+### Creating a Superuser
+
+To create a superuser, run the following command:
+
+```bash
+python manage.py createsuperuser
+```
+
+Alternatively, you can open create a category in the database, submit a report, set the new user's is_active and is_staff attributes to true, and then run a password reset.
 
 ### Application behavior
 
