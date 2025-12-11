@@ -6,6 +6,7 @@ from importlib.resources import files
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from configparser import NoSectionError, RawConfigParser
+from typing import Mapping, Any
 
 from six import raise_from, with_metaclass
 
@@ -27,14 +28,13 @@ class Strategy(with_metaclass(ABCMeta)):
     file_types = ()
 
     @abstractmethod
-    def read_file(self, file_name, section=None):
+    def read_file(self, file_name: str, section: str | None = None) -> Mapping[str, Any]:
         """Read settings from file."""
 
     @abstractmethod
-    def write_settings(self, settings, file_name, section=None):
+    def write_settings(self, settings: dict, file_name: str, section: str | None = None) -> None:
         """Write settings to file."""
-
-    def parse_file_name_and_section(self, file_name, section=None, extender=None,
+    def parse_file_name_and_section(self, file_name: str, section=None, extender=None,
                                     extender_section=None):
         """Parse file name and (maybe) section.
 
@@ -60,7 +60,8 @@ class Strategy(with_metaclass(ABCMeta)):
 
         if ':' in file_name:
             package, path = file_name.split(':', 1)
-            file_name = files(package).joinpath(path)
+            traversable = files(package).joinpath(path)
+            file_name = str(traversable)
 
         if extender:
             if not file_name:
@@ -81,7 +82,7 @@ class Strategy(with_metaclass(ABCMeta)):
 
         return file_name, section
 
-    def get_default_section(self, file_name):
+    def get_default_section(self, file_name) -> str | None: 
         return None
 
     def decode_value(self, value):
@@ -98,17 +99,17 @@ class LocalSettingsConfigParser(RawConfigParser):
     def options(self, section):
         # Order [DEFAULT] options before section options; the default
         # implementation orders them after.
-        options = self._defaults.copy()
+        options = self._defaults.copy() # pyright: ignore - use internal _sections to avoid recursion
         try:
-            options.update(self._sections[section])
+            options.update(self._sections[section]) # pyright: ignore - use internal _sections to avoid recursion
         except KeyError:
             raise_from(NoSectionError(section), None)
         return list(options.keys())
 
-    def optionxform(self, option):
+    def optionxform(self, optionstr):
         # Don't alter option names; the default implementation lower
         # cases them.
-        return option
+        return optionstr
 
 
 class INIStrategy(Strategy):
@@ -119,7 +120,7 @@ class INIStrategy(Strategy):
         super(INIStrategy, self).__init__()
         self.section_found_while_reading = False
 
-    def read_file(self, file_name, section=None):
+    def read_file(self, file_name: str, section: str | None = None):
         """Read settings from specified ``section`` of config file."""
         file_name, section = self.parse_file_name_and_section(file_name, section)
         if not os.path.isfile(file_name):
@@ -130,11 +131,11 @@ class INIStrategy(Strategy):
 
         settings = OrderedDict()
 
-        if parser.has_section(section):
+        if section and parser.has_section(section):
             section_dict = parser[section]
             self.section_found_while_reading = True
         else:
-            section_dict = parser.defaults().copy()
+            section_dict = dict(parser.defaults())
 
         extends = section_dict.get('extends')
 
@@ -151,7 +152,7 @@ class INIStrategy(Strategy):
 
         return settings
 
-    def write_settings(self, settings, file_name, section):
+    def write_settings(self, settings: dict, file_name: str, section: str | None = None) -> None:
         file_name, section = self.parse_file_name_and_section(file_name, section)
         parser = self.make_parser()
         if os.path.exists(file_name):
@@ -159,21 +160,22 @@ class INIStrategy(Strategy):
                 parser.read_file(fp)
         else:
             log.info('Creating new local settings file: %s', file_name)
-        if section not in parser:
+        if section and section not in parser:
             log.info('Adding new section to %s: %s', file_name, section)
             parser.add_section(section)
         sorted_keys = sorted(settings.keys())
         for name in sorted_keys:
             value = self.encode_value(settings[name])
             settings[name] = value
-            parser[section][name] = value
+            if section:
+                parser[section][name] = value
         with open(file_name, 'w') as fp:
             parser.write(fp)
         for name in sorted_keys:
             value = settings[name]
             log.info('Saved %s to %s as: %s', name, file_name, value)
 
-    def get_default_section(self, file_name):
+    def get_default_section(self, file_name) -> str:
         """Returns first non-DEFAULT section; falls back to DEFAULT."""
         if not os.path.isfile(file_name):
             return 'DEFAULT'

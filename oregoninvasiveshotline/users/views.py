@@ -1,9 +1,9 @@
 import logging
+from typing import Any
 import random
 
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.core.exceptions import ValidationError
 from django.core.signing import BadSignature
 from django.views.generic import DetailView
 from django.contrib.auth import login as django_login
@@ -32,7 +32,7 @@ class LoginView(DjangoLoginView):
         context['other_form'] = PublicLoginForm()
         return context
 
-    def get_form_class(self):
+    def get_form_class(self) -> Any:
         if self.request.POST.get('form') == 'OTHER_LOGIN':
             return PublicLoginForm
         return super().get_form_class()

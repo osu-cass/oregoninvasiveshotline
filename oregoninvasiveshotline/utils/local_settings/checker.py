@@ -1,5 +1,7 @@
 import sys
 from collections.abc import Mapping, Sequence
+from typing import Type
+from typing import Any, MutableMapping
 
 from .base import Base
 from .color_printer import color_printer as printer
@@ -10,7 +12,7 @@ from .util import NO_DEFAULT, is_a_tty
 
 class Checker(Base):
 
-    def __init__(self, file_name, section=None, registry=None, strategy_type=INIJSONStrategy,
+    def __init__(self, file_name: str, section=None, registry=None, strategy_type: Type[INIJSONStrategy] = INIJSONStrategy,
                  prompt=None):
         super(Checker, self).__init__(file_name, section, registry, strategy_type)
         if prompt is None:
@@ -39,7 +41,9 @@ class Checker(Base):
             self.strategy.write_settings(settings_to_write, self.file_name, self.section)
         if missing:
             for name, local_setting in missing.items():
-                printer.print_error('Local setting `{name}` must be set'.format(name=name))
+                # This method is generated dynamically rather than statically, so the linter is unable to detect it.
+                # See color_printer.py for more information.
+                printer.print_error('Local setting `{name}` must be set'.format(name=name)) # pyright: ignore
             return False
         return True
 
@@ -57,8 +61,8 @@ class Checker(Base):
             else:
                 self.registry[v] = name
 
-    def _check(self, obj, prefix, settings_to_write, missing):
-        if isinstance(obj, Mapping):
+    def _check(self, obj: MutableMapping | Sequence | Any, prefix: str | None, settings_to_write: dict[str, Any], missing: dict[str, Any]):
+        if isinstance(obj, MutableMapping):
             items = sorted(obj.items(), key=lambda item: item[0])
         elif isinstance(obj, Sequence) and not isinstance(obj, str):
             items = zip(range(len(obj)), obj)
@@ -66,7 +70,7 @@ class Checker(Base):
             return {}, {}
 
         for k, v in items:
-            name = k if not prefix else '{0}.{1}'.format(prefix, k)
+            name = str(k) if not prefix else '{0}.{1}'.format(prefix, k)
             if not isinstance(v, LocalSetting):
                 self._check(v, name, settings_to_write, missing)
             elif k not in settings_to_write:
@@ -75,6 +79,7 @@ class Checker(Base):
                 # default.
                 is_set = False
                 local_setting = v
+                default_name = None
 
                 if local_setting.derived_default:
                     # Ensure this setting's default is set if it's also a local setting
@@ -85,7 +90,8 @@ class Checker(Base):
                             None, settings_to_write, missing)
 
                 if self.prompt:
-                    printer.print_header('=' * 79)
+                    # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+                    printer.print_header('=' * 79) # pyright: ignore
 
                 if local_setting.prompt:  # prompt for value
                     if self.prompt:
@@ -95,11 +101,12 @@ class Checker(Base):
                     msg = (
                         'Using default value `{value!r}` for local setting '
                         '`{name}`'.format(name=name, value=v))
-                    if local_setting.derived_default:
+                    if local_setting.derived_default and default_name:
                         msg += ' (derived from {0})'.format(default_name)
-                    printer.print_warning(msg)
+                    # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+                    printer.print_warning(msg) # pyright: ignore
 
-                if is_set:
+                if is_set and isinstance(obj, MutableMapping):
                     local_setting.value = obj[k] = settings_to_write[name] = v
                 else:
                     missing[name] = v
@@ -109,29 +116,36 @@ class Checker(Base):
     def prompt_for_value(self, name, local_setting):
         v, is_set = NO_DEFAULT, False
         while not is_set:  # Keep prompting until valid value is set
-            printer.print_header(
+            # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+            printer.print_header( # pyright: ignore
                 'Enter a value for the local setting `{name}` (as JSON)'.format(name=name))
             if local_setting.doc:
-                printer.print_header(local_setting.doc)
+                # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+                printer.print_header(local_setting.doc) # pyright: ignore
             if local_setting.has_default:
                 msg = 'Hit enter to use default: `{0!r}`'.format(local_setting.default)
                 if local_setting.derived_default:
                     default_name = self.registry[local_setting.derived_default]
                     msg += ' (derived from {0})'.format(default_name)
-                printer.print_header(msg)
+                # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+                printer.print_header(msg) # pyright: ignore
             v = input('> ').strip()
             if v:
                 try:
                     v = self.strategy.decode_value(v)
                 except ValueError as e:
-                    printer.print_error(e)
+                    # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+                    printer.print_error(e) # pyright: ignore
                 else:
                     is_set = local_setting.validate(v)
                     if not is_set:
-                        printer.print_error('`{0}` is not a valid value for {1}'.format(v, name))
+                        # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+                        printer.print_error('`{0}` is not a valid value for {1}'.format(v, name)) # pyright: ignore
             elif local_setting.has_default:
                 v, is_set = local_setting.default, True
-                printer.print_info('Using default value for `{0}`'.format(name))
+                # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+                printer.print_info('Using default value for `{0}`'.format(name)) # pyright: ignore
             else:
-                printer.print_error('You must enter a value for `{0}`'.format(name))
+                # This method is generated dynamically, so the linter can't detect it. See color_printer.py for info.
+                printer.print_error('You must enter a value for `{0}`'.format(name)) # pyright: ignore
         return v, is_set

@@ -48,12 +48,12 @@ class PermissionsMeta(type):
         cls = type.__new__(mcs, name, bases, attrs)
         if hasattr(cls, 'permissions'):
             if hasattr(cls, 'permissions_registry'):
-                registry = cls.permissions_registry
+                registry = cls.permissions_registry # pyright: ignore - attr exists
             elif hasattr(mcs, 'registry'):
-                registry = mcs.registry
+                registry = mcs.registry # pyright: ignore - attr exists
             else:
                 raise PermissionsError('No permissions registry found')
-            for k, v in cls.permissions.items():
+            for k, v in cls.permissions.items(): # pyright: ignore - attr exists
                 method = getattr(cls, k)
                 decorated_method = registry.require(v)(method)
                 setattr(cls, k, decorated_method)

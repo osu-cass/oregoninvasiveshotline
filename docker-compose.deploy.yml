@@ -1,7 +1,7 @@
 secrets:
-  SecretKey:
+  SECRET_KEY:
     file: docker/secrets/secret_key.txt
-  DBPassword:
+  DB_PASSWORD:
     file: docker/secrets/db_password.txt
   GOOGLE_API_KEY:
     file: docker/secrets/google_api_key.txt
@@ -17,64 +17,62 @@ services:
       - default
     volumes:
       - ${VOLUME_PATH}/rabbitmq:/var/lib/rabbitmq
-    # override hostname to prevent reinitialization of data
-    # on container delete/init cycle.
-    #   Refs: https://github.com/docker-library/rabbitmq/issues/106#issuecomment-241882358
-    hostname: 'rabbitmq-dev'
+    hostname: ${RABBITMQ_HOSTNAME:-rabbitmq-server}
 
-  bootstrap:
-    image: ghcr.io/osu-cass/oregoninvasiveshotline:latest
-    environment:
-      - EMCEE_CMD_ENV=docker
-      - APP_SERVICE=bootstrap
-    networks:
-      - default
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - ${VOLUME_PATH}/media:/media
-      - ${VOLUME_PATH}/static:/static
-      - ./:/app
-    secrets:
-      - SecretKey
-      - DBPassword
-    user: '${USER_ID}'
-
-  app:
-    image: ghcr.io/osu-cass/oregoninvasiveshotline:latest
-    environment:
-      - EMCEE_CMD_ENV=docker
-      - APP_SERVICE=wsgi
+  nginx:
+    image: nginx:alpine
     networks:
       - default
     ports:
-      - 8000:8000
+      - ${APP_PORT:-8000}:80
+    environment:
+      - LOAD_BALANCER_IPS=${LOAD_BALANCER_IPS:-}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${VOLUME_PATH}/media:/media:ro
+      - ${VOLUME_PATH}/static:/static:ro
+      - ./docker/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./docker/nginx/docker-entrypoint.sh:/docker-entrypoint-custom.sh:ro
+      - ./docker/nginx/maintenance.conf:/etc/nginx/conf.d/maintenance.conf:ro
+    entrypoint: ["/docker-entrypoint-custom.sh"]
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  app:
+    image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline:latest}
+    env_file:
+      - .env
+    environment:
+      - APP_SERVICE=wsgi
+    networks:
+      - default
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${VOLUME_PATH}/media:/media
       - ${VOLUME_PATH}/static:/static
-      - ./:/app
     depends_on:
       - rabbitmq
     secrets:
-      - SecretKey
-      - DBPassword
+      - SECRET_KEY
+      - DB_PASSWORD
       - GOOGLE_API_KEY
     user: '${USER_ID}'
 
   celery:
-    image: ghcr.io/osu-cass/oregoninvasiveshotline:latest
+    image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline:latest}
+    env_file:
+      - .env
     environment:
-      - EMCEE_CMD_ENV=docker
       - APP_SERVICE=celery
     networks:
       - default
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${VOLUME_PATH}/media:/media
-      - ./:/app
     depends_on:
       - app
     secrets:
-      - SecretKey
-      - DBPassword
+      - SECRET_KEY
+      - DB_PASSWORD
     user: '${USER_ID}'

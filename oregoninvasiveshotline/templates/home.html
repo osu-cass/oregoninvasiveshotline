@@ -30,7 +30,7 @@
         </div>
     </div>
 
-    <div class="row" id="sponsors">
+    <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-5" id="sponsors">
         <a href="http://pdx.edu"><img src="{% static 'img/PSU.gif' %}" alt="Portland State University logo"></a>
         <a href="http://www.cascadepacific.org/western-invasives-network"><img src="{% static 'img/WIN.jpg' %}" alt="Western Invasives Network logo"></a>
         <a href="http://www.oregoninvasivespeciescouncil.org/"><img src="{% static 'img/OISC.png' %}" alt="Oregon Invasives Species Council logo"></a>
@@ -54,9 +54,9 @@
 {% block js %}
     {{ block.super }}
 
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
+    <script nonce="{{request.csp_nonce}}" src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
             async></script>
-    <script>
+    <script nonce="{{request.csp_nonce}}">
         var reports = {{ reports|jsonify }};
         function initMap() {
             var options = getDefaultMapOptions();
@@ -108,7 +108,7 @@
             });
         }
     </script>
-    <script>
+    <script nonce="{{request.csp_nonce}}">
         $(document).ready(function () {
             $('#map-canvas').click(function(){ window.location='{% url 'reports-list' %}'});
 

@@ -1,3 +1,4 @@
+from typing import cast
 from django.template.loader import render_to_string
 from django.core.management import call_command
 from django.core.mail import send_mail
@@ -22,8 +23,8 @@ def notify_report_submission(report_id, user_id):
     report = Report.objects.get(pk=report_id)
     user = User.objects.get(pk=user_id)
 
-    subject = get_setting('NOTIFICATIONS.new_report__subject')
-    from_email = get_setting('NOTIFICATIONS.from_email')
+    subject = cast(str, get_setting('NOTIFICATIONS.new_report__subject'))
+    from_email = cast(str, get_setting('NOTIFICATIONS.from_email'))
     path = reverse('reports-detail', args=[report.pk])
 
     if user.is_active:
@@ -47,8 +48,8 @@ def notify_report_subscribers(report_id):
 
     report = Report.objects.get(pk=report_id)
 
-    subject = get_setting('NOTIFICATIONS.notify_new_submission__subject')
-    from_email = get_setting('NOTIFICATIONS.from_email')
+    subject = cast(str, get_setting('NOTIFICATIONS.notify_new_submission__subject'))
+    from_email = cast(str, get_setting('NOTIFICATIONS.from_email'))
     excluded_users = Notification.objects.filter(report=report).values_list('user_id', flat=True)
     queryset = UserNotificationQuery.objects.all().select_related('user')
     queryset = queryset.exclude(user__pk__in=excluded_users)
@@ -85,8 +86,8 @@ def notify_report_subscribers(report_id):
 def notify_invited_reviewer(invite_id, message):
     invite = Invite.objects.get(pk=invite_id)
 
-    subject = get_setting('NOTIFICATIONS.invite_reviewer__subject')
-    from_email = get_setting('NOTIFICATIONS.from_email')
+    subject = cast(str, get_setting('NOTIFICATIONS.invite_reviewer__subject'))
+    from_email = cast(str, get_setting('NOTIFICATIONS.from_email'))
     next_url = reverse('reports-detail', args=[invite.report.pk])
 
     if invite.user.is_active:

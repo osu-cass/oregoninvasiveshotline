@@ -1,4 +1,5 @@
 from collections import namedtuple
+from typing import Any, cast
 
 from django.core.validators import validate_email
 from django.db import transaction
@@ -49,7 +50,7 @@ class ReportSearchForm(SearchForm):
 
     source = forms.ChoiceField(
         required=False,
-        label='',
+        label='Extra Criteria',
         choices=[
             ('', '- Extra Criteria -'),
             ('invited', 'Invited to Review'),
@@ -71,7 +72,7 @@ class ReportSearchForm(SearchForm):
     is_archived = forms.ChoiceField(
         required=False,
         initial='notarchived',
-        label='',
+        label='Is Archived?',
         choices=[
             ('', '- Archived? -'),
             ('archived', 'Archived'),
@@ -80,7 +81,7 @@ class ReportSearchForm(SearchForm):
     )
     is_public = forms.ChoiceField(
         required=False,
-        label='',
+        label='Is Public?',
         choices=[
             ('', '- Public? -'),
             ('public', 'Public'),
@@ -88,7 +89,7 @@ class ReportSearchForm(SearchForm):
         ])
     claimed_by = forms.ChoiceField(
         required=False,
-        label='',
+        label='Claimed By?',
         choices=[
             ('', '- Claimed By -'),
             ('me', 'Me'),
@@ -127,8 +128,8 @@ class ReportSearchForm(SearchForm):
 
         if user.is_anonymous:
             if report_ids:
-                source_field = self.fields['source']
-                source_choices = source_field.choices
+                source_field = cast(forms.ChoiceField, self.fields['source'])
+                source_choices: Any = source_field.choices
                 source_field.choices = [
                     (value, label)
                     for (value, label) in source_choices if value != 'invited']
@@ -223,7 +224,8 @@ class ReportSearchForm(SearchForm):
 class ReportForm(forms.ModelForm):
 
     email = forms.EmailField()
-    prefix = forms.CharField(required=False)
+    # Assignment type is correct at runtime.
+    prefix = forms.CharField(required=False)  # pyright: ignore[reportAssignmentType]
     first_name = forms.CharField()
     last_name = forms.CharField()
     suffix = forms.CharField(required=False)
@@ -255,8 +257,9 @@ class ReportForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['reported_species'].empty_label = 'Unknown'
-        self.fields['reported_species'].required = False
+        reported_species_field = cast(forms.ModelChoiceField, self.fields['reported_species'])
+        reported_species_field.empty_label = 'Unknown'
+        reported_species_field.required = False
 
         has_completed_ofpd_label = User._meta.get_field('has_completed_ofpd').verbose_name
         self.fields['has_completed_ofpd'].label = has_completed_ofpd_label
@@ -398,8 +401,9 @@ class ManagementForm(forms.ModelForm):
 
         self.fields['new_species'].widget.attrs['placeholder'] = "Species common name"
 
-        self.fields['actual_species'].empty_label = ""
-        self.fields['actual_species'].required = False
+        actual_species_field = cast(forms.ModelChoiceField, self.fields['actual_species'])
+        actual_species_field.empty_label = ""
+        actual_species_field.required = False
 
         if self.instance.actual_species and self.instance.actual_species.is_confidential:
             self.fields['is_public'].widget.attrs['disabled'] = True

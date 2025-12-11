@@ -44,7 +44,7 @@ Report an Invader
         <p>Drag the pin where you found the specimen (zoom in to provide the most accurate location) or enter an address or nearby intersection below:</p>
         <p>
           <div class="form-group address">
-            <label>Address</label>
+            <label for="address">Address</label>
             <input class="form-control" type="text" id="address">
               <span style="display:none" class="loader"></span>
             </input>
@@ -77,9 +77,11 @@ Report an Invader
         <legend>Questions?</legend>
         {% bootstrap_field form.questions %}
     </fieldset>
+    <div class="d-flex justify-content-end pb-2">
+        <a href="{% url 'reports-list' %}" class="btn btn-warning">Cancel</a>
+        <input type="submit" value="Submit" class="btn btn-primary ms-2"/>
+    </div>
 
-    <input type="submit" name="submit" value="Submit" id="submit" class="btn btn-primary"/>
-    <a href="{% url 'reports-list' %}" class="btn btn-warning">Cancel</a>
     <div id="previews"></div>
 </form>
 {% endblock %}
@@ -87,14 +89,14 @@ Report an Invader
 {% block js %}
     {{ block.super }}
 
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
+    <script nonce="{{request.csp_nonce}}" src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
             async></script>
 
-    <script src="{% static 'js/img.js' %}" async></script>
-    <script>var category_id_to_species_id = {{ category_id_to_species_id|safe }};</script>
-    <script src="{% static 'js/species_selector.js' %}" async></script>
+    <script nonce="{{request.csp_nonce}}" src="{% static 'js/img.js' %}" async></script>
+    <script nonce="{{request.csp_nonce}}">var category_id_to_species_id = {{ category_id_to_species_id|safe }};</script>
+    <script nonce="{{request.csp_nonce}}" src="{% static 'js/species_selector.js' %}" async></script>
 
-    <script>
+    <script nonce="{{request.csp_nonce}}">
         function initMap() {
             var options = getDefaultMapOptions();
             var map = new google.maps.Map(document.getElementById('map-canvas'), options);

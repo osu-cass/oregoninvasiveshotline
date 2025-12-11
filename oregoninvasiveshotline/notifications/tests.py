@@ -1,14 +1,11 @@
-from unittest.mock import Mock
 
-from django.core import mail
 from django.contrib.gis.geos import Point
 from django.test import TestCase
 from django.urls import reverse
 
-from model_mommy.mommy import make
+from model_bakery.baker import make
 
 from oregoninvasiveshotline.utils.test.user import UserMixin
-from oregoninvasiveshotline.reports.models import Report
 from oregoninvasiveshotline.species.models import Category
 
 from .models import UserNotificationQuery

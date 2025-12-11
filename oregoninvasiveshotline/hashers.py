@@ -1,6 +1,7 @@
 import hashlib
 
-from django.contrib.auth.hashers import BasePasswordHasher, constant_time_compare
+from django.contrib.auth.hashers import BasePasswordHasher
+from django.utils.crypto import constant_time_compare
 
 
 class RubyPasswordHasher(BasePasswordHasher):

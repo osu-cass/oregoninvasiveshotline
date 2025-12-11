@@ -49,10 +49,7 @@ class ClearableImageInput(ClearableFileInput):
         self.signed_path = None
         self._sentinel = object()
         self._cached_value = self._sentinel
-        try:
-            os.mkdir(self.tmp_dir)
-        except FileExistsError:
-            pass
+        self.tmp_dir = os.path.join(settings.MEDIA_ROOT, "tmp")
 
     def signed_path_field_name(self, name):
         """
@@ -67,6 +64,7 @@ class ClearableImageInput(ClearableFileInput):
         return "%s_data_uri" % name
 
     def value_from_datadict(self, data, files, name):
+        os.makedirs(self.tmp_dir, exist_ok=True)
         # we cache the return value of this function, since it is called a
         # bunch of time, and is expensive
         if self._cached_value is self._sentinel:
@@ -96,6 +94,7 @@ class ClearableImageInput(ClearableFileInput):
                             if upload:
                                 f.write(upload.read())
                             else:
+                                assert data_uri is not None
                                 f.write(b64decode(data_uri[data_uri.find(",")+1:]))
                         except Error:
                             pass
@@ -107,7 +106,7 @@ class ClearableImageInput(ClearableFileInput):
                     upload = UploadedFile(open(path, "rb"), name=path, size=os.path.getsize(path))
                     # tack on a URL attribute so the parent Widget thinks it
                     # has an initial value
-                    upload.url = settings.MEDIA_URL + os.path.relpath(upload.file.name, settings.MEDIA_ROOT)
+                    setattr(upload, 'url', settings.MEDIA_URL + os.path.relpath(upload.file.name, settings.MEDIA_ROOT))
 
             self._cached_value = upload
 

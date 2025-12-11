@@ -1,4 +1,3 @@
-import functools
 
 from django import forms
 from django.forms.models import modelformset_factory
@@ -26,7 +25,7 @@ class ImageForm(forms.ModelForm):
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['image'].label = ""
+        self.fields['image'].label = "Your Image: "
         self.fields['name'].label = ""
         self.fields['visibility'].label = ""
 
@@ -45,19 +44,15 @@ class BaseImageFormSet(BaseModelFormSet):
         setattr(form.instance, self.fk.__class__.__name__.lower(), self.fk)
         super().save_new(form, commit)
 
-    def save(self, user, fk, commit=True):
+    def save_all(self, user, fk, commit=True):
         self.user = user
         self.fk = fk
         super().save(commit)
 
-
-def get_image_formset(*args, **kwargs):
-    """
-    This is annoying, but because ImageForm takes arguments in the __init__
-    method, we have to alter the formset's form on the fly
-
-    http://stackoverflow.com/a/813647/2733517
-    """
-    ImageFormSet = modelformset_factory(Image, form=ImageForm, formset=BaseImageFormSet, can_delete=True)
-    ImageFormSet.form = staticmethod(functools.partial(ImageForm, *args, **kwargs))
-    return ImageFormSet
+ImageFormSet = modelformset_factory(
+    Image,
+    form=ImageForm,
+    formset=BaseImageFormSet,
+    can_delete=True,
+    extra=1,
+)
