@@ -75,6 +75,21 @@ services:
       - GOOGLE_API_KEY
     user: '${USER_ID}'
 
+  frontend:
+    image: node:24-alpine
+    working_dir: /frontend
+    # volumes:
+    #   - ./
+    #   - ./node_modules
+    ports:
+      - 5173:5173
+    command: >
+      sh -c "
+      	npm install -g pnpm &&
+        pnpm install &&
+        pnpm dev
+      "
+
   celery:
     build:
       context: .

@@ -5,6 +5,7 @@ import os.path
 from celery.schedules import crontab
 import environ
 from csp.constants import SELF, UNSAFE_INLINE, NONE, NONCE
+from pathlib import Path
 
 # Due to an issue with the types of env(), when passing a default you must add a pyright ignore statement
 # This is because it has a type defualt of NoValue, which the type that is being passed in will not satisfy
@@ -50,6 +51,7 @@ env = environ.Env(
 )
 
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+BASE_DIR = Path(__file__).resolve().parent.parent
 FILE_ROOT = os.path.abspath(os.path.join(BASE_PATH, '..'))
 
 # Read environment variables from .env file
@@ -89,6 +91,20 @@ ADMINS = [["PSU Web & Mobile Team", "webteam@pdx.edu"]]
 MANAGERS = [["PSU Web & Mobile Team", "webteam@pdx.edu"]]
 EMAIL_SUBJECT_PREFIX = "[Oregon Invasive Hotline] "
 EMAIL_BACKEND = env('EMAIL_BACKEND')
+
+# Vite configuration
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEBUG,
+        "dev_server_host": env.str("DJANGO_VITE_DEV_SERVER_HOST", default="localhost"),
+        "dev_server_port": env.int("DJANGO_VITE_DEV_SERVER_PORT", default=5173),
+    }
+}
+
+DJANGO_VITE_ASSETS_PATH = BASE_DIR / "static" / "dist"
+DJANGO_VITE_DEV_MODE = DEBUG
+STATICFILES_DIRS = [DJANGO_VITE_ASSETS_PATH]
+INERTIA_LAYOUT = "vite_base.html"
 
 # SMTP Settings (if using SMTP backend)
 if env('EMAIL_HOST'):
@@ -229,6 +245,8 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.flatpages",
     "django.contrib.gis",
+    "django_vite",
+    "inertia",
 ]
 
 MIDDLEWARE = [
@@ -240,7 +258,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django.middleware.http.ConditionalGetMiddleware"
+    "django.middleware.http.ConditionalGetMiddleware",
+    "inertia.middleware.InertiaMiddleware"
 ]
 
 CONTENT_SECURITY_POLICY = {
