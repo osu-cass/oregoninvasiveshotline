@@ -350,7 +350,7 @@ def delete(request, report_id):
 def test(request):
     return inertia_render(
         request,
-        "Index",
+        "index",
         {
             "authenticated": request.user.is_authenticated,
         },

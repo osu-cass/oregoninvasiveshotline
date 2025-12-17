@@ -101,7 +101,7 @@ DJANGO_VITE = {
     }
 }
 
-DJANGO_VITE_ASSETS_PATH = BASE_DIR / "static" / "dist"
+DJANGO_VITE_ASSETS_PATH = BASE_DIR / "frontend" / "dist"
 DJANGO_VITE_DEV_MODE = DEBUG
 STATICFILES_DIRS = [DJANGO_VITE_ASSETS_PATH]
 INERTIA_LAYOUT = "vite_base.html"
@@ -277,6 +277,15 @@ CONTENT_SECURITY_POLICY = {
         "upgrade-insecure-requests": True,
     }
 }
+
+if DEBUG:
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].extend([
+        "http://localhost:5173",
+    ])
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["connect-src"].extend([
+        "http://localhost:5173",
+        "ws://localhost:5173",  # For HMR websocket
+    ])
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True

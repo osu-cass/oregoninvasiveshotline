@@ -39,7 +39,7 @@ services:
     # override hostname to prevent reinitialization of data
     # on container delete/init cycle.
     #   Refs: https://github.com/docker-library/rabbitmq/issues/106#issuecomment-241882358
-    hostname: 'rabbitmq-dev'
+    hostname: "rabbitmq-dev"
 
   app:
     build:
@@ -73,21 +73,21 @@ services:
       - SECRET_KEY
       - DB_PASSWORD
       - GOOGLE_API_KEY
-    user: '${USER_ID}'
+    user: "${USER_ID}"
 
   frontend:
     image: node:24-alpine
     working_dir: /frontend
-    # volumes:
-    #   - ./
-    #   - ./node_modules
+    volumes:
+      - ./frontend:/frontend
+      - /frontend/node_modules
     ports:
       - 5173:5173
     command: >
       sh -c "
       	npm install -g pnpm &&
         pnpm install &&
-        pnpm dev
+        pnpm dev --host 0.0.0.0
       "
 
   celery:
@@ -113,7 +113,7 @@ services:
     secrets:
       - SECRET_KEY
       - DB_PASSWORD
-    user: '${USER_ID}'
+    user: "${USER_ID}"
 
   mailpit:
     image: axllent/mailpit:latest
