@@ -30,6 +30,14 @@ You must configure a few API keys for this project. To create them, make files w
 - `secret_key.txt`
 	- Create a secret key. For development, you can use whatever random string. In production, use a secure random string.
 
+### Creating the `.env` File
+
+Copy the `.env-default` to a new file called `.env`.
+
+```sh
+cp .env-default .env
+```
+
 ### Starting Docker
 
 To use the provided Docker container definitions:
