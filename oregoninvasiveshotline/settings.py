@@ -96,7 +96,7 @@ EMAIL_BACKEND = env('EMAIL_BACKEND')
 DJANGO_VITE = {
     "default": {
         "dev_mode": DEBUG,
-        "dev_server_host": env.str("DJANGO_VITE_DEV_SERVER_HOST", default="localhost"),
+        "dev_server_host": env.str("DJANGO_VITE_DEV_SERVER_HOST", default="localhost") or "localhost",
         "dev_server_port": env.int("DJANGO_VITE_DEV_SERVER_PORT", default=5173),
     }
 }
@@ -281,6 +281,7 @@ CONTENT_SECURITY_POLICY = {
 if DEBUG:
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].extend([
         "http://localhost:5173",
+        UNSAFE_INLINE,
     ])
     CONTENT_SECURITY_POLICY["DIRECTIVES"]["connect-src"].extend([
         "http://localhost:5173",

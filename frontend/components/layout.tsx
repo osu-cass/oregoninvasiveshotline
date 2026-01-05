@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "@inertiajs/react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -8,7 +7,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 				<nav className="flex items-start justify-center">
 					<ul className="flex space-x-4">
 						<li>
-							<Link href="/">Home</Link>
+							<Link href="/">Home!!</Link>
 						</li>
 					</ul>
 				</nav>

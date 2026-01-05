@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
 		plugins: [tailwindcss(), react()],
 		resolve: {
 			alias: {
-				"@": resolve(INPUT_DIR, "ts"),
+				"@": resolve(INPUT_DIR),
 			},
 		},
 		root: resolve(INPUT_DIR),

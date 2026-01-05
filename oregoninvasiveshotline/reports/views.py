@@ -346,7 +346,6 @@ def delete(request, report_id):
         "will_be_deleted_with": related_objects,
     })
 
-@require_GET
 def test(request):
     return inertia_render(
         request,

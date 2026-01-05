@@ -26,15 +26,12 @@
 			nonce="{{request.csp_nonce}}"
 			href="https://cdn.jsdelivr.net/combine/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css,npm/choices.js@11.1.0/public/assets/styles/choices.min.css"
 		/>
-		<link
-			rel="stylesheet"
-			nonce="{{request.csp_nonce}}"
-			href="{% static 'css/main.css' %}"
-		/>
+
 		{% endblock %} 
 		
 		{% vite_hmr_client %}
-    {% vite_asset 'main.tsx' %}
+		{% vite_react_refresh %}
+		{% vite_asset 'main.tsx' %}
 		{% endblock %}
 	</head>
 
