@@ -9,7 +9,12 @@ if [[ ${APP_SERVICE} == "wsgi" ]]; then
     # Run migrations and collect static files before starting the app
     ${APP_ENV}/bin/python manage.py migrate --no-input
     ${APP_ENV}/bin/python manage.py collectstatic --no-input
-    if [[ ${DJANGO_ENV} == "docker" ]]; then
+    
+    # Check if debug mode is enabled
+    if [[ ${DJANGO_DEBUG_MODE} == "true" ]]; then
+      echo "Starting Django development server with debugpy on port 5678..."
+      ${APP_ENV}/bin/python -m debugpy --listen 0.0.0.0:5678 manage.py runserver 0.0.0.0:8000 --noreload --nothreading
+    elif [[ ${DJANGO_ENV} == "docker" ]]; then
       ${APP_ENV}/bin/gunicorn -b 0.0.0.0:8000 --reload oregoninvasiveshotline.wsgi
     else
       ${APP_ENV}/bin/gunicorn \

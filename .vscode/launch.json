@@ -1,0 +1,53 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Django: Attach to Docker",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5678
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "/app"
+        }
+      ],
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Django: Debug Manage.py",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "args": [
+        "runserver",
+        "0.0.0.0:8000"
+      ],
+      "django": true,
+      "justMyCode": false,
+      "env": {
+        "DJANGO_SETTINGS_MODULE": "oregoninvasiveshotline.settings",
+        "DJANGO_ENV": "dev"
+      }
+    },
+    {
+      "name": "Django: Debug Tests",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "args": [
+        "test"
+      ],
+      "django": true,
+      "justMyCode": false,
+      "env": {
+        "DJANGO_SETTINGS_MODULE": "oregoninvasiveshotline.settings",
+        "DJANGO_ENV": "dev"
+      }
+    }
+  ]
+}

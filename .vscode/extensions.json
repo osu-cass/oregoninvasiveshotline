@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.debugpy",
+    "charliermarsh.ruff",
+    "batisteo.vscode-django",
+    "mtxr.sqltools",
+    "mtxr.sqltools-driver-pg"
+  ]
+}

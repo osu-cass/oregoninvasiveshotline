@@ -1,0 +1,73 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Django: Run Migrations",
+      "type": "shell",
+      "command": "${config:python.defaultInterpreterPath}",
+      "args": [
+        "manage.py",
+        "migrate"
+      ],
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Django: Make Migrations",
+      "type": "shell",
+      "command": "${config:python.defaultInterpreterPath}",
+      "args": [
+        "manage.py",
+        "makemigrations"
+      ],
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Django: Run Tests",
+      "type": "shell",
+      "command": "${config:python.defaultInterpreterPath}",
+      "args": [
+        "manage.py",
+        "test"
+      ],
+      "problemMatcher": [],
+      "group": "test"
+    },
+    {
+      "label": "Docker: Start All Services",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "compose",
+        "up",
+        "-d"
+      ],
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Docker: Stop All Services",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "compose",
+        "down"
+      ],
+      "problemMatcher": [],
+      "group": "build"
+    },
+    {
+      "label": "Docker: View Logs",
+      "type": "shell",
+      "command": "docker",
+      "args": [
+        "compose",
+        "logs",
+        "-f"
+      ],
+      "problemMatcher": [],
+      "isBackground": true
+    }
+  ]
+}

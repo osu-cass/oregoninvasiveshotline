@@ -63,6 +63,86 @@ docker-compose --profile dev-tools up
 
 Then, it's accessible via http://localhost:5050.
 
+### Debugging
+
+This project includes debugging configurations for both Visual Studio Code and Zed IDE.
+
+#### Prerequisites
+
+Before debugging, ensure you have:
+1. Installed debugpy in the development environment (already included in `Pipfile` dev dependencies)
+2. Set up your IDE with the appropriate extensions/language servers
+
+#### Debugging with Visual Studio Code
+
+The repository includes a `.vscode/launch.json` configuration with three debugging options:
+
+1. **Django: Attach to Docker** - Attach to the running Django application in Docker
+2. **Django: Debug Manage.py** - Debug Django management commands locally
+3. **Django: Debug Tests** - Debug Django tests locally
+
+**To debug the Django application in Docker:**
+
+1. Start the application in debug mode:
+   ```bash
+   docker compose -f docker-compose.debug.yml up
+   ```
+
+2. In VS Code, open the Run and Debug panel (Ctrl+Shift+D / Cmd+Shift+D)
+3. Select "Django: Attach to Docker" from the configuration dropdown
+4. Press F5 or click the green play button to attach the debugger
+5. Set breakpoints in your Python code by clicking in the gutter next to line numbers
+6. The debugger will pause execution when it hits your breakpoints
+
+**To debug locally (without Docker):**
+
+1. Set up a local Python virtual environment:
+   ```bash
+   pipenv install --dev
+   pipenv shell
+   ```
+
+2. Configure your local database settings in a `.env` file
+3. Use the "Django: Debug Manage.py" or "Django: Debug Tests" configurations
+4. Press F5 to start debugging
+
+**Recommended VS Code Extensions:**
+- Python (ms-python.python)
+- Pylance (ms-python.vscode-pylance)
+- Python Debugger (ms-python.debugpy)
+- Ruff (charliermarsh.ruff)
+- Django (batisteo.vscode-django)
+
+#### Debugging with Zed IDE
+
+The repository includes a `.zed/settings.json` configuration with tasks for common Django operations.
+
+1. Open the project in Zed IDE
+2. The Python language server (Pyright) will automatically use the configuration
+3. Use the command palette to access tasks:
+   - "Django: Run Server"
+   - "Django: Run Migrations"
+   - "Django: Run Tests"
+   - "Docker: Start All Services"
+   - "Docker: View Logs"
+
+For debugging in Zed, you can:
+1. Use the integrated terminal to start the debug server:
+   ```bash
+   docker compose -f docker-compose.debug.yml up
+   ```
+
+2. In a separate terminal, you can attach to the debugger or use print statements for debugging
+3. Zed's language server will provide inline type checking and code intelligence
+
+#### Debugging Tips
+
+- The debug server runs on port 5678 (exposed from the Docker container)
+- The Django development server runs on port 8000
+- When debugging in Docker, source code changes are reflected immediately due to volume mounts
+- Use `--noreload` and `--nothreading` flags with debugpy to prevent issues with breakpoints
+- Check Docker logs if the debugger won't attach: `docker compose logs -f app`
+
 ## Deploying
 
 This project is deployed using docker. use the `docker-compose.production.yml` file with docker compose.
