@@ -3,6 +3,7 @@ import { join, resolve } from "node:path";
 import react from "@vitejs/plugin-react";
 
 import { defineConfig, loadEnv } from "vite";
+import type { UserConfig } from 'vite';
 
 import tailwindcss from "@tailwindcss/vite";
 
@@ -23,7 +24,7 @@ export default defineConfig(({ mode }) => {
 		base: "/static/",
 		server: {
 			host: "0.0.0.0",
-			port: env.DJANGO_VITE_DEV_SERVER_PORT || 5173,
+			port: Number(env.DJANGO_VITE_DEV_SERVER_PORT) || 5173,
 			watch: {
 				usePolling: true,
 			},

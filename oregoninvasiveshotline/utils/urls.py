@@ -12,7 +12,7 @@ def safe_redirect(request, proposed_redirect, fallback=""):
     if url_has_allowed_host_and_scheme(
         url=proposed_redirect,
         allowed_hosts=request.get_host(),
-        require_https=request.is_secure(),
+        require_https=request.is_secure(), 
     ):
         return redirect(proposed_redirect)
     elif proposed_redirect is not None and proposed_redirect.strip():
