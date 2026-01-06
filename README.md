@@ -115,25 +115,35 @@ The repository includes a `.vscode/launch.json` configuration with three debuggi
 
 #### Debugging with Zed IDE
 
-The repository includes a `.zed/settings.json` configuration with tasks for common Django operations.
+The repository includes an example Zed configuration at `.github/zed/settings-example.json` with recommended settings for Python development and tasks for common Django operations.
 
-1. Open the project in Zed IDE
-2. The Python language server (Pyright) will automatically use the configuration
-3. Use the command palette to access tasks:
+**To set up Zed IDE:**
+
+1. Copy the example configuration to your user settings:
+   ```bash
+   # Copy to your .zed directory (user-specific, not tracked in git)
+   mkdir -p .zed
+   cp .github/zed/settings-example.json .zed/settings.json
+   ```
+
+2. Open the project in Zed IDE
+3. The Python language server (Pyright) will automatically use the configuration
+4. Use the command palette (Cmd/Ctrl+Shift+P) to access tasks:
    - "Django: Run Server"
    - "Django: Run Migrations"
    - "Django: Run Tests"
    - "Docker: Start All Services"
    - "Docker: View Logs"
 
-For debugging in Zed, you can:
+**For debugging in Zed:**
+
 1. Use the integrated terminal to start the debug server:
    ```bash
    docker compose -f docker-compose.debug.yml up
    ```
 
-2. In a separate terminal, you can attach to the debugger or use print statements for debugging
-3. Zed's language server will provide inline type checking and code intelligence
+2. Set breakpoints and use the terminal for debugging, or use print statements
+3. Zed's language server provides inline type checking and code intelligence
 
 #### Debugging Tips
 

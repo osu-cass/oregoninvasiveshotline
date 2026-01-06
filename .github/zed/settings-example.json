@@ -1,0 +1,66 @@
+{
+  "languages": {
+    "Python": {
+      "language_servers": ["pyright"],
+      "formatter": {
+        "external": {
+          "command": "ruff",
+          "arguments": ["format", "-"]
+        }
+      },
+      "format_on_save": "on",
+      "tab_size": 4
+    }
+  },
+  "lsp": {
+    "pyright": {
+      "settings": {
+        "python": {
+          "pythonPath": ".venv/bin/python",
+          "analysis": {
+            "typeCheckingMode": "basic",
+            "autoImportCompletions": true
+          }
+        }
+      }
+    }
+  },
+  "terminal": {
+    "env": {
+      "DJANGO_SETTINGS_MODULE": "oregoninvasiveshotline.settings",
+      "DJANGO_ENV": "dev"
+    }
+  },
+  "tasks": [
+    {
+      "label": "Django: Run Server",
+      "command": "python manage.py runserver 0.0.0.0:8000",
+      "use_new_terminal": true
+    },
+    {
+      "label": "Django: Run Migrations",
+      "command": "python manage.py migrate"
+    },
+    {
+      "label": "Django: Make Migrations",
+      "command": "python manage.py makemigrations"
+    },
+    {
+      "label": "Django: Run Tests",
+      "command": "python manage.py test"
+    },
+    {
+      "label": "Docker: Start All Services",
+      "command": "docker compose up -d"
+    },
+    {
+      "label": "Docker: Stop All Services",
+      "command": "docker compose down"
+    },
+    {
+      "label": "Docker: View Logs",
+      "command": "docker compose logs -f",
+      "use_new_terminal": true
+    }
+  ]
+}
