@@ -152,6 +152,7 @@ The repository includes an example Zed configuration at `.github/zed/settings-ex
 - When debugging in Docker, source code changes are reflected immediately due to volume mounts
 - Use `--noreload` and `--nothreading` flags with debugpy to prevent issues with breakpoints
 - Check Docker logs if the debugger won't attach: `docker compose logs -f app`
+- **Security Note**: The `docker-compose.debug.yml` configuration is for local development only. Never use it in production as it exposes the debug port and runs in development mode.
 
 ## Deploying
 

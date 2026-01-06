@@ -23,5 +23,9 @@
     "**/static/**": true,
     "**/.venv/**": true,
     "**/node_modules/**": true
-  }
+  },
+  // Note: This project uses pipenv. After running 'pipenv install --dev',
+  // VS Code should auto-detect the virtual environment created by pipenv.
+  // You may need to select the correct interpreter using the Command Palette
+  // (Cmd/Ctrl+Shift+P > "Python: Select Interpreter")
 }
