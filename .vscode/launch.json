@@ -1,0 +1,23 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Django: Launch & Debug",
+			"type": "debugpy",
+			"request": "attach",
+			"connect": {
+				"host": "127.0.0.1",
+				"port": 1080,
+			},
+			"pathMappings": [
+				{
+					"localRoot": "${workspaceFolder}",
+					"remoteRoot": "/app",
+				},
+			],
+			"django": true,
+			"preLaunchTask": "Docker: Start with Debugger",
+			"postDebugTask": "Docker: Stop",
+		},
+	],
+}

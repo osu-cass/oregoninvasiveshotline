@@ -54,10 +54,12 @@ services:
     environment:
       - APP_SERVICE=wsgi
       - APP_ENVIRONMENT=development
+      - ENABLE_DEBUGGER=${ENABLE_DEBUGGER:-false}
     networks:
       - default
     ports:
       - ${APP_PORT:-8000}:8000
+      - ${DEBUG_PORT:-1080}:1080
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${VOLUME_PATH}/media:/media
@@ -74,6 +76,11 @@ services:
       - DB_PASSWORD
       - GOOGLE_API_KEY
     user: '${USER_ID}'
+    healthcheck:
+      test: ["CMD-SHELL", python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   celery:
     build:
