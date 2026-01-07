@@ -54,10 +54,12 @@ services:
     environment:
       - APP_SERVICE=wsgi
       - APP_ENVIRONMENT=development
+      - ENABLE_DEBUGGER=${ENABLE_DEBUGGER:-false}
     networks:
       - default
     ports:
       - ${APP_PORT:-8000}:8000
+      - 3000:3000
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${VOLUME_PATH}/media:/media

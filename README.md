@@ -63,6 +63,25 @@ docker-compose --profile dev-tools up
 
 Then, it's accessible via http://localhost:5050.
 
+### Running Debug Mode
+
+To enable VS Code debugging with breakpoints, start the containers with the debugger enabled:
+
+**Linux/macOS/WSL:**
+```bash
+ENABLE_DEBUGGER=true docker compose up
+```
+
+**PowerShell:**
+```powershell
+$env:ENABLE_DEBUGGER="true"; docker compose up
+```
+
+Once running, attach VS Code's debugger using the "Attach to Django" configuration in the Run view.
+
+> [!NOTE]  
+> Once the `ENABLE_DEBUGGER` variable is set to true, you will need to set it to false or open a new terminal to run docker compose without the debugger.
+
 ## Deploying
 
 This project is deployed using docker. use the `docker-compose.production.yml` file with docker compose.

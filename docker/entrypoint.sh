@@ -9,14 +9,19 @@ if [[ ${APP_SERVICE} == "wsgi" ]]; then
     # Run migrations and collect static files before starting the app
     ${APP_ENV}/bin/python manage.py migrate --no-input
     ${APP_ENV}/bin/python manage.py collectstatic --no-input
-    if [[ ${DJANGO_ENV} == "docker" ]]; then
+    
+    if [[ ${ENABLE_DEBUGGER} == "true" ]]; then
+      # Use Django dev server in debug mode (enables debugpy)
+      echo "Starting in DEBUG mode with debugpy enabled"
+      ${APP_ENV}/bin/python -Xfrozen_modules=off manage.py runserver 0.0.0.0:8000
+    elif [[ ${DJANGO_ENV} == "docker" ]]; then
       ${APP_ENV}/bin/gunicorn -b 0.0.0.0:8000 --reload oregoninvasiveshotline.wsgi
     else
       ${APP_ENV}/bin/gunicorn \
         --access-logfile '-' \
         --error-logfile '-' \
         --log-file '-' \
-        --access-logformat '%({x-forwarded-for}i)s %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"' \
+        --access-logformat '%({x-forwarded-for}i)s %(h)s %(l)s %(u)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"' \
         --forwarded-allow-ips="${LOAD_BALANCER_IPS:-127.0.0.1}" \
         -w 4 \
         -b 0.0.0.0:8000 \

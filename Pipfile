@@ -17,6 +17,7 @@ django-bootstrap5 = "~=25.2"
 sentry-sdk = "~=2.35.0"
 setuptools = "~=80.9.0"
 django-csp = "~=4.0"
+debugpy = "~=1.8.19"
 
 [dev-packages]
 coverage = "~=7.10.6"
