@@ -59,7 +59,7 @@ services:
       - default
     ports:
       - ${APP_PORT:-8000}:8000
-      - 3000:3000
+      - ${DEBUG_PORT:-1080}:1080
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${VOLUME_PATH}/media:/media
@@ -76,6 +76,11 @@ services:
       - DB_PASSWORD
       - GOOGLE_API_KEY
     user: '${USER_ID}'
+    # healthcheck:
+    #   test: ["CMD-SHELL", "curl -f http://localhost:8000/health/ || exit 1"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
 
   celery:
     build:

@@ -77,6 +77,7 @@ if settings.DEBUG:  # pragma: no cover
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static('htmlcov', document_root='htmlcov', show_indexes=True)
+    urlpatterns += [path("health/", include("health_check.urls"))]
 
 
 urlpatterns += [path('', include('django.contrib.flatpages.urls'))]
