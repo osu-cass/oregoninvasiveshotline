@@ -231,9 +231,6 @@ INSTALLED_APPS = [
     "django.contrib.gis",
 ]
 
-if DEBUG:
-	INSTALLED_APPS += ["health_check", "health_check.contrib.celery_ping"]
-
 MIDDLEWARE = [
     "csp.middleware.CSPMiddleware",
     "django.middleware.security.SecurityMiddleware",

@@ -76,11 +76,11 @@ services:
       - DB_PASSWORD
       - GOOGLE_API_KEY
     user: '${USER_ID}'
-    # healthcheck:
-    #   test: ["CMD-SHELL", "curl -f http://localhost:8000/health/ || exit 1"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 5
+    healthcheck:
+      test: ["CMD-SHELL", python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   celery:
     build:
