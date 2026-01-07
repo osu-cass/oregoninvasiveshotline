@@ -49,10 +49,7 @@ class ClearableImageInput(ClearableFileInput):
         self.signed_path = None
         self._sentinel = object()
         self._cached_value = self._sentinel
-        try:
-            os.mkdir(self.tmp_dir)
-        except FileExistsError:
-            pass
+        self.tmp_dir = os.path.join(settings.MEDIA_ROOT, "tmp")
 
     def signed_path_field_name(self, name):
         """
@@ -67,6 +64,7 @@ class ClearableImageInput(ClearableFileInput):
         return "%s_data_uri" % name
 
     def value_from_datadict(self, data, files, name):
+        os.makedirs(self.tmp_dir, exist_ok=True)
         # we cache the return value of this function, since it is called a
         # bunch of time, and is expensive
         if self._cached_value is self._sentinel:

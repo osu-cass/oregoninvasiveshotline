@@ -2,7 +2,7 @@
 
 This project allows members of the public to submit reports of invasive species for experts to
 review. Experts can login and review the reports, comment on them, and make a final determination
-about the species that was reported
+about the species that was reported.
 
 ## Technology stack
 
@@ -19,52 +19,63 @@ Packages are managed with a jsDelivr script link in `templates/base.html`.
 
 Ensure that you have Docker and Docker Compose installed in your host's environment.
 
+### Setting up Secrets
+
+You must configure a few API keys for this project. To create them, make files with the exact names below in the `docker/secrets` folder.
+
+- `db_password.txt`
+  - Recommended: `invasives`
+- google_api_key.txt`
+  - Create an API key on <https://mapsplatform.google.com/>. It should look something like `AIzaSyDQwAloK4wKTeKqKJ4oK4wKTeKqKJ4oK4w`.
+- `secret_key.txt`
+  - Create a secret key. For development, you can use whatever random string. In production, use a secure random string.
+
+### Starting Docker
+
 To use the provided Docker container definitions:
 
 ```bash
-docker compose up -d --build
+docker compose up
 ```
 
-View the website at http://localhost:8000
+View the website at <http://localhost:8000>.
 
-To authenticate with the provided default user:
-
-    username: foobar@example.com
-    password: foobar
-
-A Google API Key is needed for the mapping features in this project. In
-development environments (native or docker) you should export an environment variable, eg:
-
-    export GOOGLE_API_KEY='{ key }'
-
-To prepare the database you may use, e.g., the `import_database` command to install a copy of production data.
+### Testing
 
 To run the test library:
 
-    make test_container
-    
-To access the mail server, navigate to http://localhost:8025.
+```bash
+make test_container
+```
+
+Tests will also run automatically on pull requests.
+
+To access the mail server, navigate to <http://localhost:8025>.
 
 The docker compose also comes with pgAdmin, but it's disabled by default as many developers already have a postgres admin tool installed.
 To run pgAdmin, use the following command:
+
 ```bash
 # Launch just pgAdmin
-docker-compose --profile dev-tools up pgadmin
+docker compose --profile dev-tools up pgadmin
 
 # Launch all containers and pgAdmin
-docker-compose --profile dev-tools up
+docker compose --profile dev-tools up
 ```
 
-Then, it's accessible via http://localhost:5050.
+Then, it's accessible via <http://localhost:5050>.
+
+### Running Debug Mode
+
+Go to the "Run and Debug" view in VS Code. Select the "Django: Launch & Debug" configuration, and then click the green play button.
+
+By default, the debugger is running on port 1080. However, you can change this port by setting the `DEBUG_PORT` environment variable.
 
 ## Deploying
 
-This project using the Emcee tooling to define and orchestrate resource provisioning and deployment.
-See the AWS cloudformation templates in `cloudformation` and the command definitions in `commands.py`
-for more information.
+This project is deployed using docker. Use the `docker-compose.deploy.yml` file with docker compose.
 
-API keys for stage and production environments are stored and fetched from AWS key store; you will be
-prompted to supply these keys the first time you provision infrastructure for a given environment.
+Containers are built using GitHub Actions.
 
 ## General notes
 
@@ -80,6 +91,19 @@ This project ships with a celerybeat configuration which handles scheduling of s
 Several workflows trigger email notifications based on specific criteria. All such notifications
 are implemented and orchestrated using Celery-based tasks in order that they are performed
 out-of-band with respect to the request/response cycle.
+
+### Running django commands
+
+Django ships with a set of commands that can be run from the command line. If using a Windows machine, it is reccomended to run these commands in wsl. All users should use pipenv.
+
+For example:
+
+```bash
+pipenv shell
+python3 manage.py COMMAND HERE
+```
+
+[See all commands here.](https://docs.djangoproject.com/en/5.2/ref/django-admin/)
 
 ### Static Code Analysis
 
@@ -100,6 +124,16 @@ To run `pyright`:
 ```bash
 pyright
 ```
+
+### Creating a Superuser
+
+To create a superuser, run the following command:
+
+```bash
+python manage.py createsuperuser
+```
+
+Alternatively, you can open create a category in the database, submit a report, set the new user's is_active and is_staff attributes to true, and then run a password reset.
 
 ### Application behavior
 
@@ -123,22 +157,22 @@ When a report is submitted, a new `ReportSearchForm` is instantiated and passed 
 parameters that were saved in the `UserNotificationQuery` model; if the `search` method on the
 form finds results matching the newly submitted report a notification is sent to the user.
 
-# Service Architecture
+## Service Architecture
 
-## In development
+### In development
 
 <details>
 <summary>
 Expand this dropdown to see the service architecture when working in development.
 </summary>
-<img src="./readme-media/service-architecture-development.png" />
+<img src="./readme-media/service-architecture-development.png" alt="Containerized application architecture running in Docker. At the top left is a PostGIS container (PostgreSQL with geospatial support), exposing port 5439 mapped to 5432. It stores database data and archives on mounted volumes. Below PostGIS is a pgAdmin container (port 5050 mapped to 80) used for PostgreSQL administration; it depends on PostGIS being healthy. At the top right is a RabbitMQ container (internal port 5672) acting as the message broker. Below RabbitMQ is a Celery worker container, which depends on RabbitMQ being healthy and mounts application code and media volumes. At the center bottom is the main App container (port 8000 mapped to 8000). The App depends on both the database being healthy and the Celery service being started. It mounts application code, static files, media files, and system timezone configuration. Below the App is a Mailpit container. Mailpit exposes a web UI on port 8025 and an SMTP service on port 1025. It depends on the App being healthy and is used for capturing and viewing outgoing emails during development or testing. Overall flow: PostGIS provides persistent data storage; RabbitMQ queues background jobs; Celery processes those jobs asynchronously; the App serves the web application and coordinates with the database and background workers; pgAdmin provides database management; Mailpit captures application emails. All services run as Docker containers with explicit health-based startup ordering."/>
 </details>
 
-## In production
+### In production
 
 <details>
 <summary>
 Expand this dropdown to see the service architecture when working in production.
 </summary>
-<img src="./readme-media/service-architecture-production.png" />
+<img src="./readme-media/service-architecture-production.png" alt="Runtime architecture for the deployed application showing Docker containers and required external services. On the left are three external services not running in Docker: an external PostgreSQL database that must include PostGIS functionality and serves as the application’s primary data store; Sentry, an external error monitoring service configured via environment variables such as SENTRY_DSN and SENTRY_ENVIRONMENT; and an external SMTP server that accepts outgoing email from the application and is configured using environment variables including email host, port, TLS usage, username, and password. On the right are Docker-managed services: a RabbitMQ container on internal port 5672 acting as the message broker for asynchronous tasks and persisting data on a mounted volume; a Celery worker container that depends on RabbitMQ being healthy and processes background jobs, mounting application code, media storage, and system timezone configuration; and the main App container exposing a web server on port 8000 or a configurable port via the APP_PORT environment variable, mounting application code, static files, media files, and system timezone configuration. The App depends on the availability of PostgreSQL, the SMTP server, Sentry, and the Celery and RabbitMQ background processing pipeline. If the App container fails its health check, traffic is routed to Maintenance Mode, where a static HTML page is displayed instead of the application to indicate the service is unavailable."/>
 </details>
