@@ -15,6 +15,8 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 
+from inertia import render as inertia_render
+
 from oregoninvasiveshotline.utils.urls import safe_redirect
 from oregoninvasiveshotline.utils.db import will_be_deleted_with
 from oregoninvasiveshotline.comments.forms import CommentForm
@@ -343,3 +345,6 @@ def delete(request, report_id):
         "object": report,
         "will_be_deleted_with": related_objects,
     })
+
+def test(request):
+    return inertia_render(request, "Index")

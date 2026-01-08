@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
 import os.path
+from pathlib import Path
 
 from celery.schedules import crontab
 import environ
 from csp.constants import SELF, UNSAFE_INLINE, NONE, NONCE
+from inertia.settings import settings as inertia_settings
 
 # Due to an issue with the types of env(), when passing a default you must add a pyright ignore statement
 # This is because it has a type defualt of NoValue, which the type that is being passed in will not satisfy
@@ -49,6 +51,7 @@ env = environ.Env(
     SECURE_HSTS_SECONDS=(int, 31536000),
 )
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 FILE_ROOT = os.path.abspath(os.path.join(BASE_PATH, '..'))
 
@@ -229,6 +232,9 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.flatpages",
     "django.contrib.gis",
+    
+    "django_vite",
+    "inertia",
 ]
 
 MIDDLEWARE = [
@@ -240,7 +246,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django.middleware.http.ConditionalGetMiddleware"
+    "django.middleware.http.ConditionalGetMiddleware",
+    
+    "inertia.middleware.InertiaMiddleware",
 ]
 
 CONTENT_SECURITY_POLICY = {
@@ -258,6 +266,16 @@ CONTENT_SECURITY_POLICY = {
         "upgrade-insecure-requests": True,
     }
 }
+
+if DEBUG:
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].extend([
+        "http://localhost:5173",
+        UNSAFE_INLINE,
+    ])
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["connect-src"].extend([
+        "http://localhost:5173",
+        "ws://localhost:5173",  # For HMR websocket
+    ])
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
@@ -406,3 +424,21 @@ if sentry_dsn:
         traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE, # pyright: ignore
         send_default_pii=False
     )
+
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEBUG,
+        "dev_server_host": env.str("DJANGO_VITE_DEV_SERVER_HOST", default="localhost"),
+        "dev_server_port": env.int("DJANGO_VITE_DEV_SERVER_PORT", default=5173),
+    }
+}
+# Where ViteJS assets are built.
+DJANGO_VITE_ASSETS_PATH = BASE_DIR / "frontend" / "dist"
+# Include DJANGO_VITE_ASSETS_PATH into STATICFILES_DIRS to be copied inside
+# when run command python manage.py collectstatic
+STATICFILES_DIRS = [DJANGO_VITE_ASSETS_PATH]
+
+INERTIA_LAYOUT = "inertia_base.html"
+INERTIA_SSR_URL = inertia_settings.INERTIA_SSR_URL
+INERTIA_SSR_ENABLED = inertia_settings.INERTIA_SSR_ENABLED
+INERTIA_JSON_ENCODER = inertia_settings.INERTIA_JSON_ENCODER

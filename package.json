@@ -1,0 +1,32 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "TAILWIND_MODE=watch vite",
+    "build": "TAILWIND_MODE=build vite build"
+  },
+  "overrides": {
+    "vite": {
+      "rollup": "npm:@rollup/wasm-node"
+    }
+  },
+  "dependencies": {
+    
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "@inertiajs/react": "^2.0.0",
+        
+    
+    "axios": "^1.7.9"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    
+    
+    "@tailwindcss/vite": "^4.0.0",
+    "tailwindcss": "^4.0.0",
+    
+    
+    "vite": "^6.0.6"
+  }
+}

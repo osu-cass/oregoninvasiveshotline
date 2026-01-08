@@ -74,6 +74,25 @@ services:
       - DB_PASSWORD
       - GOOGLE_API_KEY
     user: '${USER_ID}'
+  
+  vite:
+    build:
+      context: .
+      dockerfile: vite.Dockerfile
+    command: npm run dev
+    tty: true
+    ports:
+      - "5173:5173"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - node_modules/
+            - .venv/
+        - action: rebuild
+          path: ./package.json
 
   celery:
     build:
