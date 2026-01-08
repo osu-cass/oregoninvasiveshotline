@@ -96,7 +96,7 @@ services:
         pnpm install &&
         pnpm dev --host 0.0.0.0
       "
-    user: '${USER_ID}'
+    # user: '${USER_ID}'
     
   celery:
     build:

@@ -22,6 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
 		},
 		setup({ el, App, props }) {
 			createRoot(el).render(<App {...props} />);
-		},
+		}, 
 	});
 });
