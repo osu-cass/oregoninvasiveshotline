@@ -5,7 +5,7 @@ export default function Index() {
 				This is the home page
 			</h2>
 			<p className="font-mono text-lg">
-				Find it in 'frontend/js/pages/Index.jsx'
+				Find it in 'frontend/js/pages/Index.jsx'!
 			</p>
 		</div>
 	);

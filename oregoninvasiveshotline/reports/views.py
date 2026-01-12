@@ -347,4 +347,4 @@ def delete(request, report_id):
     })
 
 def test(request):
-    return inertia_render(request, "Index")
+    return inertia_render(request, "test-page")
