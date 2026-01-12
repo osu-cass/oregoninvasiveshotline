@@ -1,6 +1,11 @@
 import { Link } from "@inertiajs/react";
+import type { ReactNode } from "react";
 
-const Layout = ({ children }) => (
+interface LayoutProps {
+	children: ReactNode;
+}
+
+const Layout = ({ children }: LayoutProps) => (
 	<>
 		<div>
 			<nav className="flex items-start justify-center">
@@ -10,9 +15,9 @@ const Layout = ({ children }) => (
 					</li>
 				</ul>
 			</nav>
-			<div className="flex items-center justify-center mt-32">{children}</div>
+			<div className="mt-32 flex items-center justify-center">{children}</div>
 		</div>
 	</>
 );
 
-export default (page) => <Layout>{page}</Layout>;
+export default (page: ReactNode) => <Layout>{page}</Layout>;

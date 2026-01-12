@@ -44,7 +44,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/python.Dockerfile
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}
@@ -78,7 +78,7 @@ services:
   vite:
     build:
       context: .
-      dockerfile: vite.Dockerfile
+      dockerfile: docker/vite.Dockerfile
     command: npm run dev
     tty: true
     ports:
@@ -97,7 +97,7 @@ services:
   celery:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/python.Dockerfile
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}
