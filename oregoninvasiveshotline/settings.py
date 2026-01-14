@@ -47,6 +47,7 @@ env = environ.Env(
     SENTRY_ENVIRONMENT=(str, ''),
     SENTRY_TRACES_SAMPLE_RATE=(float, 0.1),
     SECURE_HSTS_SECONDS=(int, 31536000),
+    DATA_UPLOAD_MAX_MEMORY_SIZE=(int, 5242880)
 )
 
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -89,6 +90,8 @@ ADMINS = [["PSU Web & Mobile Team", "webteam@pdx.edu"]]
 MANAGERS = [["PSU Web & Mobile Team", "webteam@pdx.edu"]]
 EMAIL_SUBJECT_PREFIX = "[Oregon Invasive Hotline] "
 EMAIL_BACKEND = env('EMAIL_BACKEND')
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = env('DATA_UPLOAD_MAX_MEMORY_SIZE')
 
 # SMTP Settings (if using SMTP backend)
 if env('EMAIL_HOST'):
