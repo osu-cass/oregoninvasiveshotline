@@ -16,12 +16,11 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
-from django.middleware.csrf import get_token
-from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from inertia import render as inertia_render
 
+from oregoninvasiveshotline.utils.inertia import inertia_location
 from oregoninvasiveshotline.utils.urls import safe_redirect
 from oregoninvasiveshotline.utils.db import will_be_deleted_with
 from oregoninvasiveshotline.comments.forms import CommentForm
@@ -364,10 +363,4 @@ def test(request: HttpRequest):
 	    request,
 	    "test-page",
 	    props
-    )
-
-def inertia_location(url: str) -> HttpResponse:
-	return HttpResponse(
-        status=409,
-        headers={"X-Inertia-Location": url},
     )
