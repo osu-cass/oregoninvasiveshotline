@@ -91,8 +91,6 @@ MANAGERS = [["PSU Web & Mobile Team", "webteam@pdx.edu"]]
 EMAIL_SUBJECT_PREFIX = "[Oregon Invasive Hotline] "
 EMAIL_BACKEND = env('EMAIL_BACKEND')
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = env('DATA_UPLOAD_MAX_MEMORY_SIZE')
-
 # SMTP Settings (if using SMTP backend)
 if env('EMAIL_HOST'):
     EMAIL_HOST = env('EMAIL_HOST')
@@ -130,6 +128,9 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(FILE_ROOT, 'media'))  # pyright: ignore
 MEDIA_URL = '/media/'
 STATICFILES_STORAGE = env('STATICFILES_STORAGE')
+
+# Temporary increase to 5MB to support many file uploads (see AB#4342)
+DATA_UPLOAD_MAX_MEMORY_SIZE = env('DATA_UPLOAD_MAX_MEMORY_SIZE')
 
 # Logging configuration
 FIRST_PARTY_LOGGER = {
