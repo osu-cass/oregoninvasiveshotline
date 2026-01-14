@@ -360,7 +360,7 @@ class InviteForm(forms.Form):
                                visibility=Comment.PRIVATE,
                                body=self.cleaned_data.get("body"),
                                created_by=inviter)
-                               
+
         return namedtuple("InviteReport", "invited already_invited")(invited, already_invited)
 
 
@@ -444,4 +444,12 @@ class ManagementForm(forms.ModelForm):
         return super().save(*args, **kwargs)
 
 class TestForm(forms.Form):
+    STATE_CHOICES = [
+        ('', 'Choose...'),
+        ('OR', 'Oregon'),
+        ('WA', 'Washington'),
+        ('CA', 'California'),
+    ]
+
     name = forms.CharField(label="Your Name", max_length=100, required=True)
+    state = forms.ChoiceField(label="State", choices=STATE_CHOICES, required=True)

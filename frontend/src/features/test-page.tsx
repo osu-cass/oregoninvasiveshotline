@@ -1,5 +1,5 @@
 import { Form, useForm, usePage } from "@inertiajs/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 interface PageIndexProps {
 	authenticated: boolean;
@@ -8,24 +8,16 @@ interface PageIndexProps {
 export default function Index({ authenticated }: PageIndexProps) {
 	const props = usePage().props
 	const { data, setData, post, processing, errors } = useForm({
-    name: '',
-})
+		name: '',
+		state: '',
+	})
 
-	// const submit = (e: React.FormEvent<HTMLFormElement>) => {
-	// 	const form = e.currentTarget;
-	// 	e.preventDefault();
- //    if (form.checkValidity() === false) {
-
- //      e.stopPropagation();
- //    }
- //    // setValidated(true)
-	// };
+	const submitted = useMemo(() => Boolean(Object.keys(errors).length), [errors]);
 
 	function submit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+		e.preventDefault()
 		post('/test/')
-		
-}
+	}
 
 	return (
 		<div
@@ -33,17 +25,69 @@ export default function Index({ authenticated }: PageIndexProps) {
 			style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}
 		>
 			<form
-				className={`row g-3 ${true ? "was-validated" : "needs-validation"}`}
+				className="row g-3"
 				noValidate
 				onSubmit={submit}
 			>
-				<input type="text" value={data.name} onChange={e => setData('name', e.target.value)} />
-        {errors.name && <div>{errors.name}</div>}
-				<button type="submit" className="btn btn-primary">
-					Submit
-				</button>
+				<div className="col-md-6">
+					<label htmlFor="validationServerName" className="form-label">Name</label>
+					<input
+						type="text"
+						className={`form-control ${submitted ? (errors.name ? 'is-invalid' : 'is-valid') : ''}`}
+						id="validationServerName"
+						value={data.name}
+						onChange={e => setData('name', e.target.value)}
+						aria-describedby={errors.name ? "validationServerNameFeedback" : undefined}
+						required
+					/>
+					{submitted && errors.name && (
+						<div id="validationServerNameFeedback" className="invalid-feedback">
+							{errors.name}
+						</div>
+					)}
+					{/*{submitted && !errors.name && data.name && (
+						<div className="valid-feedback">
+							Looks good!
+						</div>
+					)}*/}
+				</div>
+
+				<div className="col-md-6">
+					<label htmlFor="validationServerState" className="form-label">State</label>
+					<select
+						className={`form-select ${submitted ? (errors.state ? 'is-invalid' : 'is-valid') : ''}`}
+						id="validationServerState"
+						value={data.state}
+						onChange={e => setData('state', e.target.value)}
+						aria-describedby={errors.state ? "validationServerStateFeedback" : undefined}
+						required
+					>
+						<option value="">Choose...</option>
+						<option value="OR">Oregon</option>
+						<option value="WA">Washington</option>
+						<option value="CA">California</option>
+					</select>
+					{submitted && errors.state && (
+						<div id="validationServerStateFeedback" className="invalid-feedback">
+							{errors.state}
+						</div>
+					)}
+					{submitted && !errors.state && data.state && (
+						<div className="valid-feedback">
+							Looks good!
+						</div>
+					)}
+				</div>
+
+				<div className="col-12">
+					<button type="submit" className="btn btn-primary" disabled={processing}>
+						Submit form
+					</button>
+				</div>
 			</form>
-			{JSON.stringify(errors)}
+			<div style={{ marginTop: "2rem" }}>
+				<strong>Debug errors:</strong> {JSON.stringify(errors)}
+			</div>
 		</div>
 	);
 }
