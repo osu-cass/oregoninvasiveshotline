@@ -4,6 +4,7 @@ import axios from "axios";
 import type { ComponentType, ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import Layout from "./components/layout";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 type InertiaPage = ComponentType & {
 	layout?: (page: ReactNode) => ReactNode;

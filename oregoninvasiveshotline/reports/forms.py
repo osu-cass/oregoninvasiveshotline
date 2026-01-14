@@ -442,3 +442,6 @@ class ManagementForm(forms.ModelForm):
             self.instance.actual_species = None
 
         return super().save(*args, **kwargs)
+
+class TestForm(forms.Form):
+    name = forms.CharField(label="Your Name", max_length=100, required=True)
