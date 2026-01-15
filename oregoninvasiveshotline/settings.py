@@ -51,6 +51,7 @@ env = environ.Env(
     SECURE_HSTS_SECONDS=(int, 31536000),
     DJANGO_VITE_DEV_SERVER_HOST=(str, "localhost"),
     DJANGO_VITE_DEV_SERVER_PORT=(int, 5173),
+    DATA_UPLOAD_MAX_MEMORY_SIZE=(int, 5242880)
 )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -132,6 +133,9 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(FILE_ROOT, 'media'))  # pyright: ignore
 MEDIA_URL = '/media/'
 STATICFILES_STORAGE = env('STATICFILES_STORAGE')
+
+# Temporary increase to 5MB to support many file uploads (see AB#4342)
+DATA_UPLOAD_MAX_MEMORY_SIZE = env('DATA_UPLOAD_MAX_MEMORY_SIZE')
 
 # Logging configuration
 FIRST_PARTY_LOGGER = {
