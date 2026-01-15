@@ -10,6 +10,6 @@ COPY package.json package-lock.json ./
 RUN npm ci && npm cache clean --force
 
 # Copy application source
-COPY vite.config.js ./
+COPY vite.config.ts ./
 COPY tsconfig*.json ./
 COPY frontend/ ./frontend/
