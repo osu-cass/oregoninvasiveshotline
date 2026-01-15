@@ -1,0 +1,36 @@
+{
+  "src/features/test-page.tsx": {
+    "file": "assets/test-page-COqeJj2d.js",
+    "name": "test-page",
+    "src": "src/features/test-page.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "src/main.tsx"
+    ],
+    "css": [
+      "assets/css-tn0RQdqM.css"
+    ]
+  },
+  "src/main.css": {
+    "file": "assets/css-tn0RQdqM.css",
+    "src": "src/main.css",
+    "isEntry": true,
+    "name": "css",
+    "names": [
+      "css.css"
+    ]
+  },
+  "src/main.tsx": {
+    "file": "assets/main-Ca4uef5R.js",
+    "name": "main",
+    "src": "src/main.tsx",
+    "isEntry": true,
+    "dynamicImports": [
+      "src/features/test-page.tsx"
+    ],
+    "css": [
+      "assets/main-DBkz-poX.css",
+      "assets/css-tn0RQdqM.css"
+    ]
+  }
+}

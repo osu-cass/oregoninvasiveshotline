@@ -87,6 +87,7 @@ export default function Index({ authenticated }: PageIndexProps) {
 			</form>
 			<div style={{ marginTop: "2rem" }}>
 				<strong>Debug errors:</strong> {JSON.stringify(errors)}
+				{submitted ? "yes" : "no"}
 			</div>
 		</div>
 	);

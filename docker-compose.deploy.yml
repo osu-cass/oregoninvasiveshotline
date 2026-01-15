@@ -58,6 +58,16 @@ services:
       - DB_PASSWORD
       - GOOGLE_API_KEY
     user: '${USER_ID}'
+  
+  vite-build:
+    build:
+      context: .
+      dockerfile: docker/vite.Dockerfile
+    command: npm run build
+    networks:
+      - default
+    volumes:
+      - ${VOLUME_PATH}/frontend:/app/frontend/dist
 
   celery:
     image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline:latest}

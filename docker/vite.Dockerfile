@@ -3,8 +3,13 @@ FROM node:24-bullseye-slim AS base
 # Set working directory
 WORKDIR /app
 
-# Install node modules
-COPY "./package.json" ./
+# Copy package files first for better layer caching
+COPY package.json package-lock.json ./
 
-ADD . /app
-RUN npm install && npm cache clean --force
+# Install dependencies
+RUN npm ci && npm cache clean --force
+
+# Copy application source
+COPY vite.config.js ./
+COPY tsconfig*.json ./
+COPY frontend/ ./frontend/

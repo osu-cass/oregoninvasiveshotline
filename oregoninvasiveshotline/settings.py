@@ -232,7 +232,7 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.flatpages",
     "django.contrib.gis",
-    
+
     "django_vite",
     "inertia",
 ]
@@ -247,7 +247,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.http.ConditionalGetMiddleware",
-    
+
     "inertia.middleware.InertiaMiddleware",
 ]
 
@@ -278,7 +278,7 @@ if DEBUG:
     ])
 
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = env('SECURE_SSL_REDIRECT')
     SECURE_HSTS_SECONDS = env('SECURE_HSTS_SECONDS')
     SECURE_HSTS_PRELOAD = True
     SESSION_COOKIE_SECURE = True
@@ -427,13 +427,13 @@ if sentry_dsn:
 
 DJANGO_VITE = {
     "default": {
-        "dev_mode": DEBUG,
-        "dev_server_host": env.str("DJANGO_VITE_DEV_SERVER_HOST", default="localhost"),
-        "dev_server_port": env.int("DJANGO_VITE_DEV_SERVER_PORT", default=5173),
+        "dev_mode": False,
+        # "dev_server_host": env.str("DJANGO_VITE_DEV_SERVER_HOST", default="localhost"),
+        # "dev_server_port": env.int("DJANGO_VITE_DEV_SERVER_PORT", default=5173),
     }
 }
 # Where ViteJS assets are built.
-DJANGO_VITE_ASSETS_PATH = BASE_DIR / "frontend" / "dist"
+DJANGO_VITE_ASSETS_PATH = BASE_DIR / "frontend"
 # Include DJANGO_VITE_ASSETS_PATH into STATICFILES_DIRS to be copied inside
 # when run command python manage.py collectstatic
 STATICFILES_DIRS = [DJANGO_VITE_ASSETS_PATH]
