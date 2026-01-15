@@ -1,22 +1,25 @@
-import { Form, useForm, usePage } from "@inertiajs/react";
-import { useMemo, useState } from "react";
+import { useForm, usePage } from "@inertiajs/react";
+import { useMemo } from "react";
 
 interface PageIndexProps {
 	authenticated: boolean;
 }
 
 export default function Index({ authenticated }: PageIndexProps) {
-	const props = usePage().props
+	const _props = usePage().props;
 	const { data, setData, post, processing, errors } = useForm({
-		name: '',
-		state: '',
-	})
+		name: "",
+		state: "",
+	});
 
-	const submitted = useMemo(() => Boolean(Object.keys(errors).length), [errors]);
+	const submitted = useMemo(
+		() => Boolean(Object.keys(errors).length),
+		[errors],
+	);
 
 	function submit(e: React.FormEvent<HTMLFormElement>) {
-		e.preventDefault()
-		post('/test/')
+		e.preventDefault();
+		post("/test/");
 	}
 
 	return (
@@ -24,20 +27,20 @@ export default function Index({ authenticated }: PageIndexProps) {
 			className="container"
 			style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}
 		>
-			<form
-				className="row g-3"
-				noValidate
-				onSubmit={submit}
-			>
+			<form className="row g-3" noValidate onSubmit={submit}>
 				<div className="col-md-6">
-					<label htmlFor="validationServerName" className="form-label">Name</label>
+					<label htmlFor="validationServerName" className="form-label">
+						Name
+					</label>
 					<input
 						type="text"
-						className={`form-control ${submitted ? (errors.name ? 'is-invalid' : 'is-valid') : ''}`}
+						className={`form-control ${submitted ? (errors.name ? "is-invalid" : "is-valid") : ""}`}
 						id="validationServerName"
 						value={data.name}
-						onChange={e => setData('name', e.target.value)}
-						aria-describedby={errors.name ? "validationServerNameFeedback" : undefined}
+						onChange={(e) => setData("name", e.target.value)}
+						aria-describedby={
+							errors.name ? "validationServerNameFeedback" : undefined
+						}
 						required
 					/>
 					{submitted && errors.name && (
@@ -53,13 +56,17 @@ export default function Index({ authenticated }: PageIndexProps) {
 				</div>
 
 				<div className="col-md-6">
-					<label htmlFor="validationServerState" className="form-label">State</label>
+					<label htmlFor="validationServerState" className="form-label">
+						State
+					</label>
 					<select
-						className={`form-select ${submitted ? (errors.state ? 'is-invalid' : 'is-valid') : ''}`}
+						className={`form-select ${submitted ? (errors.state ? "is-invalid" : "is-valid") : ""}`}
 						id="validationServerState"
 						value={data.state}
-						onChange={e => setData('state', e.target.value)}
-						aria-describedby={errors.state ? "validationServerStateFeedback" : undefined}
+						onChange={(e) => setData("state", e.target.value)}
+						aria-describedby={
+							errors.state ? "validationServerStateFeedback" : undefined
+						}
 						required
 					>
 						<option value="">Choose...</option>
@@ -68,19 +75,24 @@ export default function Index({ authenticated }: PageIndexProps) {
 						<option value="CA">California</option>
 					</select>
 					{submitted && errors.state && (
-						<div id="validationServerStateFeedback" className="invalid-feedback">
+						<div
+							id="validationServerStateFeedback"
+							className="invalid-feedback"
+						>
 							{errors.state}
 						</div>
 					)}
 					{submitted && !errors.state && data.state && (
-						<div className="valid-feedback">
-							Looks good!
-						</div>
+						<div className="valid-feedback">Looks good!</div>
 					)}
 				</div>
 
 				<div className="col-12">
-					<button type="submit" className="btn btn-primary" disabled={processing}>
+					<button
+						type="submit"
+						className="btn btn-primary"
+						disabled={processing}
+					>
 						Submit form
 					</button>
 				</div>

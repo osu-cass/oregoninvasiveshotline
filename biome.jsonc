@@ -13,7 +13,8 @@
 			"!tsconfig.*",
 			"!pnpm-*",
 			"!**/node_modules",
-			"!oregoninvasiveshotline"
+			"!oregoninvasiveshotline",
+			"!.vscode"
 		]
 	},
 	"formatter": {

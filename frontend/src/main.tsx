@@ -12,7 +12,9 @@ type InertiaPage = ComponentType & {
 
 import "./main.css";
 
-const features = import.meta.glob<{ default: InertiaPage }>("./features/**/*.tsx");
+const features = import.meta.glob<{ default: InertiaPage }>(
+	"./features/**/*.tsx",
+);
 
 document.addEventListener("DOMContentLoaded", () => {
 	axios.defaults.xsrfCookieName = "csrftoken";

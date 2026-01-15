@@ -278,7 +278,7 @@ if DEBUG:
     ])
 
 if not DEBUG:
-    SECURE_SSL_REDIRECT = env('SECURE_SSL_REDIRECT')
+    SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = env('SECURE_HSTS_SECONDS')
     SECURE_HSTS_PRELOAD = True
     SESSION_COOKIE_SECURE = True
@@ -427,9 +427,9 @@ if sentry_dsn:
 
 DJANGO_VITE = {
     "default": {
-        "dev_mode": False,
-        # "dev_server_host": env.str("DJANGO_VITE_DEV_SERVER_HOST", default="localhost"),
-        # "dev_server_port": env.int("DJANGO_VITE_DEV_SERVER_PORT", default=5173),
+        "dev_mode": DEBUG,
+        "dev_server_host": env.str("DJANGO_VITE_DEV_SERVER_HOST", default="localhost"),
+        "dev_server_port": env.int("DJANGO_VITE_DEV_SERVER_PORT", default=5173),
     }
 }
 # Where ViteJS assets are built.
