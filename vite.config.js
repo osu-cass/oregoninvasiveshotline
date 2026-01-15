@@ -1,5 +1,4 @@
 import { join, resolve } from "node:path";
-import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig, loadEnv } from "vite";
 
@@ -10,7 +9,7 @@ export default defineConfig((mode) => {
 	const OUTPUT_DIR = "./frontend/dist";
 
 	return {
-		plugins: [tailwindcss(), react()],
+		plugins: [react()],
 		resolve: {
 			alias: {
 				"@": resolve(INPUT_DIR, "src"),

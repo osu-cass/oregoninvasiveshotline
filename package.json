@@ -2,8 +2,8 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "TAILWIND_MODE=watch vite",
-		"build": "TAILWIND_MODE=build vite build",
+		"dev": "vite",
+		"build": "vite build",
 		"fmt": "npx @biomejs/biome check --write --unsafe ."
 	},
 	"overrides": {
@@ -22,13 +22,11 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.11",
-		"@tailwindcss/vite": "^4.1.18",
 		"@types/node": "^25.0.6",
 		"@types/react": "^19.2.8",
 		"@types/react-dom": "^19.2.3",
 		"@vitejs/plugin-react": "^5.1.2",
 		"sass": "^1.97.2",
-		"tailwindcss": "^4.1.18",
 		"typescript": "^5.9.3",
 		"vite": "^7.3.1"
 	}
