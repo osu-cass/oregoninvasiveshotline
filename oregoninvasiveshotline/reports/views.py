@@ -355,7 +355,6 @@ def test(request: HttpRequest):
 	if request.method == "POST":
 		form = TestForm(json.loads(request.body))
 		if form.is_valid():
-			name = form.cleaned_data["name"]
 			return inertia_location("/")
 		props["errors"] = form.errors
 
