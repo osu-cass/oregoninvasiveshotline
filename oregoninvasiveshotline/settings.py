@@ -49,6 +49,8 @@ env = environ.Env(
     SENTRY_ENVIRONMENT=(str, ''),
     SENTRY_TRACES_SAMPLE_RATE=(float, 0.1),
     SECURE_HSTS_SECONDS=(int, 31536000),
+    DJANGO_VITE_DEV_SERVER_HOST=(str, "localhost"),
+    DJANGO_VITE_DEV_SERVER_PORT=(int, 5173),
 )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -428,8 +430,8 @@ if sentry_dsn:
 DJANGO_VITE = {
     "default": {
         "dev_mode": DEBUG,
-        "dev_server_host": env.str("DJANGO_VITE_DEV_SERVER_HOST", default="localhost"),
-        "dev_server_port": env.int("DJANGO_VITE_DEV_SERVER_PORT", default=5173),
+        "dev_server_host": env("DJANGO_VITE_DEV_SERVER_HOST"),
+        "dev_server_port": env("DJANGO_VITE_DEV_SERVER_PORT"),
     }
 }
 # Where ViteJS assets are built.

@@ -1,5 +1,4 @@
 {
-	"pythonPath": ".venv/bin/python",
 	"useLibraryCodeForTypes": true,
 	"include": ["oregoninvasiveshotline"]
 }
