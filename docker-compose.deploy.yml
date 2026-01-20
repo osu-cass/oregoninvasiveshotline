@@ -40,7 +40,7 @@ services:
     restart: unless-stopped
 
   app:
-    image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline-python:latest}
+    image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline:latest}
     env_file:
       - .env
     environment:
@@ -68,7 +68,7 @@ services:
       - ${VOLUME_PATH}/frontend:/app/frontend/dist
 
   celery:
-    image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline-python:latest}
+    image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline:latest}
     env_file:
       - .env
     environment:
