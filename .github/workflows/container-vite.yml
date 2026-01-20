@@ -8,11 +8,11 @@ on:
       - develop
   pull_request:
   schedule:
-    - cron: '45 18 * * 3'
+    - cron: "45 18 * * 3"
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository }}-vite
 
 jobs:
   docker:
@@ -65,7 +65,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker/python.Dockerfile
+          file: docker/vite.Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

@@ -40,7 +40,7 @@ services:
     restart: unless-stopped
 
   app:
-    image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline:latest}
+    image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline-python:latest}
     env_file:
       - .env
     environment:
@@ -60,9 +60,7 @@ services:
     user: '${USER_ID}'
   
   vite-build:
-    build:
-      context: .
-      dockerfile: docker/vite.Dockerfile
+    image: ${DOCKER_VITE_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline-vite:latest}
     command: npm run build
     networks:
       - default
@@ -70,7 +68,7 @@ services:
       - ${VOLUME_PATH}/frontend:/app/frontend/dist
 
   celery:
-    image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline:latest}
+    image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline-python:latest}
     env_file:
       - .env
     environment:

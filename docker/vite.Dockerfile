@@ -13,3 +13,6 @@ RUN npm ci && npm cache clean --force
 COPY vite.config.ts ./
 COPY tsconfig*.json ./
 COPY frontend/ ./frontend/
+
+# Default command to build the frontend
+CMD ["npm", "run", "build"]
