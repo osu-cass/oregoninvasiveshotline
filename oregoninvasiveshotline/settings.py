@@ -129,7 +129,8 @@ MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(FILE_ROOT, 'media'))  # pyri
 MEDIA_URL = '/media/'
 STATICFILES_STORAGE = env('STATICFILES_STORAGE')
 
-# Temporary increase to 5MB to support many file uploads (see AB#4342)
+# TODO: Temporary increase to 5MB to support many file uploads (see AB#4342); 
+#   need to evaluate if this can be reduced after implementing a new file upload mechanism
 DATA_UPLOAD_MAX_MEMORY_SIZE = env('DATA_UPLOAD_MAX_MEMORY_SIZE')
 
 # Logging configuration

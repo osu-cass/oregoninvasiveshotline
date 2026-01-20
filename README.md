@@ -102,7 +102,7 @@ out-of-band with respect to the request/response cycle.
 
 ### Running django commands
 
-Django ships with a set of commands that can be run from the command line. If using a Windows machine, it is reccomended to run these commands in wsl. All users should use pipenv.
+Django ships with a set of commands that can be run from the command line. If using a Windows machine, it is recommended to run these commands in wsl. All users should use pipenv.
 
 For example:
 
