@@ -353,6 +353,7 @@ def delete(request, report_id):
 def test(request: HttpRequest):
 	props: Dict[str, Any] = {}
 	if request.method == "POST":
+		# If a POST request arrives with an empty body or malformed JSON (e.g., from a non-Inertia client or network issue), this will raise a json.JSONDecodeError and return a 500 error. potentially add error handling for a real form
 		form = TestForm(json.loads(request.body))
 		if form.is_valid():
 			return inertia_location("/")
