@@ -39,7 +39,6 @@ env = environ.Env(
     STATIC_ROOT=(str, ''),
     MEDIA_ROOT=(str, ''),
     STATICFILES_STORAGE=(str, 'django.contrib.staticfiles.storage.StaticFilesStorage'),
-    CSRF_COOKIE_HTTPONLY=(bool, True),
     CSRF_COOKIE_SECURE=(bool, True),
     SESSION_COOKIE_SECURE=(bool, True),
     SECURE_PROXY_SSL_HEADER=(str, ''),
@@ -123,7 +122,6 @@ USE_L10N = True
 USE_TZ = True
 
 # CSRF and Security Settings
-CSRF_COOKIE_HTTPONLY = env('CSRF_COOKIE_HTTPONLY')
 CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
 SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
 
