@@ -58,7 +58,7 @@ services:
       - DB_PASSWORD
       - GOOGLE_API_KEY
     user: '${USER_ID}'
-  
+
   vite-build:
     image: ${DOCKER_VITE_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline-vite:latest}
     command: npm run build
