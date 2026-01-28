@@ -40,7 +40,7 @@ CMD ["npm", "run", "dev"]
 
 
 # PYTHON DEV/PROD
-FROM python:3.12-slim-bookworm as python
+FROM python:3.12-slim-bookworm AS python
 LABEL org.opencontainers.image.authors="tlinton@pdx.edu"
 LABEL org.opencontainers.image.source=https://github.com/PSU-OIT-ARC/oregoninvasiveshotline
 
@@ -103,7 +103,7 @@ WORKDIR /app
 COPY --chown=${APP_USER}:${APP_GROUP} . /app/
 
 # Copy built frontend assets from ui-build stage
-COPY --from=ui-build --chown=${APP_USER}:${APP_GROUP} /frontend /frontend/dist
+COPY --from=ui-build --chown=${APP_USER}:${APP_GROUP} /app/frontend/dist /frontend/dist
 
 # Install container entrypoint
 COPY /docker/entrypoint.sh /entrypoint.sh
