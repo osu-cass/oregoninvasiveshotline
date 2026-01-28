@@ -1,8 +1,10 @@
 from collections import OrderedDict
 import functools
 import itertools
+import json
 import posixpath
 import csv
+from typing import Any, Dict
 
 from django.conf import settings
 from django.contrib import messages
@@ -11,10 +13,14 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls import reverse
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.views.decorators.http import require_http_methods
 
+from inertia import render as inertia_render
+
+from oregoninvasiveshotline.utils.inertia import inertia_location
 from oregoninvasiveshotline.utils.urls import safe_redirect
 from oregoninvasiveshotline.utils.db import will_be_deleted_with
 from oregoninvasiveshotline.comments.forms import CommentForm
@@ -25,7 +31,7 @@ from oregoninvasiveshotline.images.models import Image
 from oregoninvasiveshotline.species.models import Category, Severity, category_id_to_species_id_json
 from oregoninvasiveshotline.users.utils import get_tab_counts
 
-from .forms import InviteForm, ManagementForm, ReportForm, ReportSearchForm
+from .forms import InviteForm, ManagementForm, ReportForm, ReportSearchForm, TestForm
 from .models import Invite, Report
 from .perms import can_manage_report, can_view_private_report, can_claim_report, permissions
 from .serializers import ReportSerializer
@@ -146,8 +152,7 @@ def _export(reports, format):
     response['Content-Disposition'] = 'attachment; filename="reports.%s"' % format
     return response
 
-
-def create(request):
+def create(request: HttpRequest):
     """
     Render the public form for submitting reports
     """
@@ -343,3 +348,19 @@ def delete(request, report_id):
         "object": report,
         "will_be_deleted_with": related_objects,
     })
+
+@require_http_methods(["GET", "POST"])
+def test(request: HttpRequest):
+	props: Dict[str, Any] = {}
+	if request.method == "POST":
+		# If a POST request arrives with an empty body or malformed JSON (e.g., from a non-Inertia client or network issue), this will raise a json.JSONDecodeError and return a 500 error. potentially add error handling for a real form
+		form = TestForm(json.loads(request.body))
+		if form.is_valid():
+			return inertia_location("/")
+		props["errors"] = form.errors
+
+	return inertia_render(
+	    request,
+	    "test-page",
+	    props
+    )

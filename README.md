@@ -43,7 +43,7 @@ cp .env-default .env
 To use the provided Docker container definitions:
 
 ```bash
-docker compose up
+docker compose up --watch
 ```
 
 View the website at <http://localhost:8000>.

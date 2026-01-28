@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
 import os.path
+from pathlib import Path
 
 from celery.schedules import crontab
 import environ
 from csp.constants import SELF, UNSAFE_INLINE, NONE, NONCE
+from inertia.settings import settings as inertia_settings
 
 # Due to an issue with the types of env(), when passing a default you must add a pyright ignore statement
 # This is because it has a type defualt of NoValue, which the type that is being passed in will not satisfy
@@ -37,7 +39,6 @@ env = environ.Env(
     STATIC_ROOT=(str, ''),
     MEDIA_ROOT=(str, ''),
     STATICFILES_STORAGE=(str, 'django.contrib.staticfiles.storage.StaticFilesStorage'),
-    CSRF_COOKIE_HTTPONLY=(bool, True),
     CSRF_COOKIE_SECURE=(bool, True),
     SESSION_COOKIE_SECURE=(bool, True),
     SECURE_PROXY_SSL_HEADER=(str, ''),
@@ -47,9 +48,12 @@ env = environ.Env(
     SENTRY_ENVIRONMENT=(str, ''),
     SENTRY_TRACES_SAMPLE_RATE=(float, 0.1),
     SECURE_HSTS_SECONDS=(int, 31536000),
+    DJANGO_VITE_DEV_SERVER_HOST=(str, "localhost"),
+    DJANGO_VITE_DEV_SERVER_PORT=(int, 5173),
     DATA_UPLOAD_MAX_MEMORY_SIZE=(int, 5242880)
 )
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 FILE_ROOT = os.path.abspath(os.path.join(BASE_PATH, '..'))
 
@@ -118,7 +122,6 @@ USE_L10N = True
 USE_TZ = True
 
 # CSRF and Security Settings
-CSRF_COOKIE_HTTPONLY = env('CSRF_COOKIE_HTTPONLY')
 CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
 SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
 
@@ -234,6 +237,9 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.flatpages",
     "django.contrib.gis",
+
+    "django_vite",
+    "inertia",
 ]
 
 MIDDLEWARE = [
@@ -245,7 +251,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django.middleware.http.ConditionalGetMiddleware"
+    "django.middleware.http.ConditionalGetMiddleware",
+
+    "inertia.middleware.InertiaMiddleware",
 ]
 
 CONTENT_SECURITY_POLICY = {
@@ -263,6 +271,16 @@ CONTENT_SECURITY_POLICY = {
         "upgrade-insecure-requests": True,
     }
 }
+
+if DEBUG:
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].extend([
+        "http://localhost:5173",
+        UNSAFE_INLINE,
+    ])
+    CONTENT_SECURITY_POLICY["DIRECTIVES"]["connect-src"].extend([
+        "http://localhost:5173",
+        "ws://localhost:5173",  # For HMR websocket
+    ])
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
@@ -411,3 +429,21 @@ if sentry_dsn:
         traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE, # pyright: ignore
         send_default_pii=False
     )
+
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEBUG,
+        "dev_server_host": env("DJANGO_VITE_DEV_SERVER_HOST"),
+        "dev_server_port": env("DJANGO_VITE_DEV_SERVER_PORT"),
+    }
+}
+# Where ViteJS assets are built.
+DJANGO_VITE_ASSETS_PATH = BASE_DIR / ".." / "frontend" / "dist"
+# Include DJANGO_VITE_ASSETS_PATH into STATICFILES_DIRS to be copied inside
+# when run command python manage.py collectstatic
+STATICFILES_DIRS = [DJANGO_VITE_ASSETS_PATH]
+
+INERTIA_LAYOUT = "inertia_base.html"
+INERTIA_SSR_URL = inertia_settings.INERTIA_SSR_URL
+INERTIA_SSR_ENABLED = inertia_settings.INERTIA_SSR_ENABLED
+INERTIA_JSON_ENCODER = inertia_settings.INERTIA_JSON_ENCODER

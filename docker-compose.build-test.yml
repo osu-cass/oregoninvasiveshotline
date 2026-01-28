@@ -45,8 +45,6 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-      # this is important because it selects the correct stage of the Dockerfile
-      target: python
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}
@@ -56,12 +54,10 @@ services:
     environment:
       - APP_SERVICE=wsgi
       - APP_ENVIRONMENT=development
-      - ENABLE_DEBUGGER=${ENABLE_DEBUGGER:-false}
     networks:
       - default
     ports:
       - ${APP_PORT:-8000}:8000
-      - ${DEBUG_PORT:-1080}:1080
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${VOLUME_PATH}/media:/media
@@ -78,38 +74,21 @@ services:
       - DB_PASSWORD
       - GOOGLE_API_KEY
     user: '${USER_ID}'
-    healthcheck:
-      test: ["CMD-SHELL", python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  vite:
+  vite-build:
     build:
       context: .
       dockerfile: docker/Dockerfile
-      target: ui-dev
-    command: npm run dev
-    tty: true
-    ports:
-      - "5173:5173"
-    develop:
-      watch:
-        - action: sync
-          path: .
-          target: /app
-          ignore:
-            - node_modules/
-            - .venv/
-        - action: rebuild
-          path: ./package.json
+    command: npm run build
+    networks:
+      - default
+    volumes:
+      - ${VOLUME_PATH}/frontend:/app/frontend/dist
 
   celery:
     build:
       context: .
       dockerfile: docker/Dockerfile
-      # this is important because it selects the correct stage of the Dockerfile
-      target: python
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}
