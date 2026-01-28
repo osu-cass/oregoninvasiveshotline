@@ -51,7 +51,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${VOLUME_PATH}/media:/media
       - ${VOLUME_PATH}/static:/static
-      # - ${VOLUME_PATH}/frontend:/app/frontend/dist
     depends_on:
       - rabbitmq
     secrets:
