@@ -16,9 +16,9 @@ services:
     networks:
       - default
     environment:
-      - POSTGRES_USER=invasives
-      - POSTGRES_PASSWORD=invasives
-      - POSTGRES_DB=invasives
+      POSTGRES_USER: invasives
+      POSTGRES_PASSWORD_FILE: /run/secrets/DB_PASSWORD
+      POSTGRES_DB: invasives
     volumes:
       - ${VOLUME_PATH}/postgres/16/main:/var/lib/postgresql/data
       - ${VOLUME_PATH}/dumps:/archive
@@ -29,6 +29,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    secrets:
+      - DB_PASSWORD
 
   rabbitmq:
     image: rabbitmq:4.1-alpine
