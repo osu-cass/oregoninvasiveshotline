@@ -103,7 +103,7 @@ WORKDIR /app
 COPY --chown=${APP_USER}:${APP_GROUP} . /app/
 
 # Copy built frontend assets from ui-build stage
-COPY --from=ui-build --chown=${APP_USER}:${APP_GROUP} /app/frontend/dist /app/frontend/dist
+COPY --from=ui-build --chown=${APP_USER}:${APP_GROUP} /app/frontend/dist ../frontend/dist
 
 # Install container entrypoint
 COPY /docker/entrypoint.sh /entrypoint.sh
