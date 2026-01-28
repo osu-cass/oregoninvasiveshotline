@@ -44,7 +44,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/python.Dockerfile
+      dockerfile: docker/Dockerfile
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}
@@ -78,7 +78,7 @@ services:
   vite-build:
     build:
       context: .
-      dockerfile: docker/vite.Dockerfile
+      dockerfile: docker/Dockerfile
     command: npm run build
     networks:
       - default
@@ -88,7 +88,7 @@ services:
   celery:
     build:
       context: .
-      dockerfile: docker/python.Dockerfile
+      dockerfile: docker/Dockerfile
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}

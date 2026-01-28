@@ -51,6 +51,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${VOLUME_PATH}/media:/media
       - ${VOLUME_PATH}/static:/static
+      # - ${VOLUME_PATH}/frontend:/app/frontend/dist
     depends_on:
       - rabbitmq
     secrets:
@@ -58,14 +59,6 @@ services:
       - DB_PASSWORD
       - GOOGLE_API_KEY
     user: '${USER_ID}'
-
-  vite-build:
-    image: ${DOCKER_VITE_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline-vite:latest}
-    command: npm run build
-    networks:
-      - default
-    volumes:
-      - ${VOLUME_PATH}/frontend:/app/frontend/dist
 
   celery:
     image: ${DOCKER_IMAGE:-ghcr.io/osu-cass/oregoninvasiveshotline:latest}

@@ -44,7 +44,9 @@ services:
   app:
     build:
       context: .
-      dockerfile: docker/python.Dockerfile
+      dockerfile: docker/Dockerfile
+      # this is important because it selects the correct stage of the Dockerfile
+      target: python
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}
@@ -85,7 +87,8 @@ services:
   vite:
     build:
       context: .
-      dockerfile: docker/vite.Dockerfile
+      dockerfile: docker/Dockerfile
+      target: ui-dev
     command: npm run dev
     tty: true
     ports:
@@ -104,7 +107,9 @@ services:
   celery:
     build:
       context: .
-      dockerfile: docker/python.Dockerfile
+      dockerfile: docker/Dockerfile
+      # this is important because it selects the correct stage of the Dockerfile
+      target: python
       args:
         - APP_USER_ID=${USER_ID}
         - APP_GROUP_ID=${GROUP_ID}

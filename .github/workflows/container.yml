@@ -1,5 +1,5 @@
 ---
-name: Create and publish a Docker image (Vite)
+name: Create and publish a Docker image
 
 on:
   push:
@@ -8,11 +8,11 @@ on:
       - develop
   pull_request:
   schedule:
-    - cron: "45 18 * * 3"
+    - cron: '45 18 * * 3'
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}-vite
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   docker:
@@ -65,7 +65,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: docker/vite.Dockerfile
+          file: docker/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
