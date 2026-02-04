@@ -20,5 +20,5 @@
 
 {% block js %}
     {{ block.super }}
-    <script nonce="{{request.csp_nonce}}" src="{% static 'js/ss' %}"></script>
+    <script nonce="{{csp_nonce}}" src="{% static 'js/ss' %}"></script>
 {% endblock %}
