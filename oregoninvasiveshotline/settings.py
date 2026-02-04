@@ -273,7 +273,7 @@ SECURE_CSP = {
 if DEBUG:
     SECURE_CSP["script-src"].extend([
         "http://localhost:5173",
-        # CSP.UNSAFE_INLINE,
+        CSP.UNSAFE_INLINE,
     ])
     SECURE_CSP["connect-src"].extend([
         "http://localhost:5173",

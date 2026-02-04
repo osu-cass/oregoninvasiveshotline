@@ -1,9 +1,7 @@
 from django.contrib import admin
-from django.contrib.gis.admin import GISModelAdmin
 from .models import Report
 
-
-class CustomGeoModelAdmin(GISModelAdmin):
+class CustomGeoModelAdmin(admin.GISModelAdmin):
     list_display = ['report_id', '__str__',
                     'county',
                     'claimed_by', 'created_on']
