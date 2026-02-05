@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 import os.path
-from django.utils.csp import CSP
+# for whatever reason, pyright isn't picking up the new CSP libraries, I assume the type stubs haven't been updated yet
+from django.utils.csp import CSP # pyright: ignore[reportMissingImports]
 from pathlib import Path
 
 from celery.schedules import crontab
