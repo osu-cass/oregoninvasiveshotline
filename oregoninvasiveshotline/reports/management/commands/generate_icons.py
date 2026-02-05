@@ -6,7 +6,7 @@ from ...utils import clean_icons, generate_icons
 class Command(BaseCommand):
 
     help = 'Generate map-style icons'
-    requires_system_checks = False
+    requires_system_checks: bool = False
 
     def add_arguments(self, parser):
         parser.add_argument(
