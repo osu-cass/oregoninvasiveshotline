@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import os.path
-# for whatever reason, pyright isn't picking up the new CSP libraries, I assume the type stubs haven't been updated yet
+# for whatever reason, pyright isn't picking up the new CSP libraries, likely type stubs haven't been updated yet
 from django.utils.csp import CSP # pyright: ignore[reportMissingImports]
 from pathlib import Path
 
@@ -261,7 +261,7 @@ SECURE_CSP = {
     "default-src": [CSP.SELF],
     "script-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", CSP.NONCE],
     "style-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", CSP.UNSAFE_INLINE],
-    "img-src": [CSP.SELF, "data:", "https:", "https://*.earthdata.nasa.gov"],
+    "img-src": [CSP.SELF, "data:", "https:"],
     "font-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
     "connect-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com"],
     "object-src": [CSP.NONE],

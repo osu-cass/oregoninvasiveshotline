@@ -6,7 +6,7 @@ from ...utils import clean_icons, generate_icons
 class Command(BaseCommand):
 
     help = 'Generate map-style icons'
-    # seems like django type stubs are out of date, everything seems to suggest leaving this as [] is the modern equiv of false
+    # empty list disables system checks (preferred over False in Django 6); type stubs still expect a bool
     requires_system_checks = [] # pyright: ignore[reportAssignmentType]
 
     def add_arguments(self, parser):
