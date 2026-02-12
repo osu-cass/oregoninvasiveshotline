@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 import os
 import os.path
+# for whatever reason, pyright isn't picking up the new CSP libraries, likely type stubs haven't been updated yet
+from django.utils.csp import CSP # pyright: ignore[reportMissingImports]
 from pathlib import Path
 
 from celery.schedules import crontab
 import environ
-from csp.constants import SELF, UNSAFE_INLINE, NONE, NONCE
 from inertia.settings import settings as inertia_settings
 
 # Due to an issue with the types of env(), when passing a default you must add a pyright ignore statement
@@ -132,7 +133,7 @@ MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(FILE_ROOT, 'media'))  # pyri
 MEDIA_URL = '/media/'
 STATICFILES_STORAGE = env('STATICFILES_STORAGE')
 
-# TODO: Temporary increase to 5MB to support many file uploads (see AB#4342); 
+# TODO: Temporary increase to 5MB to support many file uploads (see AB#4342);
 #   need to evaluate if this can be reduced after implementing a new file upload mechanism
 DATA_UPLOAD_MAX_MEMORY_SIZE = env('DATA_UPLOAD_MAX_MEMORY_SIZE')
 
@@ -207,6 +208,7 @@ TEMPLATES = [{
             "django.template.context_processors.media",
             "django.template.context_processors.static",
             "django.template.context_processors.tz",
+            "django.template.context_processors.csp",
             "oregoninvasiveshotline.context_processors.defaults"
         ]
     }
@@ -226,7 +228,6 @@ INSTALLED_APPS = [
 
     "rest_framework",
     "django_bootstrap5",
-    "csp",
 
     "django.contrib.admin",
     "django.contrib.auth",
@@ -243,7 +244,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "csp.middleware.CSPMiddleware",
+    "django.middleware.csp.ContentSecurityPolicyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -256,28 +257,26 @@ MIDDLEWARE = [
     "inertia.middleware.InertiaMiddleware",
 ]
 
-CONTENT_SECURITY_POLICY = {
-    "DIRECTIVES": {
-        "default-src": [SELF],
-        "script-src": [SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", NONCE],
-        "style-src": [SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", UNSAFE_INLINE],
-        "img-src": [SELF, "data:", "https:"],
-        "font-src": [SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
-        "connect-src": [SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com"],
-        "object-src": [NONE],
-        "base-uri": [SELF],
-        "form-action": [SELF],
-        "frame-ancestors": [NONE],
-        "upgrade-insecure-requests": True,
-    }
+SECURE_CSP = {
+    "default-src": [CSP.SELF],
+    "script-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", CSP.NONCE],
+    "style-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", CSP.UNSAFE_INLINE],
+    "img-src": [CSP.SELF, "data:", "https:"],
+    "font-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+    "connect-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com"],
+    "object-src": [CSP.NONE],
+    "base-uri": [CSP.SELF],
+    "form-action": [CSP.SELF],
+    "frame-ancestors": [CSP.NONE],
+    "upgrade-insecure-requests": True,
 }
 
 if DEBUG:
-    CONTENT_SECURITY_POLICY["DIRECTIVES"]["script-src"].extend([
+    SECURE_CSP["script-src"].extend([
         "http://localhost:5173",
-        UNSAFE_INLINE,
+        CSP.UNSAFE_INLINE,
     ])
-    CONTENT_SECURITY_POLICY["DIRECTIVES"]["connect-src"].extend([
+    SECURE_CSP["connect-src"].extend([
         "http://localhost:5173",
         "ws://localhost:5173",  # For HMR websocket
     ])
