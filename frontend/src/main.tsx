@@ -5,6 +5,7 @@ import type { ComponentType, ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import Layout from "./components/layout";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
 type InertiaPage = ComponentType & {
 	layout?: (page: ReactNode) => ReactNode;
