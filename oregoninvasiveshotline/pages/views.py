@@ -32,7 +32,7 @@ def edit(request, page_id=None):
             return safe_redirect(
                 request,
                 request.GET.get("next"),
-                fallback='pages-list'
+                fallback_url_name='pages-list'
             )
     else:
         form = FlatterPageForm(instance=page)

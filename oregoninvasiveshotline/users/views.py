@@ -86,7 +86,7 @@ def authenticate(request):
     return safe_redirect(
         request,
         request.GET.get('next'),
-        settings.LOGIN_REDIRECT_URL
+        fallback_url_name=settings.LOGIN_REDIRECT_URL
     )
 
 
