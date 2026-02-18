@@ -6,7 +6,8 @@ from ...utils import clean_icons, generate_icons
 class Command(BaseCommand):
 
     help = 'Generate map-style icons'
-    requires_system_checks = False
+    # empty list disables system checks (preferred over False in Django 6); type stubs still expect a bool
+    requires_system_checks = [] # pyright: ignore[reportAssignmentType]
 
     def add_arguments(self, parser):
         parser.add_argument(

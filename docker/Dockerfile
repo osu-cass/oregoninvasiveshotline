@@ -1,4 +1,46 @@
-FROM python:3.12-slim-bookworm
+# FRONTEND PROD
+FROM node:24-bullseye-slim AS ui-build
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files first for better layer caching
+COPY package.json package-lock.json ./
+
+# Install dependencies
+RUN npm ci && npm cache clean --force
+
+# Copy application source
+COPY vite.config.ts ./
+COPY tsconfig*.json ./
+COPY frontend/ ./frontend/
+
+# Default command to build the frontend
+RUN npm run build
+
+
+# FRONTEND DEV
+FROM node:24-bullseye-slim AS ui-dev
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files first for better layer caching
+COPY package.json package-lock.json ./
+
+# Install dependencies
+RUN npm ci && npm cache clean --force
+
+# Copy application source
+COPY vite.config.ts ./
+COPY tsconfig*.json ./
+COPY frontend/ ./frontend/
+
+CMD ["npm", "run", "dev"]
+
+
+# PYTHON DEV/PROD
+FROM python:3.12-slim-bookworm AS python
 LABEL org.opencontainers.image.authors="tlinton@pdx.edu"
 LABEL org.opencontainers.image.source=https://github.com/PSU-OIT-ARC/oregoninvasiveshotline
 
@@ -59,6 +101,9 @@ RUN ${APP_ENV}/bin/pip cache purge
 # copied code is used directly.
 WORKDIR /app
 COPY --chown=${APP_USER}:${APP_GROUP} . /app/
+
+# Copy built frontend assets from ui-build stage
+COPY --from=ui-build --chown=${APP_USER}:${APP_GROUP} /app/frontend/dist ../frontend/dist
 
 # Install container entrypoint
 COPY /docker/entrypoint.sh /entrypoint.sh

@@ -20,8 +20,7 @@ venv
 # Secrets
 docker/secrets/
 
-# Editor Configs
-.zed/
-
 # Other
 *.swp
+
+/frontend/dist

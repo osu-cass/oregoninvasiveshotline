@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
 import os.path
+# for whatever reason, pyright isn't picking up the new CSP libraries, likely type stubs haven't been updated yet
+from django.utils.csp import CSP # pyright: ignore[reportMissingImports]
+from pathlib import Path
 
 from celery.schedules import crontab
 import environ
-from csp.constants import SELF, UNSAFE_INLINE, NONE, NONCE
+from inertia.settings import settings as inertia_settings
 
 # Due to an issue with the types of env(), when passing a default you must add a pyright ignore statement
 # This is because it has a type defualt of NoValue, which the type that is being passed in will not satisfy
@@ -37,7 +40,6 @@ env = environ.Env(
     STATIC_ROOT=(str, ''),
     MEDIA_ROOT=(str, ''),
     STATICFILES_STORAGE=(str, 'django.contrib.staticfiles.storage.StaticFilesStorage'),
-    CSRF_COOKIE_HTTPONLY=(bool, True),
     CSRF_COOKIE_SECURE=(bool, True),
     SESSION_COOKIE_SECURE=(bool, True),
     SECURE_PROXY_SSL_HEADER=(str, ''),
@@ -47,9 +49,12 @@ env = environ.Env(
     SENTRY_ENVIRONMENT=(str, ''),
     SENTRY_TRACES_SAMPLE_RATE=(float, 0.1),
     SECURE_HSTS_SECONDS=(int, 31536000),
+    DJANGO_VITE_DEV_SERVER_HOST=(str, "localhost"),
+    DJANGO_VITE_DEV_SERVER_PORT=(int, 5173),
     DATA_UPLOAD_MAX_MEMORY_SIZE=(int, 5242880)
 )
 
+BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 FILE_ROOT = os.path.abspath(os.path.join(BASE_PATH, '..'))
 
@@ -118,7 +123,6 @@ USE_L10N = True
 USE_TZ = True
 
 # CSRF and Security Settings
-CSRF_COOKIE_HTTPONLY = env('CSRF_COOKIE_HTTPONLY')
 CSRF_COOKIE_SECURE = env('CSRF_COOKIE_SECURE')
 SESSION_COOKIE_SECURE = env('SESSION_COOKIE_SECURE')
 
@@ -129,7 +133,7 @@ MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(FILE_ROOT, 'media'))  # pyri
 MEDIA_URL = '/media/'
 STATICFILES_STORAGE = env('STATICFILES_STORAGE')
 
-# TODO: Temporary increase to 5MB to support many file uploads (see AB#4342); 
+# TODO: Temporary increase to 5MB to support many file uploads (see AB#4342);
 #   need to evaluate if this can be reduced after implementing a new file upload mechanism
 DATA_UPLOAD_MAX_MEMORY_SIZE = env('DATA_UPLOAD_MAX_MEMORY_SIZE')
 
@@ -204,6 +208,7 @@ TEMPLATES = [{
             "django.template.context_processors.media",
             "django.template.context_processors.static",
             "django.template.context_processors.tz",
+            "django.template.context_processors.csp",
             "oregoninvasiveshotline.context_processors.defaults"
         ]
     }
@@ -223,7 +228,6 @@ INSTALLED_APPS = [
 
     "rest_framework",
     "django_bootstrap5",
-    "csp",
 
     "django.contrib.admin",
     "django.contrib.auth",
@@ -234,10 +238,13 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "django.contrib.flatpages",
     "django.contrib.gis",
+
+    "django_vite",
+    "inertia",
 ]
 
 MIDDLEWARE = [
-    "csp.middleware.CSPMiddleware",
+    "django.middleware.csp.ContentSecurityPolicyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -245,24 +252,34 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "django.middleware.http.ConditionalGetMiddleware"
+    "django.middleware.http.ConditionalGetMiddleware",
+
+    "inertia.middleware.InertiaMiddleware",
 ]
 
-CONTENT_SECURITY_POLICY = {
-    "DIRECTIVES": {
-        "default-src": [SELF],
-        "script-src": [SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", NONCE],
-        "style-src": [SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", UNSAFE_INLINE],
-        "img-src": [SELF, "data:", "https:"],
-        "font-src": [SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
-        "connect-src": [SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com"],
-        "object-src": [NONE],
-        "base-uri": [SELF],
-        "form-action": [SELF],
-        "frame-ancestors": [NONE],
-        "upgrade-insecure-requests": True,
-    }
+SECURE_CSP = {
+    "default-src": [CSP.SELF],
+    "script-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", CSP.NONCE],
+    "style-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", CSP.UNSAFE_INLINE],
+    "img-src": [CSP.SELF, "data:", "https:"],
+    "font-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
+    "connect-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com"],
+    "object-src": [CSP.NONE],
+    "base-uri": [CSP.SELF],
+    "form-action": [CSP.SELF],
+    "frame-ancestors": [CSP.NONE],
+    "upgrade-insecure-requests": True,
 }
+
+if DEBUG:
+    SECURE_CSP["script-src"].extend([
+        "http://localhost:5173",
+        CSP.UNSAFE_INLINE,
+    ])
+    SECURE_CSP["connect-src"].extend([
+        "http://localhost:5173",
+        "ws://localhost:5173",  # For HMR websocket
+    ])
 
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
@@ -411,3 +428,21 @@ if sentry_dsn:
         traces_sample_rate=SENTRY_TRACES_SAMPLE_RATE, # pyright: ignore
         send_default_pii=False
     )
+
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEBUG,
+        "dev_server_host": env("DJANGO_VITE_DEV_SERVER_HOST"),
+        "dev_server_port": env("DJANGO_VITE_DEV_SERVER_PORT"),
+    }
+}
+# Where ViteJS assets are built.
+DJANGO_VITE_ASSETS_PATH = BASE_DIR / ".." / "frontend" / "dist"
+# Include DJANGO_VITE_ASSETS_PATH into STATICFILES_DIRS to be copied inside
+# when run command python manage.py collectstatic
+STATICFILES_DIRS = [DJANGO_VITE_ASSETS_PATH]
+
+INERTIA_LAYOUT = "inertia_base.html"
+INERTIA_SSR_URL = inertia_settings.INERTIA_SSR_URL
+INERTIA_SSR_ENABLED = inertia_settings.INERTIA_SSR_ENABLED
+INERTIA_JSON_ENCODER = inertia_settings.INERTIA_JSON_ENCODER
