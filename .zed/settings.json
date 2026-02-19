@@ -25,7 +25,8 @@
 		"JSONC": { "formatter": { "language_server": { "name": "biome" } } },
 		"CSS": { "formatter": { "language_server": { "name": "biome" } } },
 		"Python": {
-			"tab_size": 4
+			"tab_size": 4,
+			"hard_tabs": false
 		},
 		"HTML": {
 			"tab_size": 4

@@ -364,3 +364,27 @@ def test(request: HttpRequest):
 	    "test-page",
 	    props
     )
+
+def create_new(request: HttpRequest):
+    """
+    Render the new experiance for the public form for submitting reports
+    """
+    props: Dict[str, Any] = {}
+
+    if request.POST:
+        form = ReportForm(json.loads(request.POST), request.FILES)
+        # ImageFormSet inherits type incorrectly so we need to cast it to the correct type
+        formset: BaseImageFormSet = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())  # pyright: ignore[reportAssignmentType]
+        if form.is_valid() and formset.is_valid():
+            report = form.save()
+            formset.save_all(user=report.created_by, fk=report)
+            messages.success(request, "Report submitted successfully")
+            request.session.setdefault("report_ids", []).append(report.pk)
+            request.session.modified = True
+            return redirect("reports-detail", report.pk)
+    else:
+    	# ImageFormSet inherits type incorrectly so we need to cast it to the correct type
+        formset: BaseImageFormSet = ImageFormSet(queryset=Image.objects.none())  # pyright: ignore[reportAssignmentType]
+        form = ReportForm()
+
+    return inertia_render(request, "form-wizard", props)
