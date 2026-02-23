@@ -87,7 +87,12 @@
                                             <li><a class="dropdown-item strong" href="{% url 'users-home' %}">My Account</a></li>
                                         {% endif %}
                                         <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="{% url 'logout' %}">Log out</a></li>
+                                        <li>
+                                        	<form action="{% url 'logout' %}" method="post" style="margin:0;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="dropdown-item">Log out</button>
+                                          </form>
+                                        </li>
                                     </ul>
                                 </li>
                             {% else %}
