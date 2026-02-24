@@ -26,6 +26,9 @@
 		"CSS": { "formatter": { "language_server": { "name": "biome" } } },
 		"Python": {
 			"tab_size": 4
+		},
+		"HTML": {
+			"tab_size": 4
 		}
 	}
 }
