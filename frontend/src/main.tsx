@@ -1,6 +1,7 @@
 import "vite/modulepreload-polyfill";
 import { createInertiaApp } from "@inertiajs/react";
 import axios from "axios";
+import { client } from "laravel-precognition";
 import type { ComponentType, ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import Layout from "./components/layout";
@@ -20,6 +21,8 @@ const features = import.meta.glob<{ default: InertiaPage }>(
 document.addEventListener("DOMContentLoaded", () => {
 	axios.defaults.xsrfCookieName = "csrftoken";
 	axios.defaults.xsrfHeaderName = "X-CSRFToken";
+
+	client.use(axios);
 
 	createInertiaApp({
 		resolve: async (name) => {

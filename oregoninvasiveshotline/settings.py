@@ -254,6 +254,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.http.ConditionalGetMiddleware",
 
+    "oregoninvasiveshotline.middleware.precognition_middleware",
     "inertia.middleware.InertiaMiddleware",
 ]
 

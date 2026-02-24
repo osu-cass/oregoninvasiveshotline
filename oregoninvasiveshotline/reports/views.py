@@ -13,14 +13,14 @@ from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls import reverse
 from django.db.models import Q
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_http_methods
 
 from inertia import render as inertia_render
 
-from oregoninvasiveshotline.utils.inertia import inertia_location
+from oregoninvasiveshotline.utils.inertia import inertia_location, is_precognition, parse_precognition_fields
 from oregoninvasiveshotline.utils.urls import safe_redirect
 from oregoninvasiveshotline.utils.db import will_be_deleted_with
 from oregoninvasiveshotline.comments.forms import CommentForm
@@ -365,26 +365,29 @@ def test(request: HttpRequest):
 	    props
     )
 
+@require_http_methods(["GET", "POST"])
 def create_new(request: HttpRequest):
     """
-    Render the new experiance for the public form for submitting reports
+    Render the new experience for the public form for submitting reports.
     """
     props: Dict[str, Any] = {}
 
-    if request.POST:
-        form = ReportForm(json.loads(request.POST), request.FILES)
-        # ImageFormSet inherits type incorrectly so we need to cast it to the correct type
-        formset: BaseImageFormSet = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.none())  # pyright: ignore[reportAssignmentType]
-        if form.is_valid() and formset.is_valid():
+    if request.method == "POST":
+        data = json.loads(request.body)
+        form = ReportForm(data)
+
+        if is_precognition(request):
+           return parse_precognition_fields(request, form)
+
+        # Theoretically we don't need to handle the path for not suceeding, but could be better for progressive enhancement
+        if form.is_valid():
             report = form.save()
-            formset.save_all(user=report.created_by, fk=report)
             messages.success(request, "Report submitted successfully")
             request.session.setdefault("report_ids", []).append(report.pk)
             request.session.modified = True
-            return redirect("reports-detail", report.pk)
-    else:
-    	# ImageFormSet inherits type incorrectly so we need to cast it to the correct type
-        formset: BaseImageFormSet = ImageFormSet(queryset=Image.objects.none())  # pyright: ignore[reportAssignmentType]
-        form = ReportForm()
+            # return redirect("reports-detail", report.pk)
+            return inertia_location("/")
+
+        props["errors"] = form.errors
 
     return inertia_render(request, "form-wizard", props)
