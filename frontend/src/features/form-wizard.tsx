@@ -24,7 +24,15 @@ export default function FormWizard(props: FormWizardProps) {
 	console.log(props);
 	const [step, setStep] = useState(0);
 
-	const form = useForm<WizardFormData>(initialWizardData)
+	const form = useForm<WizardFormData>({
+		...initialWizardData,
+		...(props.user && {
+			first_name: props.user.first_name ?? "",
+			last_name: props.user.last_name ?? "",
+			email: props.user.email,
+			phone: props.user.phone,
+		}),
+	})
 		.withPrecognition("post", "/reports/create-new")
 		.setValidationTimeout(250);
 
@@ -57,7 +65,7 @@ export default function FormWizard(props: FormWizardProps) {
 						{step === 0 && <StepOne form={form} />}
 						{step === 1 && <StepTwo form={form} items={props.categories} />}
 						{step === 2 && <StepThree form={form} />}
-						{step === 0 && <StepFour form={form} />}
+						{step === 3 && <StepFour form={form} />}
 
 						<div className="d-flex justify-content-end mt-4 gap-2">
 							{step > 0 && (
