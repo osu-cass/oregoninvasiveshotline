@@ -31,7 +31,7 @@ from oregoninvasiveshotline.images.models import Image
 from oregoninvasiveshotline.species.models import Category, Severity, category_id_to_species_id_json
 from oregoninvasiveshotline.users.utils import get_tab_counts
 
-from .forms import InviteForm, ManagementForm, ReportForm, ReportSearchForm, TestForm
+from .forms import InviteForm, ManagementForm, NewReportForm, ReportForm, ReportSearchForm, TestForm
 from .models import Invite, Report
 from .perms import can_manage_report, can_view_private_report, can_claim_report, permissions
 from .serializers import ReportSerializer
@@ -374,7 +374,7 @@ def create_new(request: HttpRequest):
 
     if request.method == "POST":
         data = json.loads(request.body)
-        form = ReportForm(data)
+        form = NewReportForm(data)
 
         if is_precognition(request):
            return parse_precognition_fields(request, form)

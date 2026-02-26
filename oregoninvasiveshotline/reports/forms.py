@@ -1,6 +1,7 @@
 from collections import namedtuple
 from typing import Any, cast
 
+from django.contrib.gis.geos import GEOSException, GEOSGeometry, Point
 from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Q
@@ -17,6 +18,8 @@ from oregoninvasiveshotline.reports.tasks import (
     notify_report_subscribers,
     notify_invited_reviewer
 )
+
+DEFAULT_REPORT_POINT = Point(-120.578333, 44, srid=4326)
 
 
 def get_category_choices():
@@ -295,6 +298,101 @@ class ReportForm(forms.ModelForm):
         report.county = County.objects.filter(the_geom__intersects=report.point).first()
 
         super().save(*args, **kwargs)
+
+        questions = self.cleaned_data.get('questions')
+        if questions:
+            Comment.objects.create(
+                report=report, created_by=user, body=questions, visibility=Comment.PROTECTED)
+
+        transaction.on_commit(lambda: notify_report_submission.delay(report.pk, user.pk))
+        transaction.on_commit(lambda: notify_report_subscribers.delay(report.pk))
+
+        return report
+
+
+class NewReportForm(forms.Form):
+
+    find_description = forms.CharField(required=False)
+    category = forms.ModelChoiceField(queryset=Category.objects.all())
+    species = forms.ModelChoiceField(queryset=Species.objects.all(), required=False)
+    identification_process = forms.CharField(required=False, widget=forms.Textarea)
+    location_description = forms.CharField()
+    location = forms.CharField()
+    email = forms.EmailField()
+    first_name = forms.CharField()
+    last_name = forms.CharField()
+    phone = forms.CharField(required=False)
+    questions = forms.CharField(required=False, widget=forms.Textarea)
+
+    def clean_email(self):
+        # NOTE: Technically, email addresses are case-sensitive, but in
+        #       practice we can ignore that.
+        email = self.cleaned_data['email']
+        email = email.lower()
+        return email
+
+    def _get_report_description(self):
+        find_description = self.cleaned_data.get('find_description', '')
+        identification_process = self.cleaned_data.get('identification_process')
+        if identification_process and find_description:
+            return (
+                f"{find_description}\n\n"
+                f"Identification process: {identification_process}"
+            )
+        if identification_process:
+            return f"Identification process: {identification_process}"
+        return find_description
+
+    def _get_report_location(self):
+        location_description = self.cleaned_data['location_description']
+        location = self.cleaned_data.get('location')
+        if location:
+            return f"{location_description}\n\nAdditional location details: {location}"
+        return location_description
+
+    def _get_report_point(self):
+        location = self.cleaned_data.get('location')
+        if location and location.upper().startswith('POINT('):
+            try:
+                point = GEOSGeometry(location, srid=4326)
+                if isinstance(point, Point):
+                    if point.srid is None:
+                        point.srid = 4326
+                    return point
+            except GEOSException:
+                pass
+        return Point(DEFAULT_REPORT_POINT.x, DEFAULT_REPORT_POINT.y, srid=4326)
+
+    def save(self):
+        # NOTE: If the user doesn't exist, a new inactive account is
+        #       automatically created here, which seems to me like a
+        #       tremendously bad idea (still trying to work out how to
+        #       fix this).
+        email = self.cleaned_data['email']
+        defaults = {
+            'email': email.lower(),
+            'prefix': '',
+            'first_name': self.cleaned_data.get('first_name'),
+            'last_name': self.cleaned_data.get('last_name'),
+            'suffix': '',
+            'phone': self.cleaned_data.get('phone', ''),
+            'has_completed_ofpd': False,
+            'is_active': False,
+        }
+        user, _ = User.objects.get_or_create(email__iexact=email, defaults=defaults)
+
+        point = self._get_report_point()
+        report = Report(
+            reported_category=self.cleaned_data['category'],
+            reported_species=self.cleaned_data.get('species'),
+            description=self._get_report_description(),
+            location=self._get_report_location(),
+            point=point,
+            has_specimen=False,
+            created_by=user,
+        )
+        report.county = County.objects.filter(the_geom__intersects=point).first()
+        report.save()
 
         questions = self.cleaned_data.get('questions')
         if questions:

@@ -1,6 +1,7 @@
 import { useForm } from "@inertiajs/react";
 import { useAtom } from "jotai";
 import {
+	allFields,
 	initialWizardData,
 	Steps,
 	type WizardFormData,
@@ -18,18 +19,6 @@ export default function FormWizard() {
 	const currentStep = Steps[step];
 	const isLastStep = step === Steps.length - 1;
 	const isDone = step >= Steps.length;
-
-	function handleNext() {
-		if (!currentStep) return;
-		form.validate({
-			only: currentStep.fields,
-			onSuccess: () => setStep((s) => s + 1),
-		});
-	}
-
-	function handleSubmit() {
-		form.post("/reports/create-new");
-	}
 
 	const Component = currentStep?.component;
 
@@ -74,7 +63,13 @@ export default function FormWizard() {
 								<button
 									type="button"
 									className="btn btn-primary px-4"
-									onClick={handleSubmit}
+									onClick={() => {
+										if (!currentStep) return;
+										form.validate({
+											only: currentStep.fields,
+											onSuccess: () => form.post("/reports/create-new"),
+										});
+									}}
 									disabled={form.processing}
 								>
 									{form.processing ? "Submitting…" : "Submit"}
@@ -83,13 +78,36 @@ export default function FormWizard() {
 								<button
 									type="button"
 									className="btn btn-primary px-4"
-									onClick={handleNext}
+									onClick={() => {
+										if (!currentStep) return;
+										form.validate({
+											only: currentStep.fields,
+											onSuccess: () => setStep((s) => s + 1),
+										});
+									}}
 									disabled={form.validating}
 								>
 									{form.validating ? "Validating…" : "Next"}
 								</button>
 							)}
 						</div>
+					</>
+				)}
+				{Boolean(
+					// @ts-expect-error
+					Object.entries(form.errors).filter(([k]) => !allFields.includes(k))
+						.length,
+				) && (
+					<>
+						Debug Errors:{" "}
+						{JSON.stringify(
+							Object.fromEntries(
+								Object.entries(form.errors).filter(
+									// @ts-expect-error
+									([k]) => !allFields.includes(k),
+								),
+							),
+						)}
 					</>
 				)}
 			</div>

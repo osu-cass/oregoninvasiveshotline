@@ -29,7 +29,7 @@ from oregoninvasiveshotline.species.models import Category, Severity, Species
 from oregoninvasiveshotline.notifications.models import UserNotificationQuery
 from oregoninvasiveshotline.users.models import User
 
-from .forms import InviteForm, ManagementForm, ReportForm, ReportSearchForm
+from .forms import InviteForm, ManagementForm, NewReportForm, ReportForm, ReportSearchForm
 from .models import Invite, Report, receiver__generate_icon
 from .views import _export
 
@@ -764,6 +764,49 @@ class ReportFormTest(TransactionTestCase, UserMixin):
         # mailbox should contain three report submission emails and a
         # subscription notification
         self.assertEqual(len(mail.outbox), 4)
+
+
+class NewReportFormTest(TransactionTestCase):
+
+    def test_identification_process_not_required(self):
+        category = make(Category)
+        form = NewReportForm({
+            "find_description": "Found near trail edge",
+            "category": category.pk,
+            "location_description": "Near mile marker 3",
+            "location": "Trailhead parking lot",
+            "email": "foo@example.com",
+            "first_name": "Foo",
+            "last_name": "Bar",
+        })
+        self.assertTrue(form.is_valid())
+
+    def test_save_maps_wizard_fields(self):
+        category = make(Category)
+        form = NewReportForm({
+            "find_description": "Leafy plant with white flowers",
+            "category": category.pk,
+            "location_description": "Along roadside ditch",
+            "location": "Northbound shoulder by exit 12",
+            "email": "foo@example.com",
+            "first_name": "Foo",
+            "last_name": "Bar",
+            "questions": "Can someone confirm species?",
+        })
+        self.assertTrue(form.is_valid())
+
+        with (
+            patch("oregoninvasiveshotline.reports.forms.notify_report_submission.delay"),
+            patch("oregoninvasiveshotline.reports.forms.notify_report_subscribers.delay"),
+        ):
+            report = form.save()
+
+        self.assertEqual(report.description, "Leafy plant with white flowers")
+        self.assertEqual(
+            report.location,
+            "Along roadside ditch\n\nAdditional location details: Northbound shoulder by exit 12",
+        )
+        self.assertEqual(Comment.objects.get(report=report).body, "Can someone confirm species?")
 
 
 class ManagementFormTest(SuppressPostSaveMixin, TestCase):

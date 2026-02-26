@@ -1,22 +1,26 @@
 import type { ComponentType } from "react";
+import StepFour from "./four";
 import StepOne from "./one";
+import StepThree from "./three";
 import StepTwo from "./two";
 
 const stepFields = {
-	contact: ["first_name", "last_name", "email", "phone"],
-	report: ["description", "location"],
+	photos: ["find_description"],
+	identification: ["category", "species", "identification_process"],
+	location: ["location_description", "location"],
+	contact: ["first_name", "last_name", "email", "phone", "questions"],
 } as const;
 
 export type WizardField = (typeof stepFields)[keyof typeof stepFields][number];
 export type WizardFormData = Record<WizardField, string>;
 
-const allFields = Object.values(stepFields).flat() as WizardField[];
+export const allFields = Object.values(stepFields).flat() as WizardField[];
 
 export const initialWizardData: WizardFormData = Object.fromEntries(
 	allFields.map((field) => [field, ""]),
 ) as WizardFormData;
 
-export interface WizardStepProps {
+export type WizardStepProps = {
 	form: {
 		data: WizardFormData;
 		setData(field: WizardField, value: string): void;
@@ -24,7 +28,7 @@ export interface WizardStepProps {
 		valid(field: WizardField): boolean;
 		invalid(field: WizardField): boolean;
 	};
-}
+};
 
 type Step = {
 	title: string;
@@ -33,6 +37,12 @@ type Step = {
 };
 
 export const Steps: Step[] = [
-	{ title: "Contact Info", fields: stepFields.contact, component: StepOne },
-	{ title: "Report Details", fields: stepFields.report, component: StepTwo },
+	{ title: "Photos", fields: stepFields.photos, component: StepOne },
+	{
+		title: "Identification",
+		fields: stepFields.identification,
+		component: StepTwo,
+	},
+	{ title: "Location", fields: stepFields.location, component: StepThree },
+	{ title: "Contact Info", fields: stepFields.contact, component: StepFour },
 ];
