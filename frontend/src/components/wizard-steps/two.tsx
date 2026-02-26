@@ -1,18 +1,22 @@
+import FormCombobox from "../forms/combobox";
 import Field from "../forms/field";
 import type { WizardStepProps } from ".";
+import type { CategoryWithSpecies } from "./types";
 
-export default function StepTwo({ form }: WizardStepProps) {
+export default function StepTwo({
+	form,
+	items,
+}: WizardStepProps & { items: CategoryWithSpecies[] }) {
+	const comboboxItems = items.map(item => ({
+		...item,
+		label: item.name,
+		value: item.category_id
+	}))
+	
 	return (
 		<div className="row g-3 mt-1">
 			<div className="col-6">
-				<Field
-					form={form}
-					name="category"
-					label="Category"
-					inputProps={{
-						type: "text",
-					}}
-				/>
+				<FormCombobox items={comboboxItems} />
 			</div>
 
 			<div className="col-6">
@@ -35,7 +39,8 @@ export default function StepTwo({ form }: WizardStepProps) {
 					as="textarea"
 					textareaProps={{
 						rows: 5,
-						placeholder: "Describe how you identified this species (markings/size/behavior, tracks/sign, leaf/flower/fruit)",
+						placeholder:
+							"Describe how you identified this species (markings/size/behavior, tracks/sign, leaf/flower/fruit)",
 					}}
 				/>
 			</div>

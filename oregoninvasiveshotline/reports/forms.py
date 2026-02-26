@@ -312,7 +312,7 @@ class ReportForm(forms.ModelForm):
 
 class NewReportForm(forms.Form):
 
-    find_description = forms.CharField(required=False)
+    find_description = forms.CharField()
     category = forms.ModelChoiceField(queryset=Category.objects.all())
     species = forms.ModelChoiceField(queryset=Species.objects.all(), required=False)
     identification_process = forms.CharField(required=False, widget=forms.Textarea)

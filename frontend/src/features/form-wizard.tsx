@@ -1,26 +1,36 @@
 import { useForm } from "@inertiajs/react";
-import { useAtom } from "jotai";
+import { useState } from "react";
 import {
 	allFields,
 	initialWizardData,
 	Steps,
 	type WizardFormData,
 } from "../components/wizard-steps";
-import { stepAtom } from "../components/wizard-steps/atoms";
+import StepFour from "../components/wizard-steps/four";
+import StepOne from "../components/wizard-steps/one";
+import StepThree from "../components/wizard-steps/three";
+import StepTwo from "../components/wizard-steps/two";
+import type {
+	CategoryWithSpecies,
+	ContactInfo,
+} from "../components/wizard-steps/types";
 
-export default function FormWizard() {
-	const [step, setStep] = useAtom(stepAtom);
+interface FormWizardProps {
+	user: ContactInfo;
+	categories: CategoryWithSpecies[];
+}
 
-	const form = useForm<WizardFormData>(initialWizardData).withPrecognition(
-		"post",
-		"/reports/create-new",
-	);
+export default function FormWizard(props: FormWizardProps) {
+	console.log(props);
+	const [step, setStep] = useState(0);
+
+	const form = useForm<WizardFormData>(initialWizardData)
+		.withPrecognition("post", "/reports/create-new")
+		.setValidationTimeout(250);
 
 	const currentStep = Steps[step];
 	const isLastStep = step === Steps.length - 1;
 	const isDone = step >= Steps.length;
-
-	const Component = currentStep?.component;
 
 	return (
 		<div className="row justify-content-center">
@@ -44,7 +54,10 @@ export default function FormWizard() {
 					<div>Submitted!</div>
 				) : (
 					<>
-						{Component && <Component form={form} />}
+						{step === 0 && <StepOne form={form} />}
+						{step === 1 && <StepTwo form={form} items={props.categories} />}
+						{step === 2 && <StepThree form={form} />}
+						{step === 0 && <StepFour form={form} />}
 
 						<div className="d-flex justify-content-end mt-4 gap-2">
 							{step > 0 && (

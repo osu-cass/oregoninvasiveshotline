@@ -9,7 +9,6 @@ export default function StepOne({ form }: WizardStepProps) {
 					form={form}
 					name="find_description"
 					label="Details about what you found"
-					optional
 					as="textarea"
 					textareaProps={{
 						rows: 5,

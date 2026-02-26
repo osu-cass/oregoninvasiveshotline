@@ -9,6 +9,7 @@ from typing import Any, Dict
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls import reverse
@@ -20,6 +21,7 @@ from django.views.decorators.http import require_http_methods
 
 from inertia import render as inertia_render
 
+from oregoninvasiveshotline.users.models import User
 from oregoninvasiveshotline.utils.inertia import inertia_location, is_precognition, parse_precognition_fields
 from oregoninvasiveshotline.utils.urls import safe_redirect
 from oregoninvasiveshotline.utils.db import will_be_deleted_with
@@ -28,7 +30,7 @@ from oregoninvasiveshotline.comments.models import Comment
 from oregoninvasiveshotline.comments.perms import can_create_comment
 from oregoninvasiveshotline.images.forms import BaseImageFormSet, ImageFormSet
 from oregoninvasiveshotline.images.models import Image
-from oregoninvasiveshotline.species.models import Category, Severity, category_id_to_species_id_json
+from oregoninvasiveshotline.species.models import Category, Severity, Species, category_id_to_species_id_json
 from oregoninvasiveshotline.users.utils import get_tab_counts
 
 from .forms import InviteForm, ManagementForm, NewReportForm, ReportForm, ReportSearchForm, TestForm
@@ -371,6 +373,32 @@ def create_new(request: HttpRequest):
     Render the new experience for the public form for submitting reports.
     """
     props: Dict[str, Any] = {}
+    
+    categories = Category.objects.prefetch_related("species").all()
+    
+    props["categories"] = [
+    	{
+        	"category_id": category.category_id,
+            "name": category.name,
+            "species": [
+                {
+                    "species_id": species.species_id,
+                    "name": species.name,
+                    "scientific_name": species.scientific_name,
+                } for species in category.species.all()
+            ]
+        } 
+     for category in categories
+    ]
+    
+    user = request.user
+    
+    props["user"] = {
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "phone": user.phone,
+    } if isinstance(user, User) else None
 
     if request.method == "POST":
         data = json.loads(request.body)

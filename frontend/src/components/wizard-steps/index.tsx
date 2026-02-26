@@ -1,9 +1,3 @@
-import type { ComponentType } from "react";
-import StepFour from "./four";
-import StepOne from "./one";
-import StepThree from "./three";
-import StepTwo from "./two";
-
 const stepFields = {
 	photos: ["find_description"],
 	identification: ["category", "species", "identification_process"],
@@ -33,16 +27,12 @@ export type WizardStepProps = {
 type Step = {
 	title: string;
 	fields: readonly WizardField[];
-	component: ComponentType<WizardStepProps>;
 };
 
 export const Steps: Step[] = [
-	{ title: "Photos", fields: stepFields.photos, component: StepOne },
-	{
-		title: "Identification",
-		fields: stepFields.identification,
-		component: StepTwo,
-	},
-	{ title: "Location", fields: stepFields.location, component: StepThree },
-	{ title: "Contact Info", fields: stepFields.contact, component: StepFour },
+	{ title: "Photos", fields: stepFields.photos },
+	{ title: "Identification", fields: stepFields.identification },
+	{ title: "Location", fields: stepFields.location },
+	{ title: "Contact Info", fields: stepFields.contact },
 ];
+
