@@ -8,19 +8,25 @@ interface Item {
 
 export default function FormCombobox<T extends Item>({
 	items,
+	itemsName,
+	itemsNamePlural,
+	placeholder,
 }: {
 	items: T[];
+	itemsName: string;
+	itemsNamePlural: string;
+	placeholder?: string;
 }) {
 	const id = useId();
 	return (
 		<Combobox.Root items={items}>
-			<div className="d-flex fw-medium small flex-column gap-1 text-body">
-				<label htmlFor={id} className="form-label mb-0">
-					Choose a fruit
+			<div className="d-flex flex-column gap-1 text-body">
+				<label htmlFor={id} className="form-label fw-medium small mb-0">
+					Choose a {itemsName}
 				</label>
 				<div className="position-relative">
 					<Combobox.Input
-						placeholder="e.g. Apple"
+						placeholder={placeholder}
 						id={id}
 						className="form-control pe-5"
 					/>
@@ -29,13 +35,13 @@ export default function FormCombobox<T extends Item>({
 							className="combobox-clear btn btn-link btn-sm lh-1 p-0 text-secondary"
 							aria-label="Clear selection"
 						>
-							<i className="bi bi-x" />
+							<i className="bi bi-x fs-5" />
 						</Combobox.Clear>
 						<Combobox.Trigger
 							className="btn btn-link btn-sm lh-1 p-0 text-secondary"
 							aria-label="Open popup"
 						>
-							<i className="bi bi-chevron-down" />
+							<i className="bi bi-chevron-down fs-5" />
 						</Combobox.Trigger>
 					</div>
 				</div>
@@ -44,7 +50,7 @@ export default function FormCombobox<T extends Item>({
 			<Combobox.Portal>
 				<Combobox.Positioner sideOffset={4}>
 					<Combobox.Popup
-						className="dropdown-menu show rounded border p-0 shadow"
+						className="rounded-3 border bg-white p-0 shadow"
 						style={{
 							width: "var(--anchor-width)",
 							maxWidth: "var(--available-width)",
@@ -52,18 +58,31 @@ export default function FormCombobox<T extends Item>({
 							overflow: "hidden",
 						}}
 					>
-						<Combobox.Empty className="small px-3 py-2 text-muted">
-							No fruits found.
+						<Combobox.Empty>
+							<p
+								className="small d-flex mt-1 mb-1 px-3 align-items-center text-muted"
+								style={{ height: "2.5rem" }}
+							>
+								No {itemsNamePlural} found.
+							</p>
 						</Combobox.Empty>
 						<Combobox.List
-							className="mb-0 overflow-y-auto py-2"
+							className={(state) =>
+								`mb-0 overflow-y-auto ${!state.empty && "py-1"}`
+							}
 							style={{ maxHeight: "23rem" }}
 						>
 							{(item: T) => (
 								<Combobox.Item
 									key={item.value}
 									value={item}
-									className="dropdown-item d-flex gap-2 px-3 py-2 align-items-center"
+									style={{
+										height: "2.5rem",
+										cursor: "pointer",
+									}}
+									className={(state) =>
+										`d-flex mx-1 cursor-pointer gap-2 rounded-2 px-3 align-items-center ${state.highlighted ? "bg-primary text-white" : ""}`
+									}
 								>
 									<span
 										style={{
@@ -73,7 +92,7 @@ export default function FormCombobox<T extends Item>({
 										}}
 									>
 										<Combobox.ItemIndicator>
-											<i className="bi bi-check" />
+											<i className="bi bi-check fs-5" />
 										</Combobox.ItemIndicator>
 									</span>
 									<span>{item.label}</span>

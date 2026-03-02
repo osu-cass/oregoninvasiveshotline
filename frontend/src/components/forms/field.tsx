@@ -36,7 +36,9 @@ export default function Field(props: FieldProps) {
 	const isValid = valid ?? form.valid(name);
 	const className = [
 		"form-control",
-		props.as === "textarea" ? props.textareaProps?.className : props.inputProps?.className,
+		props.as === "textarea"
+			? props.textareaProps?.className
+			: props.inputProps?.className,
 		hasError ? "is-invalid" : isValid ? "is-valid" : undefined,
 	]
 		.filter(Boolean)
@@ -51,9 +53,11 @@ export default function Field(props: FieldProps) {
 
 	return (
 		<div>
-			<label htmlFor={id} className="form-label">
+			<label htmlFor={id} className="form-label fw-medium small mb-0">
 				{label}
-				{optional && <span className="ms-1 text-muted">(optional)</span>}
+				{optional && (
+					<span className="fw-normal ms-1 text-muted">(optional)</span>
+				)}
 			</label>
 
 			{props.as === "textarea" ? (

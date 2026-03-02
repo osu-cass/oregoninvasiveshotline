@@ -15,8 +15,8 @@ export default function StepTwo({
 	
 	return (
 		<div className="row g-3 mt-1">
-			<div className="col-6">
-				<FormCombobox items={comboboxItems} />
+			<div className="col-12">
+				<FormCombobox items={comboboxItems} itemsName="category" itemsNamePlural="categories" placeholder="Select a category" />
 			</div>
 
 			<div className="col-6">
