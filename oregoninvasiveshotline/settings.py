@@ -262,7 +262,7 @@ SECURE_CSP = {
     "default-src": [CSP.SELF],
     "script-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", CSP.NONCE],
     "style-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", CSP.UNSAFE_INLINE],
-    "img-src": [CSP.SELF, "data:", "https:"],
+    "img-src": [CSP.SELF, "blob:", "data:", "https:"],
     "font-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
     "connect-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com"],
     "object-src": [CSP.NONE],
