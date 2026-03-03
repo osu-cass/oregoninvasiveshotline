@@ -1,4 +1,5 @@
 import { useForm, usePage } from "@inertiajs/react";
+import clsx from "clsx";
 import { useMemo } from "react";
 
 interface PageIndexProps {
@@ -7,7 +8,7 @@ interface PageIndexProps {
 
 export default function Index({ authenticated }: PageIndexProps) {
 	const _props = usePage().props;
-	const { data, setData, post, processing, errors,  } = useForm({
+	const { data, setData, post, processing, errors } = useForm({
 		name: "",
 		state: "",
 	});
@@ -34,7 +35,10 @@ export default function Index({ authenticated }: PageIndexProps) {
 					</label>
 					<input
 						type="text"
-						className={`form-control ${submitted ? (errors.name ? "is-invalid" : "is-valid") : ""}`}
+						className={clsx(
+							"form-control",
+							submitted && (errors.name ? "is-invalid" : "is-valid"),
+						)}
 						id="validationServerName"
 						value={data.name}
 						onChange={(e) => setData("name", e.target.value)}
@@ -60,7 +64,10 @@ export default function Index({ authenticated }: PageIndexProps) {
 						State
 					</label>
 					<select
-						className={`form-select ${submitted ? (errors.state ? "is-invalid" : "is-valid") : ""}`}
+						className={clsx(
+							"form-select",
+							submitted && (errors.state ? "is-invalid" : "is-valid"),
+						)}
 						id="validationServerState"
 						value={data.state}
 						onChange={(e) => setData("state", e.target.value)}

@@ -1,5 +1,6 @@
 import { Combobox } from "@base-ui/react/combobox";
 import type { InertiaPrecognitiveFormProps } from "@inertiajs/react";
+import clsx from "clsx";
 import { type Key, type ReactNode, useId, useMemo } from "react";
 import type { WizardField, WizardFormData } from "../wizard-steps/fields";
 
@@ -69,13 +70,15 @@ export default function FormCombobox<T extends Item>({
 					<Combobox.Input
 						placeholder={placeholder}
 						id={id}
-						className={`form-control pe-5 ${validationClass ?? ""}`}
+						className={clsx("form-control pe-5", validationClass)}
 						aria-invalid={hasError}
 						aria-describedby={hasError ? errorId : undefined}
 					/>
 					<div
 						className="position-absolute d-flex end-0 top-0 h-100 align-items-center text-secondary"
-						style={{ paddingInlineEnd: isValid || hasError ? "2.25rem" : "0.75rem" }}
+						style={{
+							paddingInlineEnd: isValid || hasError ? "2.25rem" : "0.75rem",
+						}}
 					>
 						<Combobox.Clear
 							className="combobox-clear btn btn-link btn-sm lh-1 me-1 p-0 text-secondary"
@@ -115,7 +118,7 @@ export default function FormCombobox<T extends Item>({
 						</Combobox.Empty>
 						<Combobox.List
 							className={(state) =>
-								`mb-0 overflow-y-auto ${!state.empty && "py-1"}`
+								clsx("mb-0 overflow-y-auto", !state.empty && "py-1")
 							}
 							style={{ maxHeight: "23rem" }}
 						>
@@ -128,7 +131,10 @@ export default function FormCombobox<T extends Item>({
 										cursor: "pointer",
 									}}
 									className={(state) =>
-										`d-flex mx-1 cursor-pointer gap-2 rounded-2 px-3 align-items-center ${state.highlighted ? "bg-primary text-white" : ""}`
+										clsx(
+											"d-flex mx-1 cursor-pointer gap-2 rounded-2 px-3 align-items-center",
+											state.highlighted && "bg-primary text-white",
+										)
 									}
 								>
 									<span
