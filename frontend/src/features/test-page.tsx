@@ -3,9 +3,11 @@ import clsx from "clsx";
 import { useMemo } from "react";
 
 interface PageIndexProps {
+	/** Whether the current user is logged in. */
 	authenticated: boolean;
 }
 
+/** Dev test page for form validation experiments. */
 export default function Index({ authenticated }: PageIndexProps) {
 	const _props = usePage().props;
 	const { data, setData, post, processing, errors } = useForm({

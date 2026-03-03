@@ -2,10 +2,13 @@ import FormCombobox from "../forms/combobox";
 import Field from "../forms/field";
 import type { CategoryWithSpecies, WizardStepProps } from "./types";
 
+/** Step 2: Category and species identification. */
 export default function StepTwo({
 	form,
 	items,
-}: WizardStepProps & { items: CategoryWithSpecies[] }) {
+}: WizardStepProps & {
+	/** Available categories with their species. */ items: CategoryWithSpecies[];
+}) {
 	const comboboxCategoryItems = items.map((item) => ({
 		...item,
 		label: item.name,
@@ -61,7 +64,7 @@ export default function StepTwo({
 							inputProps={{
 								type: "checkbox",
 								onChange: () => {
-									form.setData("species", "")
+									form.setData("species", "");
 								},
 								placeholder:
 									"If you're not sure which species it is, mark it as unknown. We recommend entering your best guess even if you're unsure. Choose unknown only if you don’t have any guess as to what it might be.",

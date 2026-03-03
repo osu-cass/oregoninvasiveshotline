@@ -1,6 +1,7 @@
 import Field from "../forms/field";
 import type { WizardStepProps } from "./types";
 
+/** Step 3: Location details and map pin. */
 export default function StepThree({ form }: WizardStepProps) {
 	return (
 		<div className="row g-3 mt-1">

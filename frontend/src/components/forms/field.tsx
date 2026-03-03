@@ -3,15 +3,22 @@ import type React from "react";
 import type { WizardField, WizardFormData } from "../wizard-steps/fields";
 
 type BaseFieldProps = {
+	/** The Inertia precognitive form instance. */
 	form: InertiaPrecognitiveFormProps<WizardFormData>;
+	/** Form field key this input controls. */
 	name: WizardField;
+	/** Visible label text. */
 	label: string;
+	/** Shows "(optional)" next to the label. */
 	optional?: boolean;
+	/** Override the auto-detected valid state. */
 	valid?: boolean;
 };
 
 type InputFieldProps = BaseFieldProps & {
+	/** Render as a standard input (default). */
 	as?: "input";
+	/** Extra props forwarded to the underlying `<input>`. */
 	inputProps?: Omit<
 		React.InputHTMLAttributes<HTMLInputElement>,
 		"id" | "value" | "aria-invalid" | "aria-describedby"
@@ -19,13 +26,17 @@ type InputFieldProps = BaseFieldProps & {
 };
 
 type TextareaFieldProps = BaseFieldProps & {
+	/** Render as a textarea. */
 	as: "textarea";
+	/** Extra props forwarded to the underlying `<textarea>`. */
 	textareaProps?: Omit<
 		React.TextareaHTMLAttributes<HTMLTextAreaElement>,
 		"id" | "value" | "aria-invalid" | "aria-describedby"
 	>;
 };
 
+/** form field that handles label, validation feedback, and wires up to Inertia. supports input and textarea. */
+/** Form field with label, validation feedback, wired to Inertia. Supports input and textarea. */
 export default function Field(props: InputFieldProps | TextareaFieldProps) {
 	const { form, name, label, optional, valid } = props;
 	const errorId = `${name}-error`;

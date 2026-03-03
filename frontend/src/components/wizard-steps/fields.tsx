@@ -1,7 +1,4 @@
-import type { InertiaPrecognitiveFormProps } from "@inertiajs/react";
-
-// This is where all of the fields are defined
-// Each step has it's own fields so that each step can have validation run on it independantly
+/** Field keys grouped by wizard step. Each step validates independently. */
 const stepFields = {
 	photos: ["find_description"],
 	identification: [
@@ -14,14 +11,19 @@ const stepFields = {
 	contact: ["first_name", "last_name", "email", "phone", "questions"],
 } as const;
 
+/** Union of all valid form field names. */
 export type WizardField = (typeof stepFields)[keyof typeof stepFields][number];
+/** Record mapping every field name to its string value. */
 export type WizardFormData = Record<WizardField, string>;
 
+/** Flat array of every field name across all steps. */
 export const allFields = Object.values(stepFields).flat() as WizardField[];
+/** Blank form data with every field initialized to "". */
 export const initialWizardData: WizardFormData = Object.fromEntries(
 	allFields.map((field) => [field, ""]),
 ) as WizardFormData;
 
+/** Ordered list of wizard steps with their titles and field keys. */
 export const Steps: {
 	title: string;
 	fields: readonly WizardField[];

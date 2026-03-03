@@ -1,6 +1,7 @@
 import Field from "../forms/field";
 import type { WizardStepProps } from "./types";
 
+/** Step 4: Reporter contact info and optional questions. */
 export default function StepFour({ form }: WizardStepProps) {
 	return (
 		<div className="row g-3 mt-1">
@@ -58,7 +59,8 @@ export default function StepFour({ form }: WizardStepProps) {
 					as="textarea"
 					textareaProps={{
 						rows: 4,
-						placeholder: "Is there anything else you'd like advice on? For example: next steps, safe removal/containment, preventing spread, or what to keep an eye out for nearby"
+						placeholder:
+							"Is there anything else you'd like advice on? For example: next steps, safe removal/containment, preventing spread, or what to keep an eye out for nearby",
 					}}
 				/>
 			</div>

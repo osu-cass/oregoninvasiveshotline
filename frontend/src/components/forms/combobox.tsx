@@ -5,10 +5,13 @@ import { type Key, type ReactNode, useId, useMemo } from "react";
 import type { WizardField, WizardFormData } from "../wizard-steps/fields";
 
 interface Item {
+	/** Display text shown in the dropdown. */
 	label: ReactNode;
+	/** Unique value submitted with the form. */
 	value: Key;
 }
 
+/** Searchable dropdown built on base-ui, wired to an Inertia precognitive form. */
 export default function FormCombobox<T extends Item>({
 	items,
 	itemsName,
@@ -19,13 +22,21 @@ export default function FormCombobox<T extends Item>({
 	disabled,
 	onChange,
 }: {
+	/** List of selectable options. */
 	items: T[];
+	/** Singular name shown in label, e.g. "category". */
 	itemsName: string;
+	/** Plural name shown in empty state, e.g. "categories". */
 	itemsNamePlural: string;
+	/** Input placeholder text. */
 	placeholder?: string;
+	/** The Inertia precognitive form instance. */
 	form: InertiaPrecognitiveFormProps<WizardFormData>;
+	/** Form field key this combobox controls. */
 	name: WizardField;
+	/** Disables the input and trigger. */
 	disabled?: boolean;
+	/** Fires when the selected value changes. */
 	onChange?: (value: T | null) => void;
 }) {
 	const id = useId();

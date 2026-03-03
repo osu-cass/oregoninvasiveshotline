@@ -16,12 +16,15 @@ import type {
 } from "../components/wizard-steps/types";
 
 interface FormWizardProps {
+	/** Logged-in user's contact info, pre-fills step 4. */
 	user: ContactInfo;
+	/** Category + species tree from the backend. */
 	categories: CategoryWithSpecies[];
 }
 
+/** Multi-step report form with progress bar and per-step validation. */
 export default function FormWizard(props: FormWizardProps) {
-	const [step, setStep] = useState(1);
+	const [step, setStep] = useState(0);
 
 	const form = useForm<WizardFormData>({
 		...initialWizardData,
@@ -34,7 +37,7 @@ export default function FormWizard(props: FormWizardProps) {
 	})
 		.withPrecognition("post", "/reports/create-new")
 		.setValidationTimeout(250);
-	
+
 	const currentStep = Steps[step];
 	const isLastStep = step === Steps.length - 1;
 	const isDone = step >= Steps.length;
