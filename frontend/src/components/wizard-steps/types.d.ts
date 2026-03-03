@@ -1,3 +1,6 @@
+import type { InertiaPrecognitiveFormProps } from "@inertiajs/react";
+import type { WizardFormData } from "./fields";
+
 export type CategoryWithSpecies = {
 	category_id: number;
 	name: string;
@@ -14,3 +17,7 @@ export type ContactInfo = {
 	last_name: string | null;
 	phone: string;
 } | null;
+
+export type WizardStepProps = {
+	form: InertiaPrecognitiveFormProps<WizardFormData>;
+};

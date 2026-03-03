@@ -1,5 +1,5 @@
 import Field from "../forms/field";
-import type { WizardStepProps } from ".";
+import type { WizardStepProps } from "./types";
 
 export default function StepFour({ form }: WizardStepProps) {
 	return (

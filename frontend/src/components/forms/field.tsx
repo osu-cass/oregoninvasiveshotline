@@ -1,8 +1,9 @@
+import type { InertiaPrecognitiveFormProps } from "@inertiajs/react";
 import type React from "react";
-import type { WizardField, WizardStepProps } from "../wizard-steps";
+import type { WizardField, WizardFormData } from "../wizard-steps/fields";
 
 type BaseFieldProps = {
-	form: WizardStepProps["form"];
+	form: InertiaPrecognitiveFormProps<WizardFormData>;
 	name: WizardField;
 	label: string;
 	optional?: boolean;
@@ -25,35 +26,87 @@ type TextareaFieldProps = BaseFieldProps & {
 	>;
 };
 
-type FieldProps = InputFieldProps | TextareaFieldProps;
-
-export default function Field(props: FieldProps) {
+export default function Field(props: InputFieldProps | TextareaFieldProps) {
 	const { form, name, label, optional, valid } = props;
-	const id = name;
-	const errorId = `${id}-error`;
+	const errorId = `${name}-error`;
 	const error = form.invalid(name) ? form.errors[name] : undefined;
 	const hasError = Boolean(error);
 	const isValid = valid ?? form.valid(name);
+
+	const inputType =
+		props.as === "textarea" ? undefined : props.inputProps?.type;
+	const isCheck = inputType === "checkbox";
+
+	const baseClass = isCheck ? "form-check-input" : "form-control";
+
+	const validationClass = hasError
+		? "is-invalid"
+		: isValid
+			? "is-valid"
+			: undefined;
+
 	const className = [
-		"form-control",
+		baseClass,
 		props.as === "textarea"
 			? props.textareaProps?.className
 			: props.inputProps?.className,
-		hasError ? "is-invalid" : isValid ? "is-valid" : undefined,
+		validationClass,
 	]
 		.filter(Boolean)
 		.join(" ");
+
 	const baseProps = {
-		id,
+		id: name,
 		value: form.data[name],
 		className,
 		"aria-invalid": hasError,
 		"aria-describedby": hasError ? errorId : undefined,
 	};
 
+	const errorFeedback = hasError && (
+		<div id={errorId} className="invalid-feedback d-block">
+			{error}
+		</div>
+	);
+
+	if (isCheck) {
+		const inputProps = (props as InputFieldProps).inputProps;
+
+		if (!inputProps) {
+			return null;
+		}
+
+		return (
+			<div className="form-check">
+				<input
+					{...inputProps}
+					{...baseProps}
+					onChange={(event) => {
+						inputProps.onChange?.(event);
+						form.setData(name, String(event.target.checked));
+					}}
+					checked={form.data[name] === "true"}
+				/>
+				<label
+					htmlFor={name}
+					className="form-check-label small user-select-none"
+				>
+					<p className="fw-medium mb-0">
+						{label}
+						{optional && (
+							<span className="fw-normal ms-1 text-muted">(optional)</span>
+						)}
+					</p>
+					<p className="mb-0 text-muted">{inputProps.placeholder}</p>
+				</label>
+				{errorFeedback}
+			</div>
+		);
+	}
+
 	return (
 		<div>
-			<label htmlFor={id} className="form-label fw-medium small mb-0">
+			<label htmlFor={name} className="form-label fw-medium small mb-0">
 				{label}
 				{optional && (
 					<span className="fw-normal ms-1 text-muted">(optional)</span>
@@ -80,11 +133,7 @@ export default function Field(props: FieldProps) {
 				/>
 			)}
 
-			{hasError && (
-				<div id={errorId} className="invalid-feedback d-block">
-					{error}
-				</div>
-			)}
+			{errorFeedback}
 		</div>
 	);
 }

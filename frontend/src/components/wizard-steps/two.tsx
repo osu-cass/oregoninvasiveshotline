@@ -1,34 +1,75 @@
 import FormCombobox from "../forms/combobox";
 import Field from "../forms/field";
-import type { WizardStepProps } from ".";
-import type { CategoryWithSpecies } from "./types";
+import type { CategoryWithSpecies, WizardStepProps } from "./types";
 
 export default function StepTwo({
 	form,
 	items,
 }: WizardStepProps & { items: CategoryWithSpecies[] }) {
-	const comboboxItems = items.map(item => ({
+	const comboboxCategoryItems = items.map((item) => ({
 		...item,
 		label: item.name,
-		value: item.category_id
-	}))
-	
+		value: item.category_id,
+	}));
+
+	const comboboxSpeciesItems = items
+		.find((item) => item.category_id === Number(form.data.category))
+		?.species?.map((item) => ({
+			...item,
+			label: item.name,
+			value: item.species_id,
+		}));
+
 	return (
 		<div className="row g-3 mt-1">
 			<div className="col-12">
-				<FormCombobox items={comboboxItems} itemsName="category" itemsNamePlural="categories" placeholder="Select a category" />
-			</div>
-
-			<div className="col-6">
-				<Field
+				<FormCombobox
+					items={comboboxCategoryItems}
+					itemsName="category"
+					itemsNamePlural="categories"
+					placeholder="Select a category"
 					form={form}
-					name="species"
-					label="Species"
-					inputProps={{
-						type: "text",
+					onChange={() => {
+						form.setData("species", "");
 					}}
+					name="category"
 				/>
 			</div>
+
+			{comboboxSpeciesItems && (
+				<>
+					<div className="col-12">
+						<FormCombobox
+							form={form}
+							items={comboboxSpeciesItems}
+							name="species"
+							itemsName="species"
+							itemsNamePlural="species"
+							disabled={form.data.is_species_unknown === "true"}
+							placeholder={
+								form.data.is_species_unknown === "true"
+									? "You marked this species as unknown"
+									: "Select a species"
+							}
+						/>
+					</div>
+					<div className="col-12">
+						<Field
+							form={form}
+							name="is_species_unknown"
+							label="Mark as unknown"
+							inputProps={{
+								type: "checkbox",
+								onChange: () => {
+									form.setData("species", "")
+								},
+								placeholder:
+									"If you're not sure which species it is, mark it as unknown. We recommend entering your best guess even if you're unsure. Choose unknown only if you don’t have any guess as to what it might be.",
+							}}
+						/>
+					</div>
+				</>
+			)}
 
 			<div className="col-12">
 				<Field

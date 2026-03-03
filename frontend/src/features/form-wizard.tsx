@@ -5,7 +5,7 @@ import {
 	initialWizardData,
 	Steps,
 	type WizardFormData,
-} from "../components/wizard-steps";
+} from "../components/wizard-steps/fields";
 import StepFour from "../components/wizard-steps/four";
 import StepOne from "../components/wizard-steps/one";
 import StepThree from "../components/wizard-steps/three";
@@ -21,8 +21,7 @@ interface FormWizardProps {
 }
 
 export default function FormWizard(props: FormWizardProps) {
-	console.log(props);
-	const [step, setStep] = useState(0);
+	const [step, setStep] = useState(1);
 
 	const form = useForm<WizardFormData>({
 		...initialWizardData,
@@ -35,7 +34,7 @@ export default function FormWizard(props: FormWizardProps) {
 	})
 		.withPrecognition("post", "/reports/create-new")
 		.setValidationTimeout(250);
-
+	
 	const currentStep = Steps[step];
 	const isLastStep = step === Steps.length - 1;
 	const isDone = step >= Steps.length;

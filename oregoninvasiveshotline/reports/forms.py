@@ -315,6 +315,7 @@ class NewReportForm(forms.Form):
     find_description = forms.CharField()
     category = forms.ModelChoiceField(queryset=Category.objects.all())
     species = forms.ModelChoiceField(queryset=Species.objects.all(), required=False)
+    is_species_unknown = forms.BooleanField(required=False, label='Species unknown')
     identification_process = forms.CharField(required=False, widget=forms.Textarea)
     location_description = forms.CharField()
     location = forms.CharField()
@@ -330,6 +331,17 @@ class NewReportForm(forms.Form):
         email = self.cleaned_data['email']
         email = email.lower()
         return email
+
+    def clean(self):
+        cleaned_data = super().clean()
+        species = cleaned_data.get('species')
+        is_species_unknown = cleaned_data.get('is_species_unknown')
+
+        if not species and not is_species_unknown:
+            self.add_error("species", "Either choose a species or check the 'Mark as unknown' option.")
+            self.add_error("is_species_unknown", "Either check the 'Mark as unknown' option or choose a species.")
+
+        return cleaned_data
 
     def _get_report_description(self):
         find_description = self.cleaned_data.get('find_description', '')
