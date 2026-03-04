@@ -11,17 +11,24 @@ const stepFields = {
 	contact: ["first_name", "last_name", "email", "phone", "questions"],
 } as const;
 
-/** Union of all valid form field names. */
+/** Union of all valid form field names (string-valued fields only). */
 export type WizardField = (typeof stepFields)[keyof typeof stepFields][number];
-/** Record mapping every field name to its string value. */
-export type WizardFormData = Record<WizardField, string>;
 
-/** Flat array of every field name across all steps. */
+/** Full form data including string fields and image file arrays. */
+export type WizardFormData = Record<WizardField, string> & {
+	images: File[];
+	image_captions: string[];
+};
+
+/** Flat array of every string field name across all steps. */
 export const allFields = Object.values(stepFields).flat() as WizardField[];
-/** Blank form data with every field initialized to "". */
-export const initialWizardData: WizardFormData = Object.fromEntries(
-	allFields.map((field) => [field, ""]),
-) as WizardFormData;
+
+/** Blank form data with every field initialized. */
+export const initialWizardData = {
+	...Object.fromEntries(allFields.map((field) => [field, ""])),
+	images: [] as File[],
+	image_captions: [] as string[],
+} as WizardFormData;
 
 /** Ordered list of wizard steps with their titles and field keys. */
 export const Steps: {

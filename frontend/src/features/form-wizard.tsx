@@ -90,7 +90,12 @@ export default function FormWizard(props: FormWizardProps) {
 										if (!currentStep) return;
 										form.validate({
 											only: currentStep.fields,
-											onSuccess: () => form.post("/reports/create-new"),
+											onSuccess: () =>
+												form.post("/reports/create-new", {
+													// Forces form data to be always submitted as a formdata object for consistancy.
+													// see https://inertiajs.com/docs/v2/the-basics/file-uploads
+													forceFormData: true,
+												}),
 										});
 									}}
 									disabled={form.processing}

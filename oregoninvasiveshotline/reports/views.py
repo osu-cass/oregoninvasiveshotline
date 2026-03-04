@@ -22,7 +22,7 @@ from django.views.decorators.http import require_http_methods
 from inertia import render as inertia_render
 
 from oregoninvasiveshotline.users.models import User
-from oregoninvasiveshotline.utils.inertia import inertia_location, is_precognition, parse_precognition_fields
+from oregoninvasiveshotline.utils.inertia import collect_indexed, get_post_data, inertia_location, is_precognition, parse_precognition_fields
 from oregoninvasiveshotline.utils.urls import safe_redirect
 from oregoninvasiveshotline.utils.db import will_be_deleted_with
 from oregoninvasiveshotline.comments.forms import CommentForm
@@ -401,20 +401,20 @@ def create_new(request: HttpRequest):
     } if isinstance(user, User) else None
 
     if request.method == "POST":
-        data = json.loads(request.body)
-        form = NewReportForm(data)
+        data = get_post_data(request)
+        form = NewReportForm(data, request.FILES)
 
         if is_precognition(request):
            return parse_precognition_fields(request, form)
 
-        # Theoretically we don't need to handle the path for not suceeding, but could be better for progressive enhancement
         if form.is_valid():
-            report = form.save()
+            images = collect_indexed(request.FILES, "images")
+            captions = collect_indexed(request.POST, "image_captions")
+            report = form.save(images=images, captions=captions)
             messages.success(request, "Report submitted successfully")
             request.session.setdefault("report_ids", []).append(report.pk)
             request.session.modified = True
-            # return redirect("reports-detail", report.pk)
-            return inertia_location("/")
+            return inertia_location(f"/reports/detail/{report.pk}")
 
         props["errors"] = form.errors
 

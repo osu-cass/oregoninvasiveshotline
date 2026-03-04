@@ -17,6 +17,7 @@
 		"@popperjs/core": "^2.11.8",
 		"axios": "^1.13.2",
 		"bootstrap": "^5.3.8",
+		"browser-image-compression": "^2.0.2",
 		"clsx": "^2.1.1",
 		"react": "^19.2.3",
 		"react-dom": "^19.2.3",

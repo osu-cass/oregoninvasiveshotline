@@ -1,7 +1,8 @@
 from collections import namedtuple
-from typing import Any, cast
+from typing import Any, List, cast
 
 from django.contrib.gis.geos import GEOSException, GEOSGeometry, Point
+from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Q
@@ -10,6 +11,7 @@ from django import forms
 from oregoninvasiveshotline.utils.search import SearchForm
 from oregoninvasiveshotline.comments.models import Comment
 from oregoninvasiveshotline.counties.models import County
+from oregoninvasiveshotline.images.models import Image
 from oregoninvasiveshotline.species.models import Category, Severity, Species
 from oregoninvasiveshotline.users.models import User
 from oregoninvasiveshotline.reports.models import Invite, Report
@@ -375,7 +377,7 @@ class NewReportForm(forms.Form):
                 pass
         return Point(DEFAULT_REPORT_POINT.x, DEFAULT_REPORT_POINT.y, srid=4326)
 
-    def save(self):
+    def save(self, images: List[UploadedFile] | None = None, captions: List[str] | None = None):
         # NOTE: If the user doesn't exist, a new inactive account is
         #       automatically created here, which seems to me like a
         #       tremendously bad idea (still trying to work out how to
@@ -405,6 +407,16 @@ class NewReportForm(forms.Form):
         )
         report.county = County.objects.filter(the_geom__intersects=point).first()
         report.save()
+
+        # Save uploaded images attached to this report.
+        for i, image_file in enumerate(images or []):
+            caption = (captions[i] if captions and i < len(captions) else '') or ''
+            Image.objects.create(
+                image=image_file,
+                name=caption,
+                created_by=user,
+                report=report,
+            )
 
         questions = self.cleaned_data.get('questions')
         if questions:
