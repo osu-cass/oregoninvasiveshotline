@@ -1,5 +1,6 @@
 import { useForm } from "@inertiajs/react";
 import { useState } from "react";
+import ConfirmNoImagesDialog from "../components/wizard-steps/confirm-no-images-dialog";
 import {
 	allFields,
 	initialWizardData,
@@ -25,6 +26,7 @@ interface FormWizardProps {
 /** Multi-step report form with progress bar and per-step validation. */
 export default function FormWizard(props: FormWizardProps) {
 	const [step, setStep] = useState(0);
+	const [showNoImagesDialog, setShowNoImagesDialog] = useState(false);
 
 	const form = useForm<WizardFormData>({
 		...initialWizardData,
@@ -41,6 +43,31 @@ export default function FormWizard(props: FormWizardProps) {
 	const currentStep = Steps[step];
 	const isLastStep = step === Steps.length - 1;
 	const isDone = step >= Steps.length;
+
+	/** Validates the current step's fields, then advances to the next step. */
+	const validateAndAdvance = () => {
+		if (!currentStep) return;
+		form.validate({
+			only: currentStep.fields,
+			onSuccess: () => setStep((s) => s + 1),
+		});
+	};
+
+	/** Handles the Next button click, prompting if step one has no images. */
+	const handleNextClick = () => {
+		if (!currentStep) return;
+
+		if (step === 0 && form.data.images.length === 0) {
+			// Validate first, then show the dialog only if validation passes.
+			form.validate({
+				only: currentStep.fields,
+				onSuccess: () => setShowNoImagesDialog(true),
+			});
+			return;
+		}
+
+		validateAndAdvance();
+	};
 
 	return (
 		<div className="row justify-content-center">
@@ -106,13 +133,7 @@ export default function FormWizard(props: FormWizardProps) {
 								<button
 									type="button"
 									className="btn btn-primary px-4"
-									onClick={() => {
-										if (!currentStep) return;
-										form.validate({
-											only: currentStep.fields,
-											onSuccess: () => setStep((s) => s + 1),
-										});
-									}}
+									onClick={handleNextClick}
 									disabled={form.validating}
 								>
 									{form.validating ? "Validating…" : "Next"}
@@ -139,6 +160,12 @@ export default function FormWizard(props: FormWizardProps) {
 					</>
 				)}
 			</div>
+
+			<ConfirmNoImagesDialog
+				open={showNoImagesDialog}
+				onOpenChange={setShowNoImagesDialog}
+				onConfirm={() => setStep((s) => s + 1)}
+			/>
 		</div>
 	);
 }
