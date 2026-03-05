@@ -19,7 +19,6 @@ export interface LocationMapProps {
 	mapId?: string;
 	onLocationChange: (next: google.maps.LatLngLiteral) => void;
 	defaultZoom?: number;
-	disabled?: boolean;
 }
 
 export default function LocationMap({
@@ -72,9 +71,13 @@ export default function LocationMap({
 
 	useEffect(() => {
 		if (!map || locationRanYet.current) return;
+		if (marker) {
+			locationRanYet.current = true;
+			return;
+		}
 		locationRanYet.current = true;
 		setToCurrentLocation();
-	}, [map, setToCurrentLocation]);
+	}, [map, marker, setToCurrentLocation]);
 
 	useEffect(() => {
 		const container = searchContainerRef.current;

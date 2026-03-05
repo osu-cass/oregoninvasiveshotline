@@ -1,7 +1,7 @@
 from collections import namedtuple
 from typing import Any, List, cast
 
-from django.contrib.gis.geos import GEOSException, GEOSGeometry, Point
+from django.contrib.gis.geos import Point
 from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
 from django.db import transaction
@@ -22,6 +22,14 @@ from oregoninvasiveshotline.reports.tasks import (
 )
 
 DEFAULT_REPORT_POINT = Point(-120.578333, 44, srid=4326)
+ALLOWED_REPORT_STATES = ("Oregon", "Washington")
+
+
+def get_county(point: Point):
+    return County.objects.filter(
+        the_geom__intersects=point,
+        state__in=ALLOWED_REPORT_STATES,
+    ).first()
 
 
 def get_category_choices():
@@ -276,6 +284,13 @@ class ReportForm(forms.ModelForm):
         email = email.lower()
         return email
 
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     point = cleaned_data.get("point")
+    #     if point and not get_allowed_county(point):
+    #         self.add_error("point", "Report location must be in Oregon or Washington.")
+    #     return cleaned_data
+
     def save(self, *args, **kwargs):
         report = self.instance
 
@@ -297,7 +312,7 @@ class ReportForm(forms.ModelForm):
         user, _ = User.objects.get_or_create(email__iexact=email, defaults=defaults)
 
         report.created_by = user
-        report.county = County.objects.filter(the_geom__intersects=report.point).first()
+        report.county = get_county(report.point)
 
         super().save(*args, **kwargs)
 
@@ -320,7 +335,10 @@ class NewReportForm(forms.Form):
     is_species_unknown = forms.BooleanField(required=False, label='Species unknown')
     identification_process = forms.CharField(required=False, widget=forms.Textarea)
     location_description = forms.CharField()
-    location = forms.CharField()
+    # Long/Lat are required, but we instead just set an error message on 
+    # latitude that's a bit more human friendly later on in the clean method.
+    latitude = forms.FloatField(required=False)
+    longitude = forms.FloatField(required=False)
     email = forms.EmailField()
     first_name = forms.CharField()
     last_name = forms.CharField()
@@ -343,6 +361,18 @@ class NewReportForm(forms.Form):
             self.add_error("species", "Either choose a species or check the 'Mark as unknown' option.")
             self.add_error("is_species_unknown", "Either check the 'Mark as unknown' option or choose a species.")
 
+        latitude = cleaned_data.get("latitude")
+        longitude = cleaned_data.get("longitude")
+        if latitude is None or longitude is None:
+            self.add_error("latitude", "Select a location on the map.")
+            return cleaned_data
+            
+        if 
+
+        # point = Point(longitude, latitude, srid=4326)
+        # if not get_allowed_county(point):
+        #     self.add_error("latitude", "Report location must be in Oregon or Washington.")
+
         return cleaned_data
 
     def _get_report_description(self):
@@ -357,27 +387,14 @@ class NewReportForm(forms.Form):
             return f"Identification process: {identification_process}"
         return find_description
 
-    def _get_report_location(self):
-        location_description = self.cleaned_data['location_description']
-        location = self.cleaned_data.get('location')
-        if location:
-            return f"{location_description}\n\nAdditional location details: {location}"
-        return location_description
-
     def _get_report_point(self):
-        location = self.cleaned_data.get('location')
-        if location and location.upper().startswith('POINT('):
-            try:
-                point = GEOSGeometry(location, srid=4326)
-                if isinstance(point, Point):
-                    if point.srid is None:
-                        point.srid = 4326
-                    return point
-            except GEOSException:
-                pass
-        return Point(DEFAULT_REPORT_POINT.x, DEFAULT_REPORT_POINT.y, srid=4326)
+        latitude = self.cleaned_data.get("latitude")
+        longitude = self.cleaned_data.get("longitude")
+        return Point(longitude, latitude, srid=4326)
 
     def save(self, images: List[UploadedFile] | None = None, captions: List[str] | None = None):
+        if images and images.__len__() > 10:
+            raise forms.ValidationError("You can only upload up to 10 images.")
         # NOTE: If the user doesn't exist, a new inactive account is
         #       automatically created here, which seems to me like a
         #       tremendously bad idea (still trying to work out how to
@@ -400,12 +417,12 @@ class NewReportForm(forms.Form):
             reported_category=self.cleaned_data['category'],
             reported_species=self.cleaned_data.get('species'),
             description=self._get_report_description(),
-            location=self._get_report_location(),
+            location=self.cleaned_data.get('location_description'),
             point=point,
             has_specimen=False,
             created_by=user,
         )
-        report.county = County.objects.filter(the_geom__intersects=point).first()
+        report.county = get_county(point)
         report.save()
 
         # Save uploaded images attached to this report.

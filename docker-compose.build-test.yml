@@ -5,6 +5,8 @@ secrets:
     file: docker/secrets/db_password.txt
   GOOGLE_API_KEY:
     file: docker/secrets/google_api_key.txt
+  GOOGLE_MAP_ID:
+    file: docker/secrets/google_map_id.txt
 
 networks:
   default:
@@ -73,6 +75,7 @@ services:
       - SECRET_KEY
       - DB_PASSWORD
       - GOOGLE_API_KEY
+      - GOOGLE_MAP_ID
     user: '${USER_ID}'
 
   vite-build:

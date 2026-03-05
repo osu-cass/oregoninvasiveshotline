@@ -27,6 +27,8 @@ You must configure a few API keys for this project. To create them, make files w
   - Recommended: `invasives`
 - `google_api_key.txt`
   - Create an API key on <https://mapsplatform.google.com/>. It should look something like `AIzaSyDQwAloK4wKTeKqKJ4oK4wKTeKqKJ4oK4w`.
+- `google_map_id.txt`
+  - Create an map API key on <https://mapsplatform.google.com/>. It should look something like `a1b2c3d4e5f6g7h8`.
 - `secret_key.txt`
   - Create a secret key. For development, you can use whatever random string. In production, use a secure random string.
 

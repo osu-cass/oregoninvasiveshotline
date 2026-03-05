@@ -7,7 +7,7 @@ const stepFields = {
 		"identification_process",
 		"is_species_unknown",
 	],
-	location: ["location_description", "location"],
+	location: ["location_description", "latitude", "longitude"],
 	contact: ["first_name", "last_name", "email", "phone", "questions"],
 } as const;
 

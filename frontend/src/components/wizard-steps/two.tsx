@@ -2,13 +2,16 @@ import FormCombobox from "../forms/combobox";
 import Field from "../forms/field";
 import type { CategoryWithSpecies, WizardStepProps } from "./types";
 
+interface StepTwoProps extends WizardStepProps {
+	/** Available categories with their species. */
+	items: CategoryWithSpecies[];
+}
+
 /** Step 2: Category and species identification. */
 export default function StepTwo({
 	form,
 	items,
-}: WizardStepProps & {
-	/** Available categories with their species. */ items: CategoryWithSpecies[];
-}) {
+}: StepTwoProps) {
 	const comboboxCategoryItems = items.map((item) => ({
 		...item,
 		label: item.name,

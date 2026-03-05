@@ -774,7 +774,8 @@ class NewReportFormTest(TransactionTestCase):
             "find_description": "Found near trail edge",
             "category": category.pk,
             "location_description": "Near mile marker 3",
-            "location": "Trailhead parking lot",
+            "latitude": 44.0481,
+            "longitude": -123.0906,
             "email": "foo@example.com",
             "first_name": "Foo",
             "last_name": "Bar",
@@ -787,7 +788,8 @@ class NewReportFormTest(TransactionTestCase):
             "find_description": "Leafy plant with white flowers",
             "category": category.pk,
             "location_description": "Along roadside ditch",
-            "location": "Northbound shoulder by exit 12",
+            "latitude": 44.0521,
+            "longitude": -123.0867,
             "email": "foo@example.com",
             "first_name": "Foo",
             "last_name": "Bar",
@@ -804,7 +806,7 @@ class NewReportFormTest(TransactionTestCase):
         self.assertEqual(report.description, "Leafy plant with white flowers")
         self.assertEqual(
             report.location,
-            "Along roadside ditch\n\nAdditional location details: Northbound shoulder by exit 12",
+            "Along roadside ditch",
         )
         self.assertEqual(Comment.objects.get(report=report).body, "Can someone confirm species?")
 

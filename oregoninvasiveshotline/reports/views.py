@@ -373,32 +373,6 @@ def create_new(request: HttpRequest):
     Render the new experience for the public form for submitting reports.
     """
     props: Dict[str, Any] = {}
-    
-    categories = Category.objects.prefetch_related("species").all()
-    
-    props["categories"] = [
-    	{
-        	"category_id": category.category_id,
-            "name": category.name,
-            "species": [
-                {
-                    "species_id": species.species_id,
-                    "name": species.name,
-                    "scientific_name": species.scientific_name,
-                } for species in category.species.all()
-            ]
-        } 
-     for category in categories
-    ]
-    
-    user = request.user
-    
-    props["user"] = {
-        "email": user.email,
-        "first_name": user.first_name,
-        "last_name": user.last_name,
-        "phone": user.phone,
-    } if isinstance(user, User) else None
 
     if request.method == "POST":
         data = get_post_data(request)
@@ -417,5 +391,34 @@ def create_new(request: HttpRequest):
             return inertia_location(f"/reports/detail/{report.pk}")
 
         props["errors"] = form.errors
+    
+    categories = Category.objects.prefetch_related("species").all()
+    
+    props["categories"] = [
+    	{
+        	"category_id": category.category_id,
+            "name": category.name,
+            "species": [
+                {
+                    "species_id": species.species_id,
+                    "name": species.name,
+                    "scientific_name": species.scientific_name,
+                } for species in category.species.all()
+            ]
+        } 
+     for category in categories
+    ]
+
+    props["google_api_key"] = settings.GOOGLE_API_KEY
+    props["google_map_id"] = settings.GOOGLE_MAP_ID
+    
+    user = request.user
+    
+    props["user"] = {
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "phone": user.phone,
+    } if isinstance(user, User) else None
 
     return inertia_render(request, "form-wizard", props)

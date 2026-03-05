@@ -21,6 +21,10 @@ interface FormWizardProps {
 	user: ContactInfo;
 	/** Category + species tree from the backend. */
 	categories: CategoryWithSpecies[];
+	/** Google Maps API key for location step. */
+	google_api_key?: string;
+	/** Google Map ID for advanced marker support. */
+	google_map_id?: string;
 }
 
 /** Multi-step report form with progress bar and per-step validation. */
@@ -93,7 +97,13 @@ export default function FormWizard(props: FormWizardProps) {
 					<>
 						{step === 0 && <StepOne form={form} />}
 						{step === 1 && <StepTwo form={form} items={props.categories} />}
-						{step === 2 && <StepThree form={form} />}
+						{step === 2 && (
+							<StepThree
+								form={form}
+								googleApiKey={props.google_api_key}
+								googleMapId={props.google_map_id}
+							/>
+						)}
 						{step === 3 && <StepFour form={form} />}
 
 						<div className="d-flex justify-content-end mt-4 gap-2">
