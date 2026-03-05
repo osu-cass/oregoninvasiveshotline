@@ -4,6 +4,7 @@ import axios from "axios";
 import { client } from "laravel-precognition";
 import type { ComponentType, ReactNode } from "react";
 import { createRoot } from "react-dom/client";
+import { Toaster } from "sonner";
 import Layout from "./components/layout";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -31,7 +32,12 @@ document.addEventListener("DOMContentLoaded", () => {
 			return page;
 		},
 		setup({ el, App, props }) {
-			createRoot(el).render(<App {...props} />);
+			createRoot(el).render(
+				<>
+					<App {...props} />
+					<Toaster />
+				</>,
+			);
 		},
 	});
 });
