@@ -36,16 +36,19 @@ export default function LocationMap({
 	const searchInputId = useId();
 	const markerPosition = marker ?? defaultCenter;
 
-	const onLocationChangeEvent = useCallback((latLng: google.maps.LatLngLiteral | null) => {
-		if (!latLng) return;
-		onLocationChange(latLng);
-		setIsCurrectLocation(false);
-	}, [onLocationChange])
-	
+	const onLocationChangeEvent = useCallback(
+		(latLng: google.maps.LatLngLiteral | null) => {
+			if (!latLng) return;
+			onLocationChange(latLng);
+			setIsCurrectLocation(false);
+		},
+		[onLocationChange],
+	);
+
 	const changeLocation = useCallback(
 		(next: google.maps.LatLngLiteral) => {
 			if (!map) return;
-			onLocationChangeEvent(next)
+			onLocationChangeEvent(next);
 			map.panTo(next);
 		},
 		[map, onLocationChangeEvent],
@@ -62,7 +65,9 @@ export default function LocationMap({
 					setIsCurrectLocation(true);
 				},
 				() => {
-					toast.error("Unable to retrieve your location. Please allow location access and try again.");
+					toast.error(
+						"Unable to retrieve your location. Please allow location access and try again.",
+					);
 					setIsCurrectLocation(false);
 				},
 			),
@@ -135,7 +140,14 @@ export default function LocationMap({
 			autocomplete.removeEventListener("keydown", handleKeyDown);
 			autocomplete.remove();
 		};
-	}, [defaultZoom, map, placesLibrary, searchInputId, changeLocation, onLocationChangeEvent]);
+	}, [
+		defaultZoom,
+		map,
+		placesLibrary,
+		searchInputId,
+		changeLocation,
+		onLocationChangeEvent,
+	]);
 
 	return (
 		<div className="d-grid gap-2">

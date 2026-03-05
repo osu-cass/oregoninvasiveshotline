@@ -8,10 +8,7 @@ interface StepTwoProps extends WizardStepProps {
 }
 
 /** Step 2: Category and species identification. */
-export default function StepTwo({
-	form,
-	items,
-}: StepTwoProps) {
+export default function StepTwo({ form, items }: StepTwoProps) {
 	const comboboxCategoryItems = items.map((item) => ({
 		...item,
 		label: item.name,
