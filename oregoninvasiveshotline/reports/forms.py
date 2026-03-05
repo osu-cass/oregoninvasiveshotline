@@ -366,8 +366,6 @@ class NewReportForm(forms.Form):
         if latitude is None or longitude is None:
             self.add_error("latitude", "Select a location on the map.")
             return cleaned_data
-            
-        if 
 
         # point = Point(longitude, latitude, srid=4326)
         # if not get_allowed_county(point):
