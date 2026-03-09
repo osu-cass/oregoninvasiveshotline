@@ -2,7 +2,7 @@ import { Combobox } from "@base-ui/react/combobox";
 import type { InertiaPrecognitiveFormProps } from "@inertiajs/react";
 import clsx from "clsx";
 import { type Key, type ReactNode, useId, useMemo } from "react";
-import type { WizardField, WizardFormData } from "../wizard-steps/fields";
+import type { WizardField, WizardFormData } from "../wizard/fields";
 
 interface Item {
 	/** Display text shown in the dropdown. */

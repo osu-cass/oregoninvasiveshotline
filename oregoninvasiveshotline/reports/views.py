@@ -363,7 +363,7 @@ def test(request: HttpRequest):
 
 	return inertia_render(
 	    request,
-	    "test-page",
+	    "testPage",
 	    props
     )
 
@@ -421,4 +421,4 @@ def create_new(request: HttpRequest):
         "phone": user.phone,
     } if isinstance(user, User) else None
 
-    return inertia_render(request, "form-wizard", props)
+    return inertia_render(request, "reportWizard", props)

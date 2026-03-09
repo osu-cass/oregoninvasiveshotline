@@ -1,6 +1,6 @@
-import FormCombobox from "../forms/combobox";
-import Field from "../forms/field";
-import type { CategoryWithSpecies, WizardStepProps } from "./types";
+import FormCombobox from "../../forms/combobox";
+import Field from "../../forms/field";
+import type { CategoryWithSpecies, WizardStepProps } from "../types";
 
 interface StepTwoProps extends WizardStepProps {
 	/** Available categories with their species. */

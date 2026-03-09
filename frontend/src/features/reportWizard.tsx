@@ -1,20 +1,20 @@
 import { useForm } from "@inertiajs/react";
 import { useState } from "react";
-import ConfirmNoImagesDialog from "../components/wizard-steps/confirm-no-images-dialog";
+import ConfirmNoImagesDialog from "../components/wizard/confirmNoImagesDialog";
 import {
 	allFields,
 	initialWizardData,
 	Steps,
 	type WizardFormData,
-} from "../components/wizard-steps/fields";
-import StepFour from "../components/wizard-steps/four";
-import StepOne from "../components/wizard-steps/one";
-import StepThree from "../components/wizard-steps/three";
-import StepTwo from "../components/wizard-steps/two";
+} from "../components/wizard/fields";
+import StepFour from "../components/wizard/steps/four";
+import StepOne from "../components/wizard/steps/one";
+import StepThree from "../components/wizard/steps/three";
+import StepTwo from "../components/wizard/steps/two";
 import type {
 	CategoryWithSpecies,
 	ContactInfo,
-} from "../components/wizard-steps/types";
+} from "../components/wizard/types";
 
 interface FormWizardProps {
 	/** Logged-in user's contact info, pre-fills step 4. */

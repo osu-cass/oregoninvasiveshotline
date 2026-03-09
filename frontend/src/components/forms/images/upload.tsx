@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useState } from "react";
-import ImageThumb from "./image-thumb";
-import { resizeImage } from "./resize-image";
+import ImageThumb from "./imageThumbnail";
+import { resizeImage } from "./resizeImage";
 
 const ACCEPT = "image/*";
 

@@ -1,8 +1,8 @@
 import { APIProvider } from "@vis.gl/react-google-maps";
 import { useCallback, useMemo } from "react";
-import Field from "../forms/field";
-import LocationMap from "./location-map";
-import type { WizardStepProps } from "./types";
+import Field from "../../forms/field";
+import LocationMap from "../locationMap";
+import type { WizardStepProps } from "../types";
 
 const defaultCenter = { lat: 44, lng: -120.578333 };
 

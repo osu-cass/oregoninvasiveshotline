@@ -1,6 +1,6 @@
-import Field from "../forms/field";
-import ImageUpload from "../forms/image-upload";
-import type { WizardStepProps } from "./types";
+import Field from "../../forms/field";
+import ImageUpload from "../../forms/images/upload";
+import type { WizardStepProps } from "../types";
 
 /** Step 1: Photo upload and description of the find. */
 export default function StepOne({ form }: WizardStepProps) {

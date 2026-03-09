@@ -1,5 +1,5 @@
-import Field from "../forms/field";
-import type { WizardStepProps } from "./types";
+import Field from "../../forms/field";
+import type { WizardStepProps } from "../types";
 
 /** Step 4: Reporter contact info and optional questions. */
 export default function StepFour({ form }: WizardStepProps) {

@@ -1,6 +1,6 @@
 import type { InertiaPrecognitiveFormProps } from "@inertiajs/react";
 import type React from "react";
-import type { WizardField, WizardFormData } from "../wizard-steps/fields";
+import type { WizardField, WizardFormData } from "../wizard/fields";
 
 type BaseFieldProps = {
 	/** The Inertia precognitive form instance. */
