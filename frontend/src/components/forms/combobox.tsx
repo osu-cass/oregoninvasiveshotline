@@ -1,7 +1,7 @@
 import { Combobox } from "@base-ui/react/combobox";
 import type { InertiaPrecognitiveFormProps } from "@inertiajs/react";
 import clsx from "clsx";
-import { type Key, type ReactNode, useId, useMemo } from "react";
+import { type Key, type ReactNode, useMemo } from "react";
 import type { WizardField, WizardFormData } from "../wizard/fields";
 
 interface Item {
@@ -39,7 +39,7 @@ export default function FormCombobox<T extends Item>({
 	/** Fires when the selected value changes. */
 	onChange?: (value: T | null) => void;
 }) {
-	const id = useId();
+	const id = name;
 	const formValue = form.data[name];
 	const selectedItem = useMemo(
 		() => items.find((item) => String(item.value) === formValue) ?? null,

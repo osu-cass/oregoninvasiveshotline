@@ -275,6 +275,9 @@ SECURE_CSP = {
 }
 
 if DEBUG:
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = False
+    SECURE_CSP["upgrade-insecure-requests"] = False
     SECURE_CSP["script-src"].extend([
         "http://localhost:5173",
         CSP.UNSAFE_INLINE,
