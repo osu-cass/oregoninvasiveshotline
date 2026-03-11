@@ -9,12 +9,11 @@ from typing import Any, Dict
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import AnonymousUser
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls import reverse
 from django.db.models import Q
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views.decorators.http import require_http_methods
@@ -30,7 +29,7 @@ from oregoninvasiveshotline.comments.models import Comment
 from oregoninvasiveshotline.comments.perms import can_create_comment
 from oregoninvasiveshotline.images.forms import BaseImageFormSet, ImageFormSet
 from oregoninvasiveshotline.images.models import Image
-from oregoninvasiveshotline.species.models import Category, Severity, Species, category_id_to_species_id_json
+from oregoninvasiveshotline.species.models import Category, Severity, category_id_to_species_id_json
 from oregoninvasiveshotline.users.utils import get_tab_counts
 
 from .forms import InviteForm, ManagementForm, NewReportForm, ReportForm, ReportSearchForm, TestForm

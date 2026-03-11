@@ -1,8 +1,8 @@
 import json
-from typing import Any
+from typing import Any, Mapping
 
 from django.forms import Form
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse, QueryDict
 
 
 def inertia_location(url: str) -> HttpResponse:
@@ -16,7 +16,7 @@ def is_precognition(request: HttpRequest) -> bool:
     return "Precognition" in request.headers
 
 
-def get_post_data(request: HttpRequest) -> dict[str, Any]:
+def get_post_data(request: HttpRequest) -> QueryDict | dict[str, Any]:
     """Return POST data from either form-encoded or JSON request bodies.
 
     Precognition sends JSON when the payload has no files. Django only
@@ -29,7 +29,7 @@ def get_post_data(request: HttpRequest) -> dict[str, Any]:
     return json.loads(request.body)
 
 
-def collect_indexed(source: dict, prefix: str) -> list:
+def collect_indexed(source: Mapping[str, object], prefix: str) -> list:
     """Collect values sent with Inertia's indexed array format.
 
     Inertia serializes arrays as prefix[0], prefix[1], etc. Django treats
