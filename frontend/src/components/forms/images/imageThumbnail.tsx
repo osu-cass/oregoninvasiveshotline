@@ -1,12 +1,6 @@
 import { useEffect, useMemo } from "react";
 
-/** Thumbnail preview for an uploaded image with caption input and remove button. */
-export default function ImageThumb({
-	file,
-	caption,
-	onCaptionChange,
-	onRemove,
-}: {
+interface ImageThumbProps {
 	/** The image file. */
 	file: File;
 	/** The caption for this image. */
@@ -15,7 +9,15 @@ export default function ImageThumb({
 	onCaptionChange: (caption: string) => void;
 	/** Called when the user clicks the remove button. */
 	onRemove: () => void;
-}) {
+}
+
+/** Thumbnail preview for an uploaded image with caption input and remove button. */
+export default function ImageThumb({
+	file,
+	caption,
+	onCaptionChange,
+	onRemove,
+}: ImageThumbProps) {
 	const src = useMemo(() => URL.createObjectURL(file), [file]);
 
 	useEffect(() => {

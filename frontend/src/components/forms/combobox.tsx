@@ -11,17 +11,7 @@ interface Item {
 	value: Key;
 }
 
-/** Searchable dropdown built on base-ui, wired to an Inertia precognitive form. */
-export default function FormCombobox<T extends Item>({
-	items,
-	itemsName,
-	itemsNamePlural,
-	placeholder,
-	form,
-	name,
-	disabled,
-	onChange,
-}: {
+interface ComboboxProps<T> {
 	/** List of selectable options. */
 	items: T[];
 	/** Singular name shown in label, e.g. "category". */
@@ -38,7 +28,19 @@ export default function FormCombobox<T extends Item>({
 	disabled?: boolean;
 	/** Fires when the selected value changes. */
 	onChange?: (value: T | null) => void;
-}) {
+}
+
+/** Searchable dropdown built on base-ui, wired to an Inertia precognitive form. */
+export default function FormCombobox<T extends Item>({
+	items,
+	itemsName,
+	itemsNamePlural,
+	placeholder,
+	form,
+	name,
+	disabled,
+	onChange,
+}: ComboboxProps<T>) {
 	const id = name;
 	const formValue = form.data[name];
 	const selectedItem = useMemo(
@@ -50,12 +52,6 @@ export default function FormCombobox<T extends Item>({
 	const hasError = Boolean(error);
 	const isValid = form.valid(name);
 	const errorId = `${name}-error`;
-
-	const validationClass = hasError
-		? "is-invalid"
-		: isValid
-			? "is-valid"
-			: undefined;
 
 	const errorFeedback = hasError && (
 		<div id={errorId} className="invalid-feedback d-block">
@@ -81,7 +77,11 @@ export default function FormCombobox<T extends Item>({
 					<Combobox.Input
 						placeholder={placeholder}
 						id={id}
-						className={clsx("form-control pe-5", validationClass)}
+						className={clsx(
+							"form-control pe-5",
+							hasError && "is-invalid",
+							isValid && "is-valid",
+						)}
 						aria-invalid={hasError}
 						aria-describedby={hasError ? errorId : undefined}
 					/>

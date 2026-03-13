@@ -1,8 +1,9 @@
 import type { InertiaPrecognitiveFormProps } from "@inertiajs/react";
+import clsx from "clsx";
 import type React from "react";
 import type { WizardField, WizardFormData } from "../wizard/fields";
 
-type BaseFieldProps = {
+interface BaseFieldProps {
 	/** The Inertia precognitive form instance. */
 	form: InertiaPrecognitiveFormProps<WizardFormData>;
 	/** Form field key this input controls. */
@@ -13,9 +14,9 @@ type BaseFieldProps = {
 	optional?: boolean;
 	/** Override the auto-detected valid state. */
 	valid?: boolean;
-};
+}
 
-type InputFieldProps = BaseFieldProps & {
+interface InputFieldProps extends BaseFieldProps {
 	/** Render as a standard input (default). */
 	as?: "input";
 	/** Extra props forwarded to the underlying `<input>`. */
@@ -23,9 +24,9 @@ type InputFieldProps = BaseFieldProps & {
 		React.InputHTMLAttributes<HTMLInputElement>,
 		"id" | "value" | "aria-invalid" | "aria-describedby"
 	>;
-};
+}
 
-type TextareaFieldProps = BaseFieldProps & {
+interface TextareaFieldProps extends BaseFieldProps {
 	/** Render as a textarea. */
 	as: "textarea";
 	/** Extra props forwarded to the underlying `<textarea>`. */
@@ -33,7 +34,7 @@ type TextareaFieldProps = BaseFieldProps & {
 		React.TextareaHTMLAttributes<HTMLTextAreaElement>,
 		"id" | "value" | "aria-invalid" | "aria-describedby"
 	>;
-};
+}
 
 /** form field that handles label, validation feedback, and wires up to Inertia. supports input and textarea. */
 /** Form field with label, validation feedback, wired to Inertia. Supports input and textarea. */
@@ -48,28 +49,19 @@ export default function Field(props: InputFieldProps | TextareaFieldProps) {
 		props.as === "textarea" ? undefined : props.inputProps?.type;
 	const isCheck = inputType === "checkbox";
 
-	const baseClass = isCheck ? "form-check-input" : "form-control";
-
-	const validationClass = hasError
-		? "is-invalid"
-		: isValid
-			? "is-valid"
-			: undefined;
-
-	const className = [
-		baseClass,
-		props.as === "textarea"
-			? props.textareaProps?.className
-			: props.inputProps?.className,
-		validationClass,
-	]
-		.filter(Boolean)
-		.join(" ");
-
 	const baseProps = {
 		id: name,
 		value: form.data[name],
-		className,
+		className: clsx(
+			isCheck ? "form-check-input" : "form-control",
+
+			props.as === "textarea"
+				? props.textareaProps?.className
+				: props.inputProps?.className,
+
+			hasError && "is-invalid",
+			isValid && "is-valid",
+		),
 		"aria-invalid": hasError,
 		"aria-describedby": hasError ? errorId : undefined,
 	};

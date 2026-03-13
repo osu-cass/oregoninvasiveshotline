@@ -20,7 +20,11 @@ interface ImageUploadProps {
 	optional?: boolean;
 }
 
-/** Drag-and-drop image uploader with client-side resize, thumbnails, and captions. */
+/**
+ * Drag-and-drop image uploader with client-side resize, thumbnails, and captions.
+ * This component is slightly less coupled compared to the other form components,
+ * so you'll need to pass in a state and the onchange prop rather than just the form.
+ */
 export default function ImageUpload({
 	images,
 	captions,
@@ -52,21 +56,6 @@ export default function ImageUpload({
 		}
 	};
 
-	const removeAt = (index: number) => {
-		onChange(
-			images.filter((_, i) => i !== index),
-			captions.filter((_, i) => i !== index),
-		);
-	};
-
-	const updateCaption = (index: number, caption: string) => {
-		const next = [...captions];
-		next[index] = caption;
-		onChange(images, next);
-	};
-
-	const atLimit = images.length >= maxFiles;
-
 	return (
 		<div>
 			{/* Form label. */}
@@ -88,15 +77,24 @@ export default function ImageUpload({
 							key={`${file.name}-${file.lastModified}-${index}`}
 							file={file}
 							caption={captions[index] ?? ""}
-							onCaptionChange={(caption) => updateCaption(index, caption)}
-							onRemove={() => removeAt(index)}
+							onCaptionChange={(caption) => {
+								const next = [...captions];
+								next[index] = caption;
+								onChange(images, next);
+							}}
+							onRemove={() =>
+								onChange(
+									images.filter((_, i) => i !== index),
+									captions.filter((_, i) => i !== index),
+								)
+							}
 						/>
 					))}
 				</div>
 			)}
 
 			{/* Drop zone and file input. */}
-			{!atLimit && (
+			{images.length < maxFiles && (
 				<label
 					htmlFor="file-drop-input"
 					onDragOver={(e) => {
