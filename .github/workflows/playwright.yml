@@ -24,6 +24,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Validate Google Maps configuration
+        run: |
+          test -n "$GOOGLE_API_KEY"
+          test -n "$GOOGLE_MAP_ID"
+
       - name: Create Docker secrets directory
         run: |
           mkdir -p docker/secrets
@@ -50,18 +55,33 @@ jobs:
       - name: Start application services
         run: docker compose up --build -d postgres rabbitmq app vite
 
+      - name: Show container status
+        run: docker compose ps
+
       - name: Wait for application services
         run: |
-          until curl --fail --silent http://localhost:5173/@vite/client > /dev/null; do
+          for i in {1..36}; do
+            curl --fail --silent --max-time 5 http://localhost:5173/static/@vite/client > /dev/null && break
             echo "Waiting for Vite dev server..."
             sleep 5
           done
-
-          until curl --fail --silent http://localhost:8000/reports/create-new > /dev/null; do
+          curl --fail --silent http://localhost:5173/static/@vite/client > /dev/null || {
+            echo "Vite dev server did not become ready"
+            docker compose ps
+            exit 1
+          }
+      
+          for i in {1..36}; do
+            curl --fail --silent --max-time 5 http://localhost:8000 > /dev/null && break
             echo "Waiting for Django app..."
             sleep 5
           done
-
+          curl --fail --silent http://localhost:8000 > /dev/null || {
+            echo "Django app did not become ready"
+            docker compose ps
+            exit 1
+          }
+            
       - name: Seed database fixtures
         run: >
           docker compose exec -T app /opt/venv/bin/python manage.py loaddata
@@ -69,6 +89,9 @@ jobs:
           oregoninvasiveshotline/species/fixtures/severity.json
           oregoninvasiveshotline/species/fixtures/category.json
           oregoninvasiveshotline/species/fixtures/species.json
+
+      - name: Copy category icons into media volume
+        run: docker compose exec -T app /bin/sh -lc 'mkdir -p /media/icons && cp -R /app/media.template/icons/. /media/icons/'
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps

@@ -354,10 +354,11 @@ class NewReportForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
+        category = cleaned_data.get('category')
         species = cleaned_data.get('species')
         is_species_unknown = cleaned_data.get('is_species_unknown')
 
-        if not species and not is_species_unknown:
+        if category and category.species.exists() and not species and not is_species_unknown:
             self.add_error("species", "Either choose a species or check the 'Mark as unknown' option.")
             self.add_error("is_species_unknown", "Either check the 'Mark as unknown' option or choose a species.")
 

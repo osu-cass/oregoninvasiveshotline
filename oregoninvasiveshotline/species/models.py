@@ -3,7 +3,6 @@ from collections import defaultdict
 
 from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models.manager import RelatedManager
 
 
 def category_id_to_species_id_json():
@@ -39,7 +38,7 @@ class Category(models.Model):
         )
     )
     
-    species: RelatedManager["Species"]
+    species: models.Manager["Species"]
 
     def __str__(self):
         return self.name
