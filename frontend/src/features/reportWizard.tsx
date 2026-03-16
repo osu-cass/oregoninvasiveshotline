@@ -152,7 +152,7 @@ export default function FormWizard(props: FormWizardProps) {
 						</div>
 					</>
 				)}
-				{Boolean(
+				{import.meta.env.DEV && Boolean(
 					// @ts-expect-error
 					Object.entries(form.errors).filter(([k]) => !allFields.includes(k))
 						.length,
