@@ -7,7 +7,7 @@ interface PageIndexProps {
 }
 
 /** Dev test page for form validation experiments. */
-export default function Index({ authenticated }: PageIndexProps) {
+export default function Index(_: PageIndexProps) {
 	const _props = usePage().props;
 	const { data, setData, post, processing, errors } = useForm({
 		name: "",
