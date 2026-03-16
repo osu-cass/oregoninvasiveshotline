@@ -1,5 +1,4 @@
 import { APIProvider } from "@vis.gl/react-google-maps";
-import { useCallback, useMemo } from "react";
 import Field from "../../forms/field";
 import LocationMap from "../locationMap";
 import type { WizardStepProps } from "../types";
@@ -23,21 +22,9 @@ export default function StepThree({
 		? form.errors.latitude
 		: undefined;
 
-	const marker = useMemo(() => {
-		const lat = Number.parseFloat(form.data.latitude);
-		const lng = Number.parseFloat(form.data.longitude);
-		if (Number.isNaN(lat) || Number.isNaN(lng)) return null;
-		return { lat, lng };
-	}, [form.data.latitude, form.data.longitude]);
-
-	const saveLocation = useCallback(
-		(next: google.maps.LatLngLiteral) => {
-			form.setData("latitude", String(next.lat));
-			form.setData("longitude", String(next.lng));
-			form.clearErrors("latitude", "longitude");
-		},
-		[form],
-	);
+	const lat = Number.parseFloat(form.data.latitude);
+	const lng = Number.parseFloat(form.data.longitude);
+	const marker = Number.isNaN(lat) || Number.isNaN(lng) ? null : { lat, lng };
 
 	return (
 		<div className="row g-3 mt-1">
@@ -50,7 +37,9 @@ export default function StepThree({
 							mapId={googleMapId}
 							marker={marker}
 							onLocationChange={(next) => {
-								saveLocation(next);
+								form.setData("latitude", String(next.lat));
+								form.setData("longitude", String(next.lng));
+								form.clearErrors("latitude", "longitude");
 							}}
 						/>
 					</APIProvider>

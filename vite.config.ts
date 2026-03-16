@@ -9,7 +9,11 @@ export default defineConfig(({ mode }) => {
 	const OUTPUT_DIR = "./frontend/dist";
 
 	return {
-		plugins: [react()],
+		plugins: [react({
+			babel: {
+				plugins: ["babel-plugin-react-compiler"]
+			}
+		})],
 		resolve: {
 			alias: {
 				"@": resolve(INPUT_DIR, "src"),

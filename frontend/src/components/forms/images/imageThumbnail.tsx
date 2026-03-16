@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
 interface ImageThumbProps {
 	/** The image file. */
@@ -18,7 +18,7 @@ export default function ImageThumb({
 	onCaptionChange,
 	onRemove,
 }: ImageThumbProps) {
-	const src = useMemo(() => URL.createObjectURL(file), [file]);
+	const src = URL.createObjectURL(file);
 
 	useEffect(() => {
 		return () => URL.revokeObjectURL(src);

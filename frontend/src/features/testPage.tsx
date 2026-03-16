@@ -1,6 +1,5 @@
 import { useForm, usePage } from "@inertiajs/react";
 import clsx from "clsx";
-import { useMemo } from "react";
 
 interface PageIndexProps {
 	/** Whether the current user is logged in. */
@@ -15,10 +14,7 @@ export default function Index({ authenticated }: PageIndexProps) {
 		state: "",
 	});
 
-	const submitted = useMemo(
-		() => Boolean(Object.keys(errors).length),
-		[errors],
-	);
+	const submitted = Boolean(Object.keys(errors).length);
 
 	function submit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault();

@@ -6,7 +6,7 @@ import {
 	useMap,
 	useMapsLibrary,
 } from "@vis.gl/react-google-maps";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 
 type PlaceSelectEvent = Event & {
@@ -36,43 +36,35 @@ export default function LocationMap({
 	const searchInputId = useId();
 	const markerPosition = marker ?? defaultCenter;
 
-	const onLocationChangeEvent = useCallback(
-		(latLng: google.maps.LatLngLiteral | null) => {
-			if (!latLng) return;
-			onLocationChange(latLng);
-			setIsCurrectLocation(false);
-		},
-		[onLocationChange],
-	);
+	const onLocationChangeEvent = (latLng: google.maps.LatLngLiteral | null) => {
+		if (!latLng) return;
+		onLocationChange(latLng);
+		setIsCurrectLocation(false);
+	};
 
-	const changeLocation = useCallback(
-		(next: google.maps.LatLngLiteral) => {
-			if (!map) return;
-			onLocationChangeEvent(next);
-			map.panTo(next);
-		},
-		[map, onLocationChangeEvent],
-	);
+	const changeLocation = (next: google.maps.LatLngLiteral) => {
+		if (!map) return;
+		onLocationChangeEvent(next);
+		map.panTo(next);
+	};
 
-	const setToCurrentLocation = useCallback(
-		() =>
-			navigator.geolocation.getCurrentPosition(
-				(position) => {
-					changeLocation({
-						lat: position.coords.latitude,
-						lng: position.coords.longitude,
-					});
-					setIsCurrectLocation(true);
-				},
-				() => {
-					toast.error(
-						"Unable to retrieve your location. Please allow location access and try again.",
-					);
-					setIsCurrectLocation(false);
-				},
-			),
-		[changeLocation],
-	);
+	const setToCurrentLocation = () => {
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+				changeLocation({
+					lat: position.coords.latitude,
+					lng: position.coords.longitude,
+				});
+				setIsCurrectLocation(true);
+			},
+			() => {
+				toast.error(
+					"Unable to retrieve your location. Please allow location access and try again.",
+				);
+				setIsCurrectLocation(false);
+			},
+		);
+	};
 
 	useEffect(() => {
 		if (!map || locationRanYet.current) return;
@@ -82,7 +74,7 @@ export default function LocationMap({
 		}
 		locationRanYet.current = true;
 		setToCurrentLocation();
-	}, [map, marker, setToCurrentLocation]);
+	}, [map, marker]);
 
 	useEffect(() => {
 		const container = searchContainerRef.current;
@@ -140,14 +132,7 @@ export default function LocationMap({
 			autocomplete.removeEventListener("keydown", handleKeyDown);
 			autocomplete.remove();
 		};
-	}, [
-		defaultZoom,
-		map,
-		placesLibrary,
-		searchInputId,
-		changeLocation,
-		onLocationChangeEvent,
-	]);
+	}, [defaultZoom, map, placesLibrary, searchInputId, onLocationChange]);
 
 	return (
 		<div className="d-grid gap-2">
