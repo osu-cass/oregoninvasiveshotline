@@ -12,6 +12,7 @@ from oregoninvasiveshotline.utils.search import SearchForm
 from oregoninvasiveshotline.comments.models import Comment
 from oregoninvasiveshotline.counties.models import County
 from oregoninvasiveshotline.images.models import Image
+from oregoninvasiveshotline.visibility import Visibility
 from oregoninvasiveshotline.species.models import Category, Severity, Species
 from oregoninvasiveshotline.users.models import User
 from oregoninvasiveshotline.reports.models import Invite, Report
@@ -335,7 +336,7 @@ class NewReportForm(forms.Form):
     is_species_unknown = forms.BooleanField(required=False, label='Species unknown')
     identification_process = forms.CharField(required=False, widget=forms.Textarea)
     location_description = forms.CharField()
-    # Long/Lat are required, but we instead just set an error message on 
+    # Long/Lat are required, but we instead just set an error message on
     # latitude that's a bit more human friendly later on in the clean method.
     latitude = forms.FloatField(required=False)
     longitude = forms.FloatField(required=False)
@@ -432,6 +433,7 @@ class NewReportForm(forms.Form):
                 name=caption,
                 created_by=user,
                 report=report,
+                visibility=Visibility.PUBLIC,
             )
 
         questions = self.cleaned_data.get('questions')
