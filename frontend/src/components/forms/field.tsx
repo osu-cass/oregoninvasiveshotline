@@ -36,7 +36,6 @@ interface TextareaFieldProps extends BaseFieldProps {
 	>;
 }
 
-/** form field that handles label, validation feedback, and wires up to Inertia. supports input and textarea. */
 /** Form field with label, validation feedback, wired to Inertia. Supports input and textarea. */
 export default function Field(props: InputFieldProps | TextareaFieldProps) {
 	const { form, name, label, optional, valid } = props;

@@ -41,7 +41,7 @@ export default function ImageUpload({
 
 		const incoming = Array.from(files);
 
-		// Note that resizing strips exif data, so if/when we do location based on exif data, that is something to be aware of
+		// Note that resizing strips exif data, so if/when we do location based on exif data, that is something to be aware of.
 		setResizing(true);
 		try {
 			const resized = await Promise.all(incoming.map(resizeImage));

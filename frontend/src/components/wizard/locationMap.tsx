@@ -8,6 +8,7 @@ import {
 } from "@vis.gl/react-google-maps";
 import { useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useMountEffect } from "../../app/useMountEffect";
 
 type PlaceSelectEvent = Event & {
 	placePrediction?: google.maps.places.PlacePrediction;
@@ -77,7 +78,7 @@ export default function LocationMap({
 		// biome-ignore lint/correctness/useExhaustiveDependencies: It does not run on every re-render like this claims
 	}, [map, marker, setToCurrentLocation]);
 
-	useEffect(() => {
+	useMountEffect(() => {
 		const container = searchContainerRef.current;
 		if (!placesLibrary || !container) return;
 
@@ -133,16 +134,7 @@ export default function LocationMap({
 			autocomplete.removeEventListener("keydown", handleKeyDown);
 			autocomplete.remove();
 		};
-	}, [
-		defaultZoom,
-		map,
-		placesLibrary,
-		searchInputId,
-		// biome-ignore lint/correctness/useExhaustiveDependencies: It does not run on every re-render like this claims
-		changeLocation,
-		// biome-ignore lint/correctness/useExhaustiveDependencies: It does not run on every re-render like this claims
-		onLocationChangeEvent,
-	]);
+	});
 
 	return (
 		<div className="d-grid gap-2">
