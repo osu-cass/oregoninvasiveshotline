@@ -78,7 +78,7 @@ export default function LocationMap({
 		// biome-ignore lint/correctness/useExhaustiveDependencies: It does not run on every re-render like this claims
 	}, [map, marker, setToCurrentLocation]);
 
-	useMountEffect(() => {
+	useEffect(() => {
 		const container = searchContainerRef.current;
 		if (!placesLibrary || !container) return;
 
@@ -134,7 +134,16 @@ export default function LocationMap({
 			autocomplete.removeEventListener("keydown", handleKeyDown);
 			autocomplete.remove();
 		};
-	});
+	}, [
+		defaultZoom,
+		map,
+		placesLibrary,
+		searchInputId,
+		// biome-ignore lint/correctness/useExhaustiveDependencies: It does not run on every re-render like this claims
+		changeLocation,
+		// biome-ignore lint/correctness/useExhaustiveDependencies: It does not run on every re-render like this claims
+		onLocationChangeEvent,
+	]);
 
 	return (
 		<div className="d-grid gap-2">
