@@ -261,7 +261,7 @@ MIDDLEWARE = [
 
 SECURE_CSP = {
     "default-src": [CSP.SELF],
-    "script-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", "https://places.googleapis.com", CSP.NONCE, "'unsafe-eval'"],
+    "script-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", "https://places.googleapis.com", CSP.NONCE],
     "worker-src": [CSP.SELF, "blob:"],
     "style-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", CSP.UNSAFE_INLINE],
     "img-src": [CSP.SELF, "blob:", "data:", "https:"],
