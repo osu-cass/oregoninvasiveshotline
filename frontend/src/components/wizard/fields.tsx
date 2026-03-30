@@ -11,7 +11,7 @@ const stepFields = {
 	contact: ["first_name", "last_name", "email", "phone", "questions"],
 } as const;
 
-/** Union of all valid form field names (string-valued fields only). */
+/** Union of all valid form field names (string-valued fields only) so that we can validate these separately. */
 export type WizardField = (typeof stepFields)[keyof typeof stepFields][number];
 
 /** Full form data including string fields and image file arrays. */

@@ -48,30 +48,7 @@ export default function FormWizard(props: FormWizardProps) {
 	const isLastStep = step === Steps.length - 1;
 	const isDone = step >= Steps.length;
 
-	/** Validates the current step's fields, then advances to the next step. */
-	const validateAndAdvance = () => {
-		if (!currentStep) return;
-		form.validate({
-			only: currentStep.fields,
-			onSuccess: () => setStep((s) => s + 1),
-		});
-	};
-
 	/** Handles the Next button click, prompting if step one has no images. */
-	const handleNextClick = () => {
-		if (!currentStep) return;
-
-		if (step === 0 && form.data.images.length === 0) {
-			// Validate first, then show the dialog only if validation passes.
-			form.validate({
-				only: currentStep.fields,
-				onSuccess: () => setShowNoImagesDialog(true),
-			});
-			return;
-		}
-
-		validateAndAdvance();
-	};
 
 	return (
 		<div className="row justify-content-center">
@@ -143,7 +120,23 @@ export default function FormWizard(props: FormWizardProps) {
 								<button
 									type="button"
 									className="btn btn-primary px-4"
-									onClick={handleNextClick}
+									onClick={() => {
+										if (!currentStep) return;
+
+										if (step === 0 && form.data.images.length === 0) {
+											// Validate first, then show the dialog only if validation passes.
+											form.validate({
+												only: currentStep.fields,
+												onSuccess: () => setShowNoImagesDialog(true),
+											});
+											return;
+										}
+
+										form.validate({
+											only: currentStep.fields,
+											onSuccess: () => setStep((s) => s + 1),
+										});
+									}}
 									disabled={form.validating}
 								>
 									{form.validating ? "Validating…" : "Next"}
@@ -152,23 +145,25 @@ export default function FormWizard(props: FormWizardProps) {
 						</div>
 					</>
 				)}
-				{import.meta.env.DEV && Boolean(
-					// @ts-expect-error
-					Object.entries(form.errors).filter(([k]) => !allFields.includes(k))
-						.length,
-				) && (
-					<>
-						Debug Errors:{" "}
-						{JSON.stringify(
-							Object.fromEntries(
-								Object.entries(form.errors).filter(
-									// @ts-expect-error
-									([k]) => !allFields.includes(k),
+				{/* Shows errors not used by a specific field. In theory should never show up if everything is working properly */}
+				{import.meta.env.DEV &&
+					Boolean(
+						// @ts-expect-error
+						Object.entries(form.errors).filter(([k]) => !allFields.includes(k))
+							.length,
+					) && (
+						<>
+							Debug Errors:{" "}
+							{JSON.stringify(
+								Object.fromEntries(
+									Object.entries(form.errors).filter(
+										// @ts-expect-error
+										([k]) => !allFields.includes(k),
+									),
 								),
-							),
-						)}
-					</>
-				)}
+							)}
+						</>
+					)}
 			</div>
 
 			<ConfirmNoImagesDialog
