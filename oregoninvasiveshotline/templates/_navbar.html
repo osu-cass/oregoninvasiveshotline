@@ -27,7 +27,7 @@
                 <a class="btn btn-warning" href="{% url 'reports-create' %}">Report Now</a>
                 {% comment %} only show phone on certain screens, since it's kinda ugly {% endcomment %}
                 {% if request.path == '/' or request.path == '/reports/create' %}
-                	<span id="phone" class="d-none d-lg-inline">
+                	<span id="phone" class="d-none d-lg-inline navbar-phone-number">
                         or call <strong>1-866-INVADER</strong>
                     </span>
                 {% endif %}
