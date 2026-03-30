@@ -34,7 +34,7 @@ def collect_indexed(source: Mapping[str, object], prefix: str) -> list:
 
     Inertia serializes arrays as prefix[0], prefix[1], etc. Django treats
     each as a literal key name, so we gather matching keys into a list.
-    
+
     Inertia sends something like this that needs to be reassembled into a more usable form:
     {
         "images[0]": <UploadedFile>,

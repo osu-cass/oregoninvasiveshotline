@@ -25,11 +25,9 @@ from oregoninvasiveshotline.reports.tasks import (
 DEFAULT_REPORT_POINT = Point(-120.578333, 44, srid=4326)
 ALLOWED_REPORT_STATES = ("Oregon", "Washington")
 
-
 def get_county(point: Point):
     return County.objects.filter(
         the_geom__intersects=point,
-        state__in=ALLOWED_REPORT_STATES,
     ).first()
 
 
@@ -284,13 +282,6 @@ class ReportForm(forms.ModelForm):
         email = self.cleaned_data['email']
         email = email.lower()
         return email
-
-    # def clean(self):
-    #     cleaned_data = super().clean()
-    #     point = cleaned_data.get("point")
-    #     if point and not get_allowed_county(point):
-    #         self.add_error("point", "Report location must be in Oregon or Washington.")
-    #     return cleaned_data
 
     def save(self, *args, **kwargs):
         report = self.instance
