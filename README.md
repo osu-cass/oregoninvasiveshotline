@@ -52,10 +52,11 @@ View the website at <http://localhost:8000>.
 
 ### Testing
 
-To run the test library:
+To run the test librarys:
 
 ```bash
-make test_container
+make test_container # Python test library
+npm test # UI integration tests. Pass `--ui` for an interative ui to run tests.
 ```
 
 Tests will also run automatically on pull requests.
