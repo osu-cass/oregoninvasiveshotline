@@ -55,7 +55,6 @@ def list_(request):
         reports = reports.select_related(
             'reported_category',
             'reported_species',
-            'reported_species__category',
             'reported_species__severity',
             'actual_species',
             'actual_species__category',
