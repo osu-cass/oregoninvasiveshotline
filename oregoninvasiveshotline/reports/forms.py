@@ -22,7 +22,6 @@ from oregoninvasiveshotline.reports.tasks import (
     notify_invited_reviewer
 )
 
-DEFAULT_REPORT_POINT = Point(-120.578333, 44, srid=4326)
 ALLOWED_REPORT_STATES = ("Oregon", "Washington")
 
 def get_county(point: Point):
