@@ -30,7 +30,7 @@ def get_post_data(request: HttpRequest) -> QueryDict | dict[str, Any]:
         return request.POST
     try:
         return json.loads(request.body)
-    except:
+    except json.JSONDecodeError:
         logger.warning("An inertia request was not properly processed.")
         return {}
         
