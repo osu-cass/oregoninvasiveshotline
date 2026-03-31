@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useMountEffect } from "../../../app/useMountEffect";
+import { useEffect, useState } from "react";
 
 interface ImageThumbProps {
 	/** The image file. */
@@ -21,12 +20,12 @@ export default function ImageThumb({
 }: ImageThumbProps) {
 	const [src, setSrc] = useState<string>();
 
-	useMountEffect(() => {
+	useEffect(() => {
 		const src = URL.createObjectURL(file)
 		setSrc(src)
 		
 		return () => URL.revokeObjectURL(src);
-	});
+	}, [file]);
 
 	return (
 		<div className="d-flex gap-2 align-items-center">
