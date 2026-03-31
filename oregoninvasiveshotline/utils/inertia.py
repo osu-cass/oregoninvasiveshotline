@@ -50,7 +50,20 @@ def collect_indexed(source: Mapping[str, object], prefix: str) -> list:
     Works with both request.POST (QueryDict) and request.FILES (MultiValueDict).
     """
     tag = prefix + "["
-    return [source[key] for key in source if key.startswith(tag)]
+    indexed: list = []
+    
+    # Theoretically the keys should all be in perfect order/have no gaps, but this makes the code a little less brittle than a simple loop.
+    for key, value in source.items():
+        if key.startswith(tag):
+            index = key[len(tag):-1]
+            if (index.isdigit()):
+                i = int(index)
+                while len(indexed) <= i:
+                    indexed.append(None)
+                
+                indexed[i] = value
+        
+    return indexed
 
 
 def parse_precognition_fields(request: HttpRequest, form: Form) -> HttpResponse:
