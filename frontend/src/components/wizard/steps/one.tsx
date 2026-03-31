@@ -27,7 +27,7 @@ export default function StepOne({ form }: WizardStepProps) {
 					textareaProps={{
 						rows: 5,
 						placeholder:
-							"Describe what you saw: estimated amount, size, life stage, condition, notable traits (color/markings, flowers/fruit), and anything else you feel is relevent",
+							"Describe what you saw: estimated amount, size, life stage, condition, notable traits (color/markings, flowers/fruit), and anything else you feel is relevant",
 					}}
 				/>
 			</div>

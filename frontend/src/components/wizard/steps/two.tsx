@@ -30,7 +30,7 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 					items={comboboxCategoryItems}
 					itemsName="category"
 					itemsNamePlural="categories"
-					placeholder="Select a category"
+					placeholder="What category best describes this invasive?"
 					form={form}
 					onChange={() => {
 						form.setData("species", "");
@@ -60,14 +60,14 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 						<Field
 							form={form}
 							name="is_species_unknown"
-							label="Mark as unknown"
+							label="Mark species as unknown"
 							inputProps={{
 								type: "checkbox",
 								onChange: () => {
 									form.setData("species", "");
 								},
 								placeholder:
-									"If you're not sure which species it is, mark it as unknown. We recommend entering your best guess even if you're unsure. Choose unknown only if you don’t have any guess as to what it might be.",
+									"Make your best guess above, even if you're uncertain. Only check this box if you truly have no idea.",
 							}}
 						/>
 					</div>
@@ -78,7 +78,7 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 				<Field
 					form={form}
 					name="identification_process"
-					label="How verified this identification"
+					label="How did you verify this identification?"
 					optional
 					as="textarea"
 					textareaProps={{

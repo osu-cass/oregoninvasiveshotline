@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMountEffect } from "../../../app/useMountEffect";
 
 interface ImageThumbProps {

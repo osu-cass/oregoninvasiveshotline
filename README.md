@@ -28,7 +28,7 @@ You must configure a few API keys for this project. To create them, make files w
 - `google_api_key.txt`
   - Create an API key on <https://mapsplatform.google.com/>. It should look something like `AIzaSyDQwAloK4wKTeKqKJ4oK4wKTeKqKJ4oK4w`.
 - `google_map_id.txt`
-  - Create an map API key on <https://mapsplatform.google.com/>. It should look something like `a1b2c3d4e5f6g7h8`.
+  - Create a google maps map ID key on <https://mapsplatform.google.com/>. It should look something like `a1b2c3d4e5f6g7h8`. See <https://developers.google.com/maps/documentation/javascript/cloud-configuration#creating-map-id> for detailed steps.
 - `secret_key.txt`
   - Create a secret key. For development, you can use whatever random string. In production, use a secure random string.
 
@@ -52,7 +52,7 @@ View the website at <http://localhost:8000>.
 
 ### Testing
 
-To run the test librarys:
+To run the test libraries:
 
 ```bash
 make test_container # Python test library

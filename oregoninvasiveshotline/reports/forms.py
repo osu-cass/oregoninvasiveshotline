@@ -352,6 +352,12 @@ class NewReportForm(forms.Form):
         if category and category.species.exists() and not species and not is_species_unknown:
             self.add_error("species", "Either choose a species or check the 'Mark as unknown' option.")
             self.add_error("is_species_unknown", "Either check the 'Mark as unknown' option or choose a species.")
+        
+        # Currently this is an impossible state to get into based on the current UI code.
+        # However, probably still worth handling.
+        if species and is_species_unknown:
+            self.add_error("species", "You cannot choose a species and mark it as unknown at the same time.")
+            self.add_error("is_species_unknown", "You cannot choose a species and mark it as unknown at the same time.")
 
         latitude = cleaned_data.get("latitude")
         longitude = cleaned_data.get("longitude")

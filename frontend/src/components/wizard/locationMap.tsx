@@ -8,7 +8,6 @@ import {
 } from "@vis.gl/react-google-maps";
 import { useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useMountEffect } from "../../app/useMountEffect";
 
 type PlaceSelectEvent = Event & {
 	placePrediction?: google.maps.places.PlacePrediction;
@@ -31,7 +30,7 @@ export default function LocationMap({
 }: LocationMapProps) {
 	const map = useMap();
 	const placesLibrary = useMapsLibrary("places");
-	const [isCurrectLocation, setIsCurrectLocation] = useState(false);
+	const [isCorrectLocation, setIsCorrectLocation] = useState(false);
 	const locationRanYet = useRef(false);
 	const searchContainerRef = useRef<HTMLDivElement | null>(null);
 	const searchInputId = useId();
@@ -40,7 +39,7 @@ export default function LocationMap({
 	const onLocationChangeEvent = (latLng: google.maps.LatLngLiteral | null) => {
 		if (!latLng) return;
 		onLocationChange(latLng);
-		setIsCurrectLocation(false);
+		setIsCorrectLocation(false);
 	};
 
 	const changeLocation = (next: google.maps.LatLngLiteral) => {
@@ -56,13 +55,13 @@ export default function LocationMap({
 					lat: position.coords.latitude,
 					lng: position.coords.longitude,
 				});
-				setIsCurrectLocation(true);
+				setIsCorrectLocation(true);
 			},
 			() => {
 				toast.error(
 					"Unable to retrieve your location. Please allow location access and try again.",
 				);
-				setIsCurrectLocation(false);
+				setIsCorrectLocation(false);
 			},
 		);
 	};
@@ -169,7 +168,7 @@ export default function LocationMap({
 					onClick={setToCurrentLocation}
 				>
 					Set to current location{" "}
-					{isCurrectLocation && (
+					{isCorrectLocation && (
 						<i className="bi bi-check fs-5 lh-1 d-block text-success" />
 					)}
 				</button>
