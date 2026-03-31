@@ -1,9 +1,11 @@
 import json
+import logging
 from typing import Any, Mapping
 
 from django.forms import Form
 from django.http import HttpRequest, HttpResponse, JsonResponse, QueryDict
 
+logger = logging.getLogger(__name__)
 
 def inertia_location(url: str) -> HttpResponse:
     return HttpResponse(
@@ -26,8 +28,12 @@ def get_post_data(request: HttpRequest) -> QueryDict | dict[str, Any]:
     """
     if request.POST:
         return request.POST
-    return json.loads(request.body)
-
+    try:
+        return json.loads(request.body)
+    except:
+        logger.warning("An inertia request was not properly processed.")
+        return {}
+        
 
 def collect_indexed(source: Mapping[str, object], prefix: str) -> list:
     """Collect values sent with Inertia's indexed array format.
