@@ -4,3 +4,4 @@ Important rules/notes:
 - Do not have multiple react components in the same file
 - Comments should be short and to the point, but should generally have a capitol letter at the start and end with a period
 - While much of this project is unfortunately untyped, new code should include types (but don't be overly verbose)
+- This project uses the react compiler, be aware of this and do not add uneeded useMemos/useCallbacks
