@@ -75,7 +75,7 @@ def read_secret(secret_name, default=''):
 DEBUG = env('DEBUG')  # pyright: ignore
 TEMPLATE_DEBUG = env('TEMPLATE_DEBUG', default=DEBUG)  # pyright: ignore
 SECRET_KEY = read_secret('SECRET_KEY', str(env('SECRET_KEY')))
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=["localhost", "127.0.0.1"])
 
 # Environment name (for display in templates)
 ENV = env('DJANGO_ENV')
