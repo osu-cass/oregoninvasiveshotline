@@ -3,6 +3,7 @@ import type { MapMouseEvent } from "@vis.gl/react-google-maps";
 import {
 	AdvancedMarker,
 	Map as GoogleMap,
+	RenderingType,
 	useMap,
 	useMapsLibrary,
 } from "@vis.gl/react-google-maps";
@@ -197,7 +198,7 @@ export default function LocationMap({
 					fullscreenControl
 					disableDefaultUI
 					zoomControl
-					
+					renderingType={RenderingType.RASTER}
 				>
 					{marker && (
 						<AdvancedMarker
