@@ -33,7 +33,6 @@ export default function StepThree({
 					<APIProvider apiKey={googleApiKey} libraries={["places"]}>
 						<LocationMap
 							defaultCenter={defaultCenter}
-							defaultZoom={7}
 							mapId={googleMapId}
 							marker={marker}
 							onLocationChange={(next) => {

@@ -26,7 +26,7 @@ export default function LocationMap({
 	marker,
 	mapId,
 	onLocationChange,
-	defaultZoom = 7,
+	defaultZoom = 18,
 }: LocationMapProps) {
 	const map = useMap();
 	const placesLibrary = useMapsLibrary("places");
@@ -196,6 +196,8 @@ export default function LocationMap({
 					gestureHandling="cooperative"
 					fullscreenControl
 					disableDefaultUI
+					zoomControl
+					
 				>
 					{marker && (
 						<AdvancedMarker
