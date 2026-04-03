@@ -9,7 +9,7 @@
     <h3>Create Species</h3>
 {% endif %}
 
-<form action="" method="post">
+<form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {% bootstrap_field form.name %}
     {% bootstrap_field form.scientific_name %}
@@ -18,8 +18,25 @@
     {% bootstrap_field form.remedy %}
     {% bootstrap_field form.resources %}
     {% bootstrap_field form.is_confidential %}
+    
+    {% if form.instance.pk and form.instance.identification_image %}
+        <div class="mb-3">
+            <label class="form-label">Current identification image</label>
+            <div>
+                <img
+                    src="{{ form.instance.identification_image.url }}"
+                    alt="{{ form.instance.identification_image_alt|default:'' }}"
+                    style="max-width: 100%; height: auto; max-height: 300px;"
+                >
+            </div>
+        </div>
+    {% endif %}
+    
+    {% bootstrap_field form.identification_image help_text="test" %}
+    {% bootstrap_field form.identification_image_alt placeholder="Briefly describe the image for users with visual impairments" %}
+    {% bootstrap_field form.identification_external_resource_link placeholder="Optionally include a link for users to learn more about identifying a species" %}
     <input type="submit" class="btn btn-primary" value="Update" />
-    <a href="{% url 'species-list' %}" class="btn btn-warning">Cancel</a>
+	<a href="{% url 'species-list' %}" class="btn btn-warning">Cancel</a>
 </form>
 
 {% endblock %}
