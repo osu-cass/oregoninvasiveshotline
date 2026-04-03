@@ -29,7 +29,7 @@ interface FormWizardProps {
 
 /** Multi-step report form with progress bar and per-step validation. */
 export default function FormWizard(props: FormWizardProps) {
-	const [step, setStep] = useState(0);
+	const [step, setStep] = useState(1);
 	const [showNoImagesDialog, setShowNoImagesDialog] = useState(false);
 
 	const form = useForm<WizardFormData>({

@@ -1,3 +1,4 @@
+import { Collapsible } from "@base-ui/react";
 import FormCombobox from "../../forms/combobox";
 import Field from "../../forms/field";
 import type { CategoryWithSpecies, WizardStepProps } from "../types";
@@ -22,6 +23,10 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 			label: item.name,
 			value: item.species_id,
 		}));
+
+	const selectedSpecies = comboboxSpeciesItems?.find(
+		(item) => item.value === Number(form.data.species),
+	);
 
 	return (
 		<div className="row g-3 mt-1">
@@ -73,6 +78,33 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 					</div>
 				</>
 			)}
+
+			{selectedSpecies &&
+				(selectedSpecies.identification_image ||
+					selectedSpecies.identification_external_resource_link) && (
+					<Collapsible.Root defaultOpen>
+						<Collapsible.Trigger
+							className="d-flex justify-content-between w-100 rounded border p-1 px-3 py-2"
+							render={(props, state) => (
+								<button
+									{...props}
+									className="d-flex justify-content-between w-100 rounded border p-1 px-3 py-2"
+								>
+									<p className="fw-medium small mb-0 text-start">
+										Confirm Species with Common Identifiers
+									</p>
+									<i
+										className={`bi ${state.open ? "bi-chevron-up" : "bi-chevron-down"} fs-6`}
+									/>
+								</button>
+							)}
+						/>
+					<Collapsible.Panel>
+							<p>You can optionally use the identifers below as a referance to determine if the species you have selected mat</p>
+							{selectedSpecies?.identification_image}
+						</Collapsible.Panel>
+					</Collapsible.Root>
+				)}
 
 			<div className="col-12">
 				<Field
