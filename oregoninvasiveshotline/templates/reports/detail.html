@@ -13,7 +13,7 @@ Report #{{ report.pk }} - {{ report }}
     {{ block.super }}
     <link
       rel="stylesheet"
-      href="https://cdn.jsdelivr.net/combine/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.css,npm/@fancyapps/ui@6.0/dist/carousel/carousel.css"
+      href="https://cdn.jsdelivr.net/combine/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css,npm/photoswipe@5.4.4/dist/photoswipe.css"
     />
 {% endblock %}
 <div class="row">
@@ -61,18 +61,45 @@ Report #{{ report.pk }} - {{ report }}
         <blockquote>{{ report.description|default:"No description provided"|linebreaksbr }}</blockquote>
 
         {% if images %}
-            <div class="f-carousel" id="myCarousel">
-                {% for image in images %}
-                    <div 
-                   		data-src="{{ image.image.url }}"
-                    	data-thumb-src="{{ image.image.url }}"
-                     	class="f-carousel__slide"
-                      data-fancybox="gallery"
-                    >
-                    	<img src="{{ image.image.url }}" alt="{{ image.name }}" />
-                    </div>
-                {% endfor %}
+            <div id="reportGallery" class="splide report-gallery" aria-label="Report images">
+                <div class="splide__track">
+                    <ul class="splide__list">
+                        {% for image in images %}
+                            <li class="splide__slide report-gallery-slide">
+                                <a
+                                  href="{{ image.image.url }}"
+                                  data-pswp-width="{{ image.image.width }}"
+                                  data-pswp-height="{{ image.image.height }}"
+                                >
+                                    <img
+                                      src="{{ image.image.url }}"
+                                      alt="{{ image.name }}"
+                                    />
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
             </div>
+
+            {% if images|length > 1 %}
+                <div id="reportGalleryThumbs" class="splide report-gallery-thumbs" aria-label="Report image thumbnails">
+                    <div class="splide__track">
+                        <ul class="splide__list">
+                            {% for image in images %}
+                                <li class="splide__slide report-gallery-thumb-slide">
+                                    <img
+                                      src="{{ image.image.url }}"
+                                      width="{{ image.image.width }}"
+                                      height="{{ image.image.height }}"
+                                      alt="Thumbnail of {{ image.name }}"
+                                    />
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
         {% endif %}
 
         <hr />
@@ -280,18 +307,56 @@ Report #{{ report.pk }} - {{ report }}
 
     <script nonce="{{csp_nonce}}">var category_id_to_species_id = {{ category_id_to_species_id|safe }};</script>
     <script nonce="{{csp_nonce}}" src="{% static 'js/species_selector.js' %}" async></script>
-    <script nonce="{{csp_nonce}}" src="https://cdn.jsdelivr.net/combine/npm/@fancyapps/ui@6.0/dist/fancybox/fancybox.umd.js,npm/@fancyapps/ui@6.0/dist/carousel/carousel.umd.js"></script>
+    <script nonce="{{csp_nonce}}" src="https://cdn.jsdelivr.net/combine/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js,npm/photoswipe@5.4.4/dist/umd/photoswipe.umd.min.js,npm/photoswipe@5.4.4/dist/umd/photoswipe-lightbox.umd.min.js"></script>
     <script nonce="{{csp_nonce}}">
-    		const carousel = document.getElementById("myCarousel");
-      	if (carousel) {
-	    		Carousel(carousel, {}, {
-					    // LazyLoad,
-					    Arrows,
-					    Thumbs
-			    }).init();
-					Fancybox.bind("[data-fancybox]", {});
-       }
-				
+        const mainGallery = document.getElementById("reportGallery");
+
+        if (mainGallery) {
+            const main = new Splide("#reportGallery", {
+                type: "slide",
+                rewind: true,
+                pagination: false,
+                arrows: true,
+                drag: true,
+                keyboard: "global",
+                speed: 175,
+            });
+
+            const thumbGallery = document.getElementById("reportGalleryThumbs");
+            if (thumbGallery) {
+                const thumbs = new Splide("#reportGalleryThumbs", {
+                    fixedWidth: 90,
+                    fixedHeight: 60,
+                    gap: 10,
+                    rewind: true,
+                    pagination: false,
+                    arrows: false,
+                    isNavigation: true,
+                    focus: "center",
+                    updateOnMove: true,
+                    breakpoints: {
+                        768: {
+                            fixedWidth: 72,
+                            fixedHeight: 48,
+                            gap: 8,
+                        },
+                    },
+                });
+
+                main.sync(thumbs);
+                thumbs.mount();
+            }
+
+            main.mount();
+
+            const lightbox = new PhotoSwipeLightbox({
+                gallery: "#reportGallery",
+                children: "a",
+                pswpModule: PhotoSwipe,
+            });
+            lightbox.init();
+        }
+
         $(document).ready(function() {
             $('#add-comment a').click(function(e){
                 e.preventDefault();
