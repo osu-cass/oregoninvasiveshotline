@@ -1,4 +1,5 @@
 import { Collapsible } from "@base-ui/react";
+import { useState } from "react";
 import FormCombobox from "../../forms/combobox";
 import Field from "../../forms/field";
 import type { CategoryWithSpecies, WizardStepProps } from "../types";
@@ -10,6 +11,7 @@ interface StepTwoProps extends WizardStepProps {
 
 /** Step 2: Category and species identification. */
 export default function StepTwo({ form, items }: StepTwoProps) {
+	const [lightboxOpen, setLightboxOpen] = useState(false);
 	const comboboxCategoryItems = items.map((item) => ({
 		...item,
 		label: item.name,
@@ -79,47 +81,76 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 				</>
 			)}
 
-			{selectedSpecies &&
-				(selectedSpecies.identification_image ||
-					selectedSpecies.identification_external_resource_link) && (
-					<Collapsible.Root defaultOpen>
-						<Collapsible.Trigger
-							className="d-flex justify-content-between w-100 rounded border p-1 px-3 py-2"
-							render={(props, state) => (
-								<button
-									{...props}
-									className="d-flex justify-content-between w-100 rounded border p-1 px-3 py-2"
-								>
-									<p className="fw-medium small mb-0 text-start">
-										Confirm Species Using Common Identifiers
-									</p>
-									<i
-										className={`bi ${state.open ? "bi-chevron-up" : "bi-chevron-down"} fs-6`}
-									/>
-								</button>
+			{selectedSpecies?.identification_image && (
+				<Collapsible.Root defaultOpen>
+					<Collapsible.Trigger
+						className="d-flex justify-content-between w-100 rounded border p-1 px-3 py-2"
+						render={(props, state) => (
+							<button
+								{...props}
+								className="d-flex justify-content-between w-100 rounded border p-1 px-3 py-2"
+							>
+								<p className="fw-medium small mb-0 text-start">
+									Confirm Species Using Common Identifiers
+								</p>
+								<i
+									className={`bi ${state.open ? "bi-chevron-up" : "bi-chevron-down"} fs-6`}
+								/>
+							</button>
+						)}
+					/>
+					<Collapsible.Panel
+						className="border border-top-0 p-3"
+						style={{
+							borderBottomLeftRadius: "var(--bs-border-radius)",
+							borderBottomRightRadius: "var(--bs-border-radius)",
+							marginTop: "-0.5rem",
+						}}
+					>
+						<p className="small mt-1">
+							Optionally refer to the identifiers below to verify your selected
+							species matches what you're seeing.{" "}
+							{selectedSpecies.identification_external_resource_link && (
+								<span>
+									For more details,{" "}
+									<a
+										href={selectedSpecies.identification_external_resource_link}
+										target="_blank"
+										rel="noopener"
+									>
+										click here
+									</a>{" "}
+									to see a full identification guide.
+								</span>
 							)}
-						/>
-						<Collapsible.Panel>
-							<p className="small mt-1">
-								Optionally refer to the identifiers below to verify your
-								selected species matches what you're seeing.{" "}
-								{selectedSpecies.identification_external_resource_link && (
-									<span>
-										For more details,{" "}
-										<a
-											href={
-												selectedSpecies.identification_external_resource_link
-											}
-										>
-											click here
-										</a>{" "}
-										to see a full identification guide.
-									</span>
-								)}
-							</p>
-							{selectedSpecies.identification_image}
-						</Collapsible.Panel>
-					</Collapsible.Root>
+						</p>
+						{selectedSpecies.identification_image && (
+							<img
+								src={selectedSpecies.identification_image}
+								alt={
+									selectedSpecies.identification_image_alt ||
+									"An image representing common species identifiers"
+								}
+								className="w-100"
+							/>
+						)}
+					</Collapsible.Panel>
+				</Collapsible.Root>
+			)}
+
+			{selectedSpecies?.identification_external_resource_link &&
+				!selectedSpecies.identification_image && (
+					<p className="small mt-1">
+						To identify this species,{" "}
+						<a
+							href={selectedSpecies.identification_external_resource_link}
+							target="_blank"
+							rel="noopener"
+						>
+							click here
+						</a>{" "}
+						to learn more about verifying your selected species.
+					</p>
 				)}
 
 			<div className="col-12">
