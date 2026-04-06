@@ -1,8 +1,11 @@
 import { Collapsible } from "@base-ui/react";
 import { useState } from "react";
+import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import FormCombobox from "../../forms/combobox";
 import Field from "../../forms/field";
 import type { CategoryWithSpecies, WizardStepProps } from "../types";
+import "yet-another-react-lightbox/styles.css";
 
 interface StepTwoProps extends WizardStepProps {
 	/** Available categories with their species. */
@@ -125,14 +128,44 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 							)}
 						</p>
 						{selectedSpecies.identification_image && (
-							<img
-								src={selectedSpecies.identification_image}
-								alt={
-									selectedSpecies.identification_image_alt ||
-									"An image representing common species identifiers"
-								}
-								className="w-100"
-							/>
+							<>
+								<button
+									onClick={() => setLightboxOpen(true)}
+									type="button"
+									aria-label="View identification image in full size"
+									className="border-0 bg-transparent p-0"
+								>
+									<img
+										src={selectedSpecies.identification_image}
+										alt={
+											selectedSpecies.identification_image_alt ||
+											"An image representing common species identifiers"
+										}
+										className="w-100"
+									/>
+								</button>
+								<Lightbox
+									open={lightboxOpen}
+									close={() => setLightboxOpen(false)}
+									slides={[{ src: selectedSpecies.identification_image }]}
+									plugins={[Zoom]}
+									controller={{ closeOnBackdropClick: true, focus: false, disableSwipeNavigation: true }}
+									zoom={{
+										scrollToZoom: true,
+										maxZoomPixelRatio: 3
+									}}
+									render={{
+										buttonPrev: () => null,
+										buttonNext: () => null
+									}}
+									styles={{
+										container: {
+											backgroundColor: "rgba(0, 0, 0, 0.7)",
+											backdropFilter: "blur(5px)",
+										}
+									}}
+								/>
+							</>
 						)}
 					</Collapsible.Panel>
 				</Collapsible.Root>
