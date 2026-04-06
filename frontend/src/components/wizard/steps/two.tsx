@@ -91,7 +91,7 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 									className="d-flex justify-content-between w-100 rounded border p-1 px-3 py-2"
 								>
 									<p className="fw-medium small mb-0 text-start">
-										Confirm Species with Common Identifiers
+										Confirm Species Using Common Identifiers
 									</p>
 									<i
 										className={`bi ${state.open ? "bi-chevron-up" : "bi-chevron-down"} fs-6`}
@@ -99,9 +99,25 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 								</button>
 							)}
 						/>
-					<Collapsible.Panel>
-							<p>You can optionally use the identifers below as a referance to determine if the species you have selected mat</p>
-							{selectedSpecies?.identification_image}
+						<Collapsible.Panel>
+							<p className="small mt-1">
+								Optionally refer to the identifiers below to verify your
+								selected species matches what you're seeing.{" "}
+								{selectedSpecies.identification_external_resource_link && (
+									<span>
+										For more details,{" "}
+										<a
+											href={
+												selectedSpecies.identification_external_resource_link
+											}
+										>
+											click here
+										</a>{" "}
+										to see a full identification guide.
+									</span>
+								)}
+							</p>
+							{selectedSpecies.identification_image}
 						</Collapsible.Panel>
 					</Collapsible.Root>
 				)}
