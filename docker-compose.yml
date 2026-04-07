@@ -25,7 +25,7 @@ services:
       - ${VOLUME_PATH}/postgres/16/main:/var/lib/postgresql/data
       - ${VOLUME_PATH}/dumps:/archive
     ports:
-      - 5439:5432
+      - ${POSTGRES_PORT:-5439}:5432
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U invasives -d invasives"]
       interval: 5s
@@ -97,7 +97,7 @@ services:
     command: npm run dev
     tty: true
     ports:
-      - "5173:5173"
+      - "${VITE_PORT:-5173}:5173"
     develop:
       watch:
         - action: sync

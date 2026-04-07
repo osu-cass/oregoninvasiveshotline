@@ -75,6 +75,7 @@ export default function FormCombobox<T extends Item>({
 					<Combobox.Input
 						placeholder={placeholder}
 						id={id}
+						data-testid={`${name}-combobox-input`}
 						className={clsx(
 							"form-control pe-5",
 							hasError && "is-invalid",
@@ -92,12 +93,14 @@ export default function FormCombobox<T extends Item>({
 						<Combobox.Clear
 							className="combobox-clear btn btn-link btn-sm lh-1 me-1 p-0 text-secondary"
 							aria-label="Clear selection"
+							data-testid={`${name}-combobox-clear`}
 						>
 							<i className="bi bi-x fs-5" />
 						</Combobox.Clear>
 						<Combobox.Trigger
 							className="btn btn-link btn-sm lh-1 p-0 text-secondary"
 							aria-label="Open popup"
+							data-testid={`${name}-combobox-trigger`}
 						>
 							<i className="bi bi-chevron-down fs-5" />
 						</Combobox.Trigger>
@@ -135,6 +138,7 @@ export default function FormCombobox<T extends Item>({
 								<Combobox.Item
 									key={item.value}
 									value={item}
+									data-testid={`${name}-option-${item.value}`}
 									style={{
 										height: "2.5rem",
 										cursor: "pointer",

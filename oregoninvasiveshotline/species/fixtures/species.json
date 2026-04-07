@@ -3170,5 +3170,69 @@
     },
     "pk": 442,
     "model": "species.species"
+},
+{
+    "fields": {
+        "remedy": "",
+        "severity": 2,
+        "resources": "",
+        "scientific_name": "Testus nullus",
+        "category": 3,
+        "name": "E2E Species No Identification Resources",
+        "is_confidential": false,
+        "identification_image": null,
+        "identification_image_alt": null,
+        "identification_external_resource_link": null
+    },
+    "pk": 443,
+    "model": "species.species"
+},
+{
+    "fields": {
+        "remedy": "",
+        "severity": 2,
+        "resources": "",
+        "scientific_name": "Testus linkus",
+        "category": 3,
+        "name": "E2E Species Link Only",
+        "is_confidential": false,
+        "identification_image": null,
+        "identification_image_alt": null,
+        "identification_external_resource_link": "https://example.org/identification/link-only"
+    },
+    "pk": 444,
+    "model": "species.species"
+},
+{
+    "fields": {
+        "remedy": "",
+        "severity": 2,
+        "resources": "",
+        "scientific_name": "Testus imago",
+        "category": 3,
+        "name": "E2E Species Image Only",
+        "is_confidential": false,
+        "identification_image": "identification_images/species-image-only.png",
+        "identification_image_alt": "Close-up of leaves and stem for species verification.",
+        "identification_external_resource_link": null
+    },
+    "pk": 445,
+    "model": "species.species"
+},
+{
+    "fields": {
+        "remedy": "",
+        "severity": 2,
+        "resources": "",
+        "scientific_name": "Testus imagolink",
+        "category": 3,
+        "name": "E2E Species Image And Link",
+        "is_confidential": false,
+        "identification_image": "identification_images/species-image-and-link.png",
+        "identification_image_alt": "Diagnostic flower and leaf traits for confirming species.",
+        "identification_external_resource_link": "https://example.org/identification/image-and-link"
+    },
+    "pk": 446,
+    "model": "species.species"
 }
 ]

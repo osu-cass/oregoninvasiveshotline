@@ -85,7 +85,10 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 			)}
 
 			{selectedSpecies?.identification_image && (
-				<Collapsible.Root defaultOpen>
+				<Collapsible.Root
+					defaultOpen
+					data-testid="species-identification-panel"
+				>
 					<Collapsible.Trigger
 						className="d-flex justify-content-between w-100 rounded border p-1 px-3 py-2"
 						render={(props, state) => (
@@ -104,6 +107,7 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 					/>
 					<Collapsible.Panel
 						className="border border-top-0 p-3"
+						data-testid="species-identification-panel-content"
 						style={{
 							borderBottomLeftRadius: "var(--bs-border-radius)",
 							borderBottomRightRadius: "var(--bs-border-radius)",
@@ -120,6 +124,7 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 										href={selectedSpecies.identification_external_resource_link}
 										target="_blank"
 										rel="noopener"
+										data-testid="species-identification-resource-link"
 									>
 										click here
 									</a>{" "}
@@ -133,6 +138,7 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 									onClick={() => setLightboxOpen(true)}
 									type="button"
 									aria-label="View identification image in full size"
+									data-testid="species-identification-image-button"
 									className="border-0 bg-transparent p-0"
 								>
 									<img
@@ -141,6 +147,7 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 											selectedSpecies.identification_image_alt ||
 											"An image representing common species identifiers"
 										}
+										data-testid="species-identification-image"
 										className="w-100"
 									/>
 								</button>
@@ -149,20 +156,24 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 									close={() => setLightboxOpen(false)}
 									slides={[{ src: selectedSpecies.identification_image }]}
 									plugins={[Zoom]}
-									controller={{ closeOnBackdropClick: true, focus: false, disableSwipeNavigation: true }}
+									controller={{
+										closeOnBackdropClick: true,
+										focus: false,
+										disableSwipeNavigation: true,
+									}}
 									zoom={{
 										scrollToZoom: true,
-										maxZoomPixelRatio: 3
+										maxZoomPixelRatio: 3,
 									}}
 									render={{
 										buttonPrev: () => null,
-										buttonNext: () => null
+										buttonNext: () => null,
 									}}
 									styles={{
 										container: {
 											backgroundColor: "rgba(0, 0, 0, 0.7)",
 											backdropFilter: "blur(5px)",
-										}
+										},
 									}}
 								/>
 							</>
@@ -173,12 +184,16 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 
 			{selectedSpecies?.identification_external_resource_link &&
 				!selectedSpecies.identification_image && (
-					<p className="small mt-1">
+					<p
+						className="small mt-1"
+						data-testid="species-identification-link-only"
+					>
 						To identify this species,{" "}
 						<a
 							href={selectedSpecies.identification_external_resource_link}
 							target="_blank"
 							rel="noopener"
+							data-testid="species-identification-resource-link"
 						>
 							click here
 						</a>{" "}

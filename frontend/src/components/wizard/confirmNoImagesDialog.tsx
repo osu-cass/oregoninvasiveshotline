@@ -22,12 +22,16 @@ export default function ConfirmNoImagesDialog({
 			description="Photos greatly help experts identify species. Are you sure you want to continue without any?"
 		>
 			<div className="d-flex justify-content-sm-end flex-column-reverse flex-sm-row gap-2">
-				<AlertDialog.Close className="btn btn-secondary px-3">
+				<AlertDialog.Close
+					className="btn btn-secondary px-3"
+					data-testid="confirm-no-images-go-back"
+				>
 					Go back
 				</AlertDialog.Close>
 				<AlertDialog.Close
 					className={`btn btn-primary px-3`}
 					onClick={onConfirm}
+					data-testid="confirm-no-images-continue"
 				>
 					Continue without photos
 				</AlertDialog.Close>
