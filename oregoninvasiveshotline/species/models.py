@@ -3,7 +3,6 @@ from collections import defaultdict
 
 from django.core.validators import RegexValidator
 from django.db import models
-from django import forms
 
 
 def category_id_to_species_id_json():
