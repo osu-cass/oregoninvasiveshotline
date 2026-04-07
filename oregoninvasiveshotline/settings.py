@@ -277,14 +277,18 @@ SECURE_CSP = {
 if DEBUG:
     CSRF_COOKIE_SECURE = False
     SESSION_COOKIE_SECURE = False
+    vite_dev_host = env("DJANGO_VITE_DEV_SERVER_HOST")
+    vite_dev_port = env("DJANGO_VITE_DEV_SERVER_PORT")
+    vite_dev_http_origin = f"http://{vite_dev_host}:{vite_dev_port}"
+    vite_dev_ws_origin = f"ws://{vite_dev_host}:{vite_dev_port}"
     SECURE_CSP["upgrade-insecure-requests"] = False
     SECURE_CSP["script-src"].extend([
-        "http://localhost:5173",
+        vite_dev_http_origin,
         CSP.UNSAFE_INLINE,
     ])
     SECURE_CSP["connect-src"].extend([
-        "http://localhost:5173",
-        "ws://localhost:5173",  # For HMR websocket
+        vite_dev_http_origin,
+        vite_dev_ws_origin,  # For HMR websocket.
     ])
 
 if not DEBUG:
