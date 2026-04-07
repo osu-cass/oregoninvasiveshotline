@@ -37,9 +37,10 @@ jobs:
 
       - name: Set up environment variables
         run: |
+          echo "COMPOSE_PROJECT_NAME=playwright-${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
           echo "USER_ID=$(id -u)" >> "$GITHUB_ENV"
           echo "GROUP_ID=$(id -g)" >> "$GITHUB_ENV"
-          echo "VOLUME_PATH=./volumes" >> "$GITHUB_ENV"
+          echo "VOLUME_PATH=./volumes/playwright-${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
 
       - name: Create volume directories
         run: |
