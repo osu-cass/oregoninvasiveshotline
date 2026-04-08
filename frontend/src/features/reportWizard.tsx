@@ -45,8 +45,6 @@ export default function FormWizard(props: FormWizardProps) {
 		.setValidationTimeout(250);
 
 	const currentStep = Steps[step];
-	const isLastStep = step === Steps.length - 1;
-	const isDone = step >= Steps.length;
 
 	/** Handles the Next button click, prompting if step one has no images. */
 
@@ -68,8 +66,8 @@ export default function FormWizard(props: FormWizardProps) {
 					/>
 				</div>
 
-				{isDone ? (
-					<div>Submitted!</div>
+				{step >= Steps.length ? (
+					<div>You reached a page that shouldn't be possible.... please refresh.</div>
 				) : (
 					<>
 						{step === 0 && <StepOne form={form} />}
@@ -96,7 +94,7 @@ export default function FormWizard(props: FormWizardProps) {
 								</button>
 							)}
 
-							{isLastStep ? (
+							{step === Steps.length - 1 ? (
 								<button
 									type="button"
 									className="btn btn-primary px-4"
