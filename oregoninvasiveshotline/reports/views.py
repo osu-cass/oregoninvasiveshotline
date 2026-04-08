@@ -52,6 +52,16 @@ def list_(request):
     # XXX: Why isn't this a separate view?
     export_format = params.get('export')
     if user.is_active and export_format in ('kml', 'csv'):
+        reports = reports.select_related(
+            'reported_category',
+            'reported_species',
+            'reported_species__severity',
+            'actual_species',
+            'actual_species__category',
+            'actual_species__severity',
+            'created_by',
+            'claimed_by',
+        )
         return _export(reports=reports, format=export_format)
 
     # Paginate the results
