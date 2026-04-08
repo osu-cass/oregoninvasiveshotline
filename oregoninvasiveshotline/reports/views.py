@@ -1,7 +1,6 @@
 from collections import OrderedDict
 import functools
 import itertools
-import json
 import posixpath
 import csv
 from typing import Any, Dict
@@ -33,7 +32,7 @@ from oregoninvasiveshotline.images.models import Image
 from oregoninvasiveshotline.species.models import Category, Severity, category_id_to_species_id_json
 from oregoninvasiveshotline.users.utils import get_tab_counts
 
-from .forms import InviteForm, ManagementForm, NewReportForm, ReportForm, ReportSearchForm, TestForm
+from .forms import InviteForm, ManagementForm, NewReportForm, ReportForm, ReportSearchForm
 from .models import Invite, Report
 from .perms import can_manage_report, can_view_private_report, can_claim_report, permissions
 from .serializers import ReportSerializer
@@ -350,22 +349,6 @@ def delete(request, report_id):
         "object": report,
         "will_be_deleted_with": related_objects,
     })
-
-@require_http_methods(["GET", "POST"])
-def test(request: HttpRequest):
-	props: Dict[str, Any] = {}
-	if request.method == "POST":
-		# If a POST request arrives with an empty body or malformed JSON (e.g., from a non-Inertia client or network issue), this will raise a json.JSONDecodeError and return a 500 error. potentially add error handling for a real form
-		form = TestForm(json.loads(request.body))
-		if form.is_valid():
-			return inertia_location("/")
-		props["errors"] = form.errors
-
-	return inertia_render(
-	    request,
-	    "testPage",
-	    props
-    )
 
 @require_http_methods(["GET", "POST"])
 def create_new(request: HttpRequest):
