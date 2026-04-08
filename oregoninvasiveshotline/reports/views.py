@@ -6,6 +6,7 @@ import posixpath
 import csv
 from typing import Any, Dict
 
+from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -383,11 +384,15 @@ def create_new(request: HttpRequest):
         if form.is_valid():
             images = collect_indexed(request.FILES, "images")
             captions = collect_indexed(request.POST, "image_captions")
-            report = form.save(images=images, captions=captions)
-            messages.success(request, "Report submitted successfully")
-            request.session.setdefault("report_ids", []).append(report.pk)
-            request.session.modified = True
-            return inertia_location(f"/reports/detail/{report.pk}")
+            try:
+                report = form.save(images=images, captions=captions)
+            except forms.ValidationError as e:
+                form.add_error("images", e)
+            else:
+                messages.success(request, "Report submitted successfully")
+                request.session.setdefault("report_ids", []).append(report.pk)
+                request.session.modified = True
+                return inertia_location(f"/reports/detail/{report.pk}")
 
         props["errors"] = form.errors
     

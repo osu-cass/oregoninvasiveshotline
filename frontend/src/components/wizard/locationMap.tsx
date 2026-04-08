@@ -92,14 +92,9 @@ export default function LocationMap({
 		autocomplete.setAttribute("included-region-codes", "us");
 
 		autocomplete.id = searchInputId;
-		autocomplete.className = "w-100";
+		autocomplete.className = "d-block w-100 border-0 bg-transparent px-3 py-2";
 		// @ts-expect-error Placeholder does exist but is missing from types.
 		autocomplete.placeholder = "Search for a place...";
-		autocomplete.style.display = "block";
-		autocomplete.style.width = "100%";
-		autocomplete.style.border = "0";
-		autocomplete.style.background = "transparent";
-		autocomplete.style.padding = "0.375rem 0.75rem";
 		autocomplete.style.colorScheme = "light";
 
 		const handleSelection = async (event: PlaceSelectEvent) => {
