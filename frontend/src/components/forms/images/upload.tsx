@@ -77,7 +77,7 @@ export default function ImageUpload({
 				<div className="d-flex my-2 flex-column gap-2">
 					{images.map((file, index) => (
 						<ImageThumb
-							key={`${file.name}-${file.lastModified}-${index}`}
+							key={`${file.name}-${file.lastModified}`}
 							file={file}
 							caption={captions[index] ?? ""}
 							onCaptionChange={(caption) => {
