@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useState } from "react";
 import ImageThumb from "./imageThumbnail";
 import { resizeImage } from "./resizeImage";
+import { toast } from "sonner";
 
 const ACCEPT = "image/*";
 
@@ -51,6 +52,8 @@ export default function ImageUpload({
 				maxFiles,
 			);
 			onChange(newImages, newCaptions);
+		} catch {
+			toast.error("An unknown error occured while trying to process your images. Please try again.");
 		} finally {
 			setResizing(false);
 		}
