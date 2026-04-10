@@ -15,13 +15,19 @@ type PlaceSelectEvent = Event & {
 };
 
 export interface LocationMapProps {
+	/** Initial center used when no marker is selected yet. */
 	defaultCenter: google.maps.LatLngLiteral;
+	/** Current marker position, or null before selection. */
 	marker: google.maps.LatLngLiteral | null;
+	/** Optional Google Map style ID. */
 	mapId?: string;
+	/** Called when the user selects a new map location. */
 	onLocationChange: (next: google.maps.LatLngLiteral) => void;
+	/** Default zoom level when the map first loads. */
 	defaultZoom?: number;
 }
 
+/** Interactive location picker with map click, drag pin, search, and geolocation support. */
 export default function LocationMap({
 	defaultCenter,
 	marker,

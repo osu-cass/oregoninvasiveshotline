@@ -18,23 +18,46 @@ test.use({
 	permissions: ["geolocation"],
 });
 
+/**
+ * Returns the wizard progressbar locator.
+ * @param page - Playwright page instance.
+ */
 function progressbar(page: Page) {
 	return page.locator('[role="progressbar"]').first();
 }
 
+/**
+ * Asserts the progressbar percentage for the current step.
+ * @param page - Playwright page instance.
+ * @param value - Expected progress percentage value.
+ */
 async function expectProgress(page: Page, value: "0" | "25" | "50" | "75") {
 	await expect(progressbar(page)).toHaveAttribute("aria-valuenow", value);
 }
 
+/**
+ * Opens the report wizard page and waits for initial DOM content.
+ * @param page - Playwright page instance.
+ */
 async function openWizard(page: Page) {
 	await page.goto(WIZARD_URL, { waitUntil: "domcontentloaded" });
 }
 
+/**
+ * Fills the step-one description textarea and verifies the value.
+ * @param page - Playwright page instance.
+ * @param description - Description text to enter.
+ */
 async function fillStepOne(page: Page, description: string) {
 	await page.locator("#find_description").fill(description);
 	await expect(page.locator("#find_description")).toHaveValue(description);
 }
 
+/**
+ * Opens a combobox and selects its first available option.
+ * @param page - Playwright page instance.
+ * @param id - Combobox field id to interact with.
+ */
 async function selectFirstComboboxOption(
 	page: Page,
 	id: "category" | "species",

@@ -21,9 +21,9 @@ export default function ImageThumb({
 	const [src, setSrc] = useState<string>();
 
 	useEffect(() => {
-		const src = URL.createObjectURL(file)
-		setSrc(src)
-		
+		const src = URL.createObjectURL(file);
+		setSrc(src);
+
 		return () => URL.revokeObjectURL(src);
 	}, [file]);
 

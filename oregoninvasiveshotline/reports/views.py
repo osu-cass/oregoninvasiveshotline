@@ -354,6 +354,12 @@ def delete(request, report_id):
 def create_new(request: HttpRequest):
     """
     Render the new experience for the public form for submitting reports.
+
+    Args:
+        request: Incoming HTTP request.
+
+    Returns:
+        HttpResponse: Inertia page response, validation response, or redirect response.
     """
     props: Dict[str, Any] = {}
 

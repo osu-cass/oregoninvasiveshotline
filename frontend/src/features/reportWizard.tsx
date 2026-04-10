@@ -67,7 +67,9 @@ export default function FormWizard(props: FormWizardProps) {
 				</div>
 
 				{step >= Steps.length ? (
-					<div>You reached a page that shouldn't be possible.... please refresh.</div>
+					<div>
+						You reached a page that shouldn't be possible.... please refresh.
+					</div>
 				) : (
 					<>
 						{step === 0 && <StepOne form={form} />}

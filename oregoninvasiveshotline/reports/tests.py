@@ -769,6 +769,7 @@ class ReportFormTest(TransactionTestCase, UserMixin):
 class NewReportFormTest(TransactionTestCase):
 
     def test_identification_process_not_required(self):
+        """Ensure the wizard form validates without an identification process note."""
         category = make(Category)
         form = NewReportForm({
             "find_description": "Found near trail edge",
@@ -783,6 +784,7 @@ class NewReportFormTest(TransactionTestCase):
         self.assertTrue(form.is_valid())
 
     def test_save_maps_wizard_fields(self):
+        """Ensure wizard fields are persisted to report and follow-up comment records."""
         category = make(Category)
         form = NewReportForm({
             "find_description": "Leafy plant with white flowers",
