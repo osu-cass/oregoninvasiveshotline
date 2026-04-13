@@ -87,7 +87,7 @@ select[multiple] {
     text-align: right;
 }
 
-#phone {
+.navbar-phone-number {
     /* the magic numbers here place the phone number in the center of the
      * Report Now button on the menu */
     position: absolute;
@@ -97,8 +97,8 @@ select[multiple] {
     white-space: nowrap;
 }
 @media (max-width: 529px){
-    #phone {
-        position:static;
+    .navbar-phone-number {
+        position: static;
     }
 }
 

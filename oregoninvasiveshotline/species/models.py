@@ -37,6 +37,8 @@ class Category(models.Model):
             'has a transparent background with a white foreground'
         )
     )
+    
+    species: models.Manager["Species"]
 
     def __str__(self):
         return self.name
@@ -69,7 +71,7 @@ class Species(models.Model):
         ordering = ['name']
 
     species_id = models.AutoField(primary_key=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, related_name="species", on_delete=models.CASCADE)
     is_confidential = models.BooleanField(
         default=False,
         help_text=(

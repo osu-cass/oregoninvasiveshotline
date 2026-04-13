@@ -30,83 +30,7 @@
     <body class="{% block body_class %}{% endblock %}">
         {% block body %}
             <div>
-                <nav class="navbar navbar-expand-lg navbar-light" style="padding-top: 0 !important;">
-                  <div class="container rounded-bottom pb-2 pb-md-0 d-flex">
-                    <div class="d-flex align-items-center flex-grow-1">
-                      <a class="navbar-brand" href="{% url 'home' %}">
-                        <img src="{% static 'img/header_logo.png' %}" 
-                             alt="Oregon Invasives Hotline" 
-                             class="img-fluid" style="max-height: 5rem;">
-                      </a>
-                      <button class="navbar-toggler ms-auto" type="button" data-bs-toggle="collapse" 
-                              data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" 
-                              aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                      </button>
-                    </div>
-                
-                    <div class="collapse navbar-collapse" id="navbarNav">
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                            <li class="nav-item">
-                                <a class="nav-link" href="/pages/learn/">Learn</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'reports-list' %}">Search Reports</a>
-                            </li>
-                            <li class="nav-item" style="position: relative;">
-                                <a class="btn btn-warning" href="{% url 'reports-create' %}">Report Now</a>
-                                {% comment %} only show phone on certain screens, since it's kinda ugly {% endcomment %}
-                                {% if request.path == '/' or request.path == '/reports/create' %}
-                                    <span id="phone" class="d-none d-lg-inline">
-                                        or call <strong>1-866-INVADER</strong>
-                                    </span>
-                                {% endif %}
-                            </li>
-                        </ul>
-                        <ul class="navbar-nav">
-                            {% if user.is_authenticated %}
-                                <li class="nav-item dropdown">
-                                    <button type="button"
-                                            class="btn btn-outline-secondary dropdown-toggle"
-                                            data-bs-toggle="dropdown"
-                                            aria-expanded="false"
-                                            aria-labelledby="user-menu-button">
-                                        <i class="bi bi-person"></i>
-                                        {{ user.get_short_name }}
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="user-menu-button">
-                                        {% if request.session.report_ids %}
-                                            <li><a class="dropdown-item strong" href="{% url 'users-home' %}">My Reports</a></li>
-                                        {% endif %}
-                                        {% if user.is_staff %}
-                                            <li><a class="dropdown-item" href="{% url 'admin-panel' %}">Admin</a></li>
-                                        {% elif user.is_active %}
-                                            <li><a class="dropdown-item" href="{% url 'species-list' %}">Species</a></li>
-                                        {% endif %}
-                                        {% if user.is_active %}
-                                            <li><a class="dropdown-item strong" href="{% url 'users-home' %}">My Account</a></li>
-                                        {% endif %}
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                        	<form action="{% url 'logout' %}" method="post" style="margin:0;">
-                                            	{% csrf_token %}
-                                             	<button type="submit" class="dropdown-item">Log out</button>
-                                          	</form>
-                                        </li>
-                                    </ul>
-                                </li>
-                            {% else %}
-                                <li class="nav-item">
-                                    <a href="{% url 'login' %}" class="btn btn-outline-secondary">
-                                        <i class="bi bi-box-arrow-in-right"></i>
-                                        Log in
-                                    </a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </div>
-                </div>
-            </nav>
+                {% include '_navbar.html' %}
 
                 <div class="{% block main_class %}container{% endblock %} rounded-top pt-3">
                     {% if messages %}
@@ -120,13 +44,7 @@
                     {% block content %}{% endblock %}
                 </div>
 
-                <div class="container text-center text-muted" id="footer">
-                    <p>
-                        Maintained by Oregon State University |
-                        <a href="mailto:{{ CONTACT_EMAIL }}">Contact us</a>
-                        for questions regarding site content
-                    </p>
-                </div>
+                {% include '_footer.html' %}
             </div>
         {% endblock %}
 

@@ -18,6 +18,7 @@ def defaults(request):
     return {
         'CONTACT_EMAIL': settings.CONTACT_EMAIL,
         'GOOGLE_API_KEY': settings.GOOGLE_API_KEY,
+        'GOOGLE_MAP_ID': settings.GOOGLE_MAP_ID,
 
         'ENVIRONMENT': settings.ENV,
         'RELEASE': __version__,

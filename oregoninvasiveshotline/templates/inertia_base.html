@@ -1,4 +1,5 @@
 {% load django_vite %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -6,14 +7,24 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="csrf-token" content="" />
-        {% vite_hmr_client %}
         
+        <title>Oregon Invasives Hotline</title>
+        <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
+        
+        <link rel="stylesheet" nonce="{{csp_nonce}}" href="{% static 'css/main.css' %}">
+        
+        {% vite_hmr_client %}
         {% vite_react_refresh nonce=csp_nonce %}
         {% vite_asset 'src/main.tsx' %}
-        
-        <title>Django Inertia</title>
     </head>
-    <body>
-        {% block inertia %}{% endblock %}
+    <body class="d-flex flex-column min-vh-100">
+        {% include '_navbar.html' %}
+        
+        <!-- Unsure why but bootstrap flex doesn't seem to be working -->
+        <main style="flex-grow: 1;" class="{% block main_class %}container{% endblock %} rounded-top pt-3">
+        	{% block inertia %}{% endblock %}
+        </main>
+            
+        {% include '_footer.html' %}
     </body>
 </html>
