@@ -2,7 +2,9 @@ import { AlertDialog } from "@base-ui/react";
 import ConfirmDialog from "../ui/dialog";
 
 interface ConfirmNoImagesDialogProps {
+	/** Whether the dialog is open. */
 	open: boolean;
+	/** Callback when dialog open state changes. */
 	onOpenChange: (open: boolean) => void;
 	/** Called when the user confirms they want to proceed without photos. */
 	onConfirm: () => void;

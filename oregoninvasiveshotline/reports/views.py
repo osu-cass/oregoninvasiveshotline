@@ -1,11 +1,11 @@
 from collections import OrderedDict
 import functools
 import itertools
-import json
 import posixpath
 import csv
 from typing import Any, Dict
 
+from django import forms
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -32,7 +32,7 @@ from oregoninvasiveshotline.images.models import Image
 from oregoninvasiveshotline.species.models import Category, Severity, category_id_to_species_id_json
 from oregoninvasiveshotline.users.utils import get_tab_counts
 
-from .forms import InviteForm, ManagementForm, NewReportForm, ReportForm, ReportSearchForm, TestForm
+from .forms import InviteForm, ManagementForm, NewReportForm, ReportForm, ReportSearchForm
 from .models import Invite, Report
 from .perms import can_manage_report, can_view_private_report, can_claim_report, permissions
 from .serializers import ReportSerializer
@@ -53,6 +53,16 @@ def list_(request):
     # XXX: Why isn't this a separate view?
     export_format = params.get('export')
     if user.is_active and export_format in ('kml', 'csv'):
+        reports = reports.select_related(
+            'reported_category',
+            'reported_species',
+            'reported_species__severity',
+            'actual_species',
+            'actual_species__category',
+            'actual_species__severity',
+            'created_by',
+            'claimed_by',
+        )
         return _export(reports=reports, format=export_format)
 
     # Paginate the results
@@ -351,25 +361,15 @@ def delete(request, report_id):
     })
 
 @require_http_methods(["GET", "POST"])
-def test(request: HttpRequest):
-	props: Dict[str, Any] = {}
-	if request.method == "POST":
-		# If a POST request arrives with an empty body or malformed JSON (e.g., from a non-Inertia client or network issue), this will raise a json.JSONDecodeError and return a 500 error. potentially add error handling for a real form
-		form = TestForm(json.loads(request.body))
-		if form.is_valid():
-			return inertia_location("/")
-		props["errors"] = form.errors
-
-	return inertia_render(
-	    request,
-	    "testPage",
-	    props
-    )
-
-@require_http_methods(["GET", "POST"])
 def create_new(request: HttpRequest):
     """
     Render the new experience for the public form for submitting reports.
+
+    Args:
+        request: Incoming HTTP request.
+
+    Returns:
+        HttpResponse: Inertia page response, validation response, or redirect response.
     """
     props: Dict[str, Any] = {}
 
@@ -383,11 +383,15 @@ def create_new(request: HttpRequest):
         if form.is_valid():
             images = collect_indexed(request.FILES, "images")
             captions = collect_indexed(request.POST, "image_captions")
-            report = form.save(images=images, captions=captions)
-            messages.success(request, "Report submitted successfully")
-            request.session.setdefault("report_ids", []).append(report.pk)
-            request.session.modified = True
-            return inertia_location(f"/reports/detail/{report.pk}")
+            try:
+                report = form.save(images=images, captions=captions)
+            except forms.ValidationError as e:
+                form.add_error("images", e)
+            else:
+                messages.success(request, "Report submitted successfully")
+                request.session.setdefault("report_ids", []).append(report.pk)
+                request.session.modified = True
+                return inertia_location(f"/reports/detail/{report.pk}")
 
         props["errors"] = form.errors
     

@@ -136,6 +136,21 @@ To run `pyright`:
 pyright
 ```
 
+### Docstring and JSDoc Conventions
+
+Use concise summary docs for new or changed functions/methods.
+
+- Python:
+  - Follow [PEP 257](https://peps.python.org/pep-0257/).
+  - Prefer a short summary line as the default.
+  - Add `Args:` / `Returns:` only when they improve clarity.
+  - In typed Python code, do not repeat type information from annotations unless needed for clarity.
+- TypeScript/JavaScript:
+  - Follow [TypeScript's supported JSDoc tags](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html).
+  - For React components with typed props, document prop fields on the props interface/type.
+  - Avoid duplicating the same prop descriptions in both the interface and function-level `@param` docs.
+  - Use function-level `@param` docs for non-prop function parameters when helpful.
+
 ### Creating a Superuser
 
 To create a superuser, run the following command:

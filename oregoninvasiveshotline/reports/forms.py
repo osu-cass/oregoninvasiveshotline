@@ -25,6 +25,14 @@ from oregoninvasiveshotline.reports.tasks import (
 ALLOWED_REPORT_STATES = ("Oregon", "Washington")
 
 def get_county(point: Point):
+    """Return the first county polygon that intersects a point.
+
+    Args:
+        point: Geographic point to test for county intersection.
+
+    Returns:
+        County | None: First matching county, if any.
+    """
     return County.objects.filter(
         the_geom__intersects=point,
     ).first()
@@ -283,6 +291,15 @@ class ReportForm(forms.ModelForm):
         return email
 
     def save(self, *args, **kwargs):
+        """Save the report, attach reporter details, and queue notifications.
+
+        Args:
+            *args: Positional arguments passed to ModelForm.save.
+            **kwargs: Keyword arguments passed to ModelForm.save.
+
+        Returns:
+            Report: The saved report instance.
+        """
         report = self.instance
 
         # NOTE: If the user doesn't exist, a new inactive account is
@@ -337,6 +354,11 @@ class NewReportForm(forms.Form):
     questions = forms.CharField(required=False, widget=forms.Textarea)
 
     def clean_email(self):
+        """Normalize the submitted email address to lowercase.
+
+        Returns:
+            str: Normalized lowercase email address.
+        """
         # NOTE: Technically, email addresses are case-sensitive, but in
         #       practice we can ignore that.
         email = self.cleaned_data['email']
@@ -344,6 +366,11 @@ class NewReportForm(forms.Form):
         return email
 
     def clean(self):
+        """Validate species-selection rules and required map coordinates.
+
+        Returns:
+            dict[str, Any]: Cleaned form data.
+        """
         cleaned_data = super().clean()
         category = cleaned_data.get('category')
         species = cleaned_data.get('species')
@@ -372,6 +399,11 @@ class NewReportForm(forms.Form):
         return cleaned_data
 
     def _get_report_description(self):
+        """Build the final report description from wizard fields.
+
+        Returns:
+            str: Combined description text.
+        """
         find_description = self.cleaned_data.get('find_description', '')
         identification_process = self.cleaned_data.get('identification_process')
         if identification_process and find_description:
@@ -384,11 +416,25 @@ class NewReportForm(forms.Form):
         return find_description
 
     def _get_report_point(self):
+        """Create a WGS84 point from cleaned latitude and longitude values.
+
+        Returns:
+            Point: Geographic point using SRID 4326.
+        """
         latitude = self.cleaned_data.get("latitude")
         longitude = self.cleaned_data.get("longitude")
         return Point(longitude, latitude, srid=4326)
 
     def save(self, images: List[UploadedFile] | None = None, captions: List[str] | None = None):
+        """Create a report, attach uploaded images, and queue notifications.
+
+        Args:
+            images: Uploaded image files from the wizard.
+            captions: Optional captions aligned to uploaded images by index.
+
+        Returns:
+            Report: The created report instance.
+        """
         if images and images.__len__() > 10:
             raise forms.ValidationError("You can only upload up to 10 images.")
         # NOTE: If the user doesn't exist, a new inactive account is
@@ -579,13 +625,3 @@ class ManagementForm(forms.ModelForm):
 
         return super().save(*args, **kwargs)
 
-class TestForm(forms.Form):
-    STATE_CHOICES = [
-        ('', 'Choose...'),
-        ('OR', 'Oregon'),
-        ('WA', 'Washington'),
-        ('CA', 'California'),
-    ]
-
-    name = forms.CharField(label="Your Name", max_length=100, required=True)
-    state = forms.ChoiceField(label="State", choices=STATE_CHOICES, required=True)

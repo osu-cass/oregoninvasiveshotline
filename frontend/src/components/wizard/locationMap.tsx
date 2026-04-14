@@ -15,13 +15,19 @@ type PlaceSelectEvent = Event & {
 };
 
 export interface LocationMapProps {
+	/** Initial center used when no marker is selected yet. */
 	defaultCenter: google.maps.LatLngLiteral;
+	/** Current marker position, or null before selection. */
 	marker: google.maps.LatLngLiteral | null;
+	/** Optional Google Map style ID. */
 	mapId?: string;
+	/** Called when the user selects a new map location. */
 	onLocationChange: (next: google.maps.LatLngLiteral) => void;
+	/** Default zoom level when the map first loads. */
 	defaultZoom?: number;
 }
 
+/** Interactive location picker with map click, drag pin, search, and geolocation support. */
 export default function LocationMap({
 	defaultCenter,
 	marker,
@@ -92,14 +98,9 @@ export default function LocationMap({
 		autocomplete.setAttribute("included-region-codes", "us");
 
 		autocomplete.id = searchInputId;
-		autocomplete.className = "w-100";
+		autocomplete.className = "d-block w-100 border-0 bg-transparent px-3 py-2";
 		// @ts-expect-error Placeholder does exist but is missing from types.
 		autocomplete.placeholder = "Search for a place...";
-		autocomplete.style.display = "block";
-		autocomplete.style.width = "100%";
-		autocomplete.style.border = "0";
-		autocomplete.style.background = "transparent";
-		autocomplete.style.padding = "0.375rem 0.75rem";
 		autocomplete.style.colorScheme = "light";
 
 		const handleSelection = async (event: PlaceSelectEvent) => {

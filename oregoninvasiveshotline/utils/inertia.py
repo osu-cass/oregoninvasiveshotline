@@ -8,6 +8,14 @@ from django.http import HttpRequest, HttpResponse, JsonResponse, QueryDict
 logger = logging.getLogger(__name__)
 
 def inertia_location(url: str) -> HttpResponse:
+    """Return an Inertia location redirect response.
+
+    Args:
+        url: Client-side destination URL.
+
+    Returns:
+        HttpResponse: Inertia location response with redirect header.
+    """
     return HttpResponse(
         status=409,
         headers={"X-Inertia-Location": url},
@@ -15,6 +23,14 @@ def inertia_location(url: str) -> HttpResponse:
 
 
 def is_precognition(request: HttpRequest) -> bool:
+    """Return whether the request is a Precognition validation call.
+
+    Args:
+        request: Incoming HTTP request.
+
+    Returns:
+        bool: True when Precognition headers are present.
+    """
     return "Precognition" in request.headers
 
 
@@ -25,6 +41,12 @@ def get_post_data(request: HttpRequest) -> QueryDict | dict[str, Any]:
     populates request.POST for multipart and form-urlencoded bodies, so
     we need to parse JSON manually. Checking request.POST first avoids
     touching request.body after multipart parsing consumes the stream.
+
+    Args:
+        request: Incoming HTTP request.
+
+    Returns:
+        QueryDict | dict[str, Any]: Parsed POST payload.
     """
     if request.POST:
         return request.POST
@@ -54,6 +76,13 @@ def collect_indexed(source: Mapping[str, object], prefix: str) -> list:
     }
 
     Works with both request.POST (QueryDict) and request.FILES (MultiValueDict).
+
+    Args:
+        source: Mapping that contains indexed keys.
+        prefix: Key prefix to collect, e.g. "images".
+
+    Returns:
+        list: Reassembled values by numeric index.
     """
     tag = prefix + "["
     indexed: list = []
@@ -73,7 +102,15 @@ def collect_indexed(source: Mapping[str, object], prefix: str) -> list:
 
 
 def parse_precognition_fields(request: HttpRequest, form: Form) -> HttpResponse:
-    """Validate specific fields for a precognition request and return errors."""
+    """Validate only requested fields for a Precognition request.
+
+    Args:
+        request: Incoming HTTP request.
+        form: Bound Django form instance to validate.
+
+    Returns:
+        HttpResponse: 422 with field errors or 204 when validation succeeds.
+    """
     header = request.headers.get("Precognition-Validate-Only", "")
     fields = [f.strip() for f in header.split(",") if f.strip()]
 

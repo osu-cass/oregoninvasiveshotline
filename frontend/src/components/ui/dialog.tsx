@@ -2,12 +2,15 @@ import { AlertDialog } from "@base-ui/react/alert-dialog";
 import type { ReactNode } from "react";
 
 interface ConfirmDialogProps {
+	/** Whether the dialog is open. */
 	open: boolean;
+	/** Callback when the open state changes. */
 	onOpenChange: (open: boolean) => void;
 	/** The title of the confirmation dialog. */
 	title: ReactNode;
 	/** The description of the confirmation dialog. */
 	description: ReactNode;
+	/** Optional dialog action/footer content. */
 	children?: ReactNode;
 }
 
