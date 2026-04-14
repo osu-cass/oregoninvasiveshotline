@@ -24,6 +24,7 @@ jobs:
           echo "test-secret-key-for-ci" > docker/secrets/secret_key.txt
           echo "invasives" > docker/secrets/db_password.txt
           echo "" > docker/secrets/google_api_key.txt
+          echo "" > docker/secrets/google_map_id.txt
           chmod 600 docker/secrets/*.txt
 
       - name: Set up environment variables

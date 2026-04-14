@@ -44,6 +44,7 @@ env = environ.Env(
     SESSION_COOKIE_SECURE=(bool, True),
     SECURE_PROXY_SSL_HEADER=(str, ''),
     GOOGLE_API_KEY=(str, ''),
+    GOOGLE_MAP_ID=(str, ''),
     GOOGLE_ANALYTICS_TRACKING_ID=(str, ''),
     SENTRY_DSN=(str, ''),
     SENTRY_ENVIRONMENT=(str, ''),
@@ -254,16 +255,18 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.http.ConditionalGetMiddleware",
 
+    "oregoninvasiveshotline.middleware.precognition_middleware",
     "inertia.middleware.InertiaMiddleware",
 ]
 
 SECURE_CSP = {
     "default-src": [CSP.SELF],
-    "script-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", CSP.NONCE],
+    "script-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", "https://places.googleapis.com", CSP.NONCE],
+    "worker-src": [CSP.SELF, "blob:"],
     "style-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", CSP.UNSAFE_INLINE],
-    "img-src": [CSP.SELF, "data:", "https:"],
+    "img-src": [CSP.SELF, "blob:", "data:", "https:"],
     "font-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
-    "connect-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com"],
+    "connect-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", "https://places.googleapis.com", "https://www.gstatic.com", "data:"],
     "object-src": [CSP.NONE],
     "base-uri": [CSP.SELF],
     "form-action": [CSP.SELF],
@@ -272,6 +275,9 @@ SECURE_CSP = {
 }
 
 if DEBUG:
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = False
+    SECURE_CSP["upgrade-insecure-requests"] = False
     SECURE_CSP["script-src"].extend([
         "http://localhost:5173",
         CSP.UNSAFE_INLINE,
@@ -352,6 +358,7 @@ ICON_TYPE = "png"
 
 GOOGLE_ANALYTICS_TRACKING_ID = env('GOOGLE_ANALYTICS_TRACKING_ID', default=None)  # pyright: ignore
 GOOGLE_API_KEY = read_secret('GOOGLE_API_KEY', str(env('GOOGLE_API_KEY')))
+GOOGLE_MAP_ID = read_secret('GOOGLE_MAP_ID', str(env('GOOGLE_MAP_ID')))
 
 NOTIFICATIONS = {
     'from_email': env('NOTIFICATIONS_FROM_EMAIL'),

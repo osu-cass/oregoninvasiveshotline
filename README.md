@@ -27,6 +27,8 @@ You must configure a few API keys for this project. To create them, make files w
   - Recommended: `invasives`
 - `google_api_key.txt`
   - Create an API key on <https://mapsplatform.google.com/>. It should look something like `AIzaSyDQwAloK4wKTeKqKJ4oK4wKTeKqKJ4oK4w`.
+- `google_map_id.txt`
+  - Create a google maps map ID key on <https://mapsplatform.google.com/>. It should look something like `a1b2c3d4e5f6g7h8`. See <https://developers.google.com/maps/documentation/javascript/cloud-configuration#creating-map-id> for detailed steps.
 - `secret_key.txt`
   - Create a secret key. For development, you can use whatever random string. In production, use a secure random string.
 
@@ -50,10 +52,11 @@ View the website at <http://localhost:8000>.
 
 ### Testing
 
-To run the test library:
+To run the test libraries:
 
 ```bash
-make test_container
+make test_container # Python test library
+npm test # UI integration tests. Pass `--ui` for an interative ui to run tests.
 ```
 
 Tests will also run automatically on pull requests.
@@ -132,6 +135,21 @@ To run `pyright`:
 ```bash
 pyright
 ```
+
+### Docstring and JSDoc Conventions
+
+Use concise summary docs for new or changed functions/methods.
+
+- Python:
+  - Follow [PEP 257](https://peps.python.org/pep-0257/).
+  - Prefer a short summary line as the default.
+  - Add `Args:` / `Returns:` only when they improve clarity.
+  - In typed Python code, do not repeat type information from annotations unless needed for clarity.
+- TypeScript/JavaScript:
+  - Follow [TypeScript's supported JSDoc tags](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html).
+  - For React components with typed props, document prop fields on the props interface/type.
+  - Avoid duplicating the same prop descriptions in both the interface and function-level `@param` docs.
+  - Use function-level `@param` docs for non-prop function parameters when helpful.
 
 ### Creating a Superuser
 
