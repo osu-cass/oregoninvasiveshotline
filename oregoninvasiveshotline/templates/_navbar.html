@@ -28,13 +28,11 @@
                 {% comment %} only show phone on certain screens, since it's kinda ugly {% endcomment %}
                 {% if request.path == '/' or request.path == '/reports/create' %}
                 	<a
-                 		href="tel:1-866-468-2337" 
-                   		id="phone"
+                 		href="tel:+18664682337" 
                      	class="d-none d-lg-inline navbar-phone-number text-decoration-none"
                       	aria-label="Call 1-866-468-2337"
                  	>
                         or call <strong>1-866-INVADER</strong>
-                        <span class="visually-hidden">(1-866-468-2337)</span>
                     </a>
                 {% endif %}
             </li>
