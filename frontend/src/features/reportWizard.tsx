@@ -1,4 +1,5 @@
 import { useForm } from "@inertiajs/react";
+import { atom } from "jotai";
 import { useState } from "react";
 import ConfirmNoImagesDialog from "../components/wizard/confirmNoImagesDialog";
 import {
@@ -26,6 +27,8 @@ interface FormWizardProps {
 	/** Google Map ID for advanced marker support. */
 	google_map_id?: string;
 }
+
+export const exifLocationAtom = atom<google.maps.LatLngLiteral>();
 
 /** Multi-step report form with progress bar and per-step validation. */
 export default function FormWizard(props: FormWizardProps) {

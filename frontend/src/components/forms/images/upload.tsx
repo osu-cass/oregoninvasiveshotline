@@ -1,8 +1,11 @@
 import clsx from "clsx";
-import { useState } from "react";
+import ExifReader from "exifreader";
+import { useSetAtom } from "jotai";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
+import { exifLocationAtom } from "../../../features/reportWizard";
 import ImageThumb from "./imageThumbnail";
 import { resizeImage } from "./resizeImage";
-import { toast } from "sonner";
 
 const ACCEPT = "image/*";
 
@@ -36,11 +39,40 @@ export default function ImageUpload({
 }: ImageUploadProps) {
 	const [dragging, setDragging] = useState(false);
 	const [resizing, setResizing] = useState(false);
+	const setExifLocation = useSetAtom(exifLocationAtom);
+	// Key should be `${file.name}-${file.lastModified}` to avoid collisions as much as possible without using the actual file/hash.
+	const imageLocations = useMemo(
+		() => new Map<`${string}-${string}`, google.maps.LatLngLiteral>(),
+		[],
+	);
 
 	const addFiles = async (files: FileList | null) => {
 		if (!files) return;
 
-		const incoming = Array.from(files);
+		let incoming = Array.from(files);
+
+		if (
+			images.some((file) =>
+				incoming.some(
+					(incomingFile) =>
+						incomingFile.name === file.name &&
+						incomingFile.lastModified === file.lastModified,
+				),
+			)
+		) {
+			toast.error(
+				"One or more of your images was duplicated, and was not uploaded",
+			);
+		}
+
+		incoming = incoming.filter(
+			(file) =>
+				!images.some(
+					(imagesFile) =>
+						imagesFile.name === file.name &&
+						imagesFile.lastModified === file.lastModified,
+				),
+		);
 
 		// Note that resizing strips exif data, so if/when we do location based on exif data, that is something to be aware of.
 		setResizing(true);
@@ -52,8 +84,28 @@ export default function ImageUpload({
 				maxFiles,
 			);
 			onChange(newImages, newCaptions);
+			await Promise.all(
+				incoming.map(async (file) => {
+					const tags = await ExifReader.load(file, { expanded: true });
+					const lng = tags.gps?.Longitude;
+					const lat = tags.gps?.Latitude;
+					if (lng != null && lat != null) {
+						imageLocations.set(`${file.name}-${file.lastModified}`, {
+							lat: Number(lat),
+							lng: Number(lng),
+						});
+					}
+				}),
+			);
+			
+			// We could track the currently set image within the atom and compare/see if it's not set,
+			// however this is an elegent solution that makes it all just slightly simpler.
+			setExifLocation(imageLocations.values().next().value);
+			console.log("locs", imageLocations);
 		} catch {
-			toast.error("An unknown error occured while trying to process your images. Please try again.");
+			toast.error(
+				"An unknown error occured while trying to process your images. Please try again.",
+			);
 		} finally {
 			setResizing(false);
 		}
@@ -85,12 +137,13 @@ export default function ImageUpload({
 								next[index] = caption;
 								onChange(images, next);
 							}}
-							onRemove={() =>
+							onRemove={() => {
+								imageLocations.delete(`${file.name}-${file.lastModified}`);
 								onChange(
 									images.filter((_, i) => i !== index),
 									captions.filter((_, i) => i !== index),
-								)
-							}
+								);
+							}}
 						/>
 					))}
 				</div>

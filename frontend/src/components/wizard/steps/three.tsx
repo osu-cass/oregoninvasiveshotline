@@ -24,7 +24,7 @@ export default function StepThree({
 
 	const lat = Number.parseFloat(form.data.latitude);
 	const lng = Number.parseFloat(form.data.longitude);
-	const marker = Number.isNaN(lat) || Number.isNaN(lng) ? null : { lat, lng };
+	const marker: google.maps.LatLngLiteral | null = Number.isNaN(lat) || Number.isNaN(lng) ? null : { lat, lng };
 
 	return (
 		<div className="row g-3 mt-1">
