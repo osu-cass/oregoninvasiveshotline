@@ -44,6 +44,7 @@ env = environ.Env(
     SESSION_COOKIE_SECURE=(bool, True),
     SECURE_PROXY_SSL_HEADER=(str, ''),
     GOOGLE_API_KEY=(str, ''),
+    GOOGLE_BACKEND_API_KEY=(str, ''),
     GOOGLE_MAP_ID=(str, ''),
     GOOGLE_ANALYTICS_TRACKING_ID=(str, ''),
     SENTRY_DSN=(str, ''),
@@ -84,6 +85,11 @@ ENV = env('DJANGO_ENV')
 SENTRY_DSN = env('SENTRY_DSN', default='') # pyright: ignore
 SENTRY_ENVIRONMENT = env('SENTRY_ENVIRONMENT', default=ENV) # pyright: ignore
 SENTRY_TRACES_SAMPLE_RATE = env('SENTRY_TRACES_SAMPLE_RATE')
+
+# Google API settings
+GOOGLE_API_KEY = read_secret('GOOGLE_API_KEY', str(env('GOOGLE_API_KEY')))
+GOOGLE_BACKEND_API_KEY = read_secret('GOOGLE_BACKEND_API_KEY', str(env('GOOGLE_BACKEND_API_KEY')))
+GOOGLE_MAP_ID = read_secret('GOOGLE_MAP_ID', str(env('GOOGLE_MAP_ID')))
 
 ROOT_URLCONF = "oregoninvasiveshotline.urls"
 WSGI_APPLICATION = "oregoninvasiveshotline.wsgi.application"

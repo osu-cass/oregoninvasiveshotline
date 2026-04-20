@@ -21,6 +21,7 @@ from oregoninvasiveshotline.reports.tasks import (
     notify_report_subscribers,
     notify_invited_reviewer
 )
+from oregoninvasiveshotline.utils.reverse_geocoding.client import location_in_oregon_or_washington
 
 ALLOWED_REPORT_STATES = ("Oregon", "Washington")
 
@@ -391,10 +392,10 @@ class NewReportForm(forms.Form):
         if latitude is None or longitude is None:
             self.add_error("latitude", "Select a location on the map.")
             return cleaned_data
-
-        # point = Point(longitude, latitude, srid=4326)
-        # if not get_allowed_county(point):
-        #     self.add_error("latitude", "Report location must be in Oregon or Washington.")
+            
+        if not location_in_oregon_or_washington(latitude, longitude):
+            self.add_error("latitude", "Report location must be in Oregon or Washington.")
+            return cleaned_data
 
         return cleaned_data
 

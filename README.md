@@ -27,6 +27,10 @@ You must configure a few API keys for this project. To create them, make files w
   - Recommended: `invasives`
 - `google_api_key.txt`
   - Create an API key on <https://mapsplatform.google.com/>. It should look something like `AIzaSyDQwAloK4wKTeKqKJ4oK4wKTeKqKJ4oK4w`.
+  - This key is used for Google Maps functionality and may be exposed to the client.
+- `google_backend_api_key.txt`
+  - Create a separate API key on <https://mapsplatform.google.com/> for backend-only API calls.
+  - This key must be treated as a secret and never shared with or exposed to the client.
 - `google_map_id.txt`
   - Create a google maps map ID key on <https://mapsplatform.google.com/>. It should look something like `a1b2c3d4e5f6g7h8`. See <https://developers.google.com/maps/documentation/javascript/cloud-configuration#creating-map-id> for detailed steps.
 - `secret_key.txt`
