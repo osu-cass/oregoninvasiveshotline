@@ -1,9 +1,7 @@
 import clsx from "clsx";
 import ExifReader from "exifreader";
-import { useSetAtom } from "jotai";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { exifLocationAtom } from "../../../features/reportWizard";
 import ImageThumb from "./imageThumbnail";
 import { resizeImage } from "./resizeImage";
 
@@ -16,6 +14,8 @@ interface ImageUploadProps {
 	captions: string[];
 	/** Called when the images or captions change. */
 	onChange: (images: File[], captions: string[]) => void;
+	/** Called when the EXIF-based location changes. */
+	onExifLocationChange: (location?: google.maps.LatLngLiteral) => void;
 	/** Max number of images allowed. Defaults to 10. */
 	maxFiles?: number;
 	/** Label text above the drop zone. */
@@ -33,18 +33,29 @@ export default function ImageUpload({
 	images,
 	captions,
 	onChange,
+	onExifLocationChange,
 	maxFiles = 10,
 	label = "Images",
 	optional,
 }: ImageUploadProps) {
 	const [dragging, setDragging] = useState(false);
 	const [resizing, setResizing] = useState(false);
-	const setExifLocation = useSetAtom(exifLocationAtom);
 	// Key should be `${file.name}-${file.lastModified}` to avoid collisions as much as possible without using the actual file/hash.
 	const imageLocations = useMemo(
 		() => new Map<`${string}-${string}`, google.maps.LatLngLiteral>(),
 		[],
 	);
+	const locationVersion = useRef(0);
+
+	/** Updates the shared EXIF location from the current image map. */
+	const syncExifLocation = () => {
+		onExifLocationChange(imageLocations.values().next().value);
+	};
+
+	const nextLocationVersion = () => {
+		locationVersion.current += 1;
+		return locationVersion.current;
+	};
 
 	const addFiles = async (files: FileList | null) => {
 		if (!files) return;
@@ -77,6 +88,7 @@ export default function ImageUpload({
 		// Note that resizing strips exif data, so if/when we do location based on exif data, that is something to be aware of.
 		setResizing(true);
 		try {
+			const operationVersion = nextLocationVersion();
 			const resized = await Promise.all(incoming.map(resizeImage));
 			const newImages = [...images, ...resized].slice(0, maxFiles);
 			const newCaptions = [...captions, ...resized.map(() => "")].slice(
@@ -84,12 +96,13 @@ export default function ImageUpload({
 				maxFiles,
 			);
 			onChange(newImages, newCaptions);
-			await Promise.all(
+			await Promise.allSettled(
 				incoming.map(async (file) => {
 					const tags = await ExifReader.load(file, { expanded: true });
 					const lng = tags.gps?.Longitude;
 					const lat = tags.gps?.Latitude;
 					if (lng != null && lat != null) {
+						if (operationVersion !== locationVersion.current) return;
 						imageLocations.set(`${file.name}-${file.lastModified}`, {
 							lat: Number(lat),
 							lng: Number(lng),
@@ -97,14 +110,13 @@ export default function ImageUpload({
 					}
 				}),
 			);
-			
-			// We could track the currently set image within the atom and compare/see if it's not set,
-			// however this is an elegent solution that makes it all just slightly simpler.
-			setExifLocation(imageLocations.values().next().value);
-			console.log("locs", imageLocations);
+
+			if (operationVersion === locationVersion.current) {
+				syncExifLocation();
+			}
 		} catch {
 			toast.error(
-				"An unknown error occured while trying to process your images. Please try again.",
+				"An unknown error occured while trying to process one of your images. Please upload any missing images again.",
 			);
 		} finally {
 			setResizing(false);
@@ -138,11 +150,16 @@ export default function ImageUpload({
 								onChange(images, next);
 							}}
 							onRemove={() => {
+								const nextImages = images.filter((_, i) => i !== index);
+								const nextCaptions = captions.filter((_, i) => i !== index);
+								nextLocationVersion();
 								imageLocations.delete(`${file.name}-${file.lastModified}`);
-								onChange(
-									images.filter((_, i) => i !== index),
-									captions.filter((_, i) => i !== index),
-								);
+								onChange(nextImages, nextCaptions);
+								if (nextImages.length === 0) {
+									onExifLocationChange(undefined);
+								} else {
+									syncExifLocation();
+								}
 							}}
 						/>
 					))}

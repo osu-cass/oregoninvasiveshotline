@@ -14,6 +14,12 @@ export const TEST_EXIF_IMAGE_PATH = path.resolve(
 	"test_assets",
 	"DSCN0042.jpg",
 );
+export const TEST_EXIF_IMAGE_PATH_2 = path.resolve(
+	process.cwd(),
+	"oregoninvasiveshotline",
+	"test_assets",
+	"DSCN0010.jpg",
+);
 export const TEST_COORDS = {
 	latitude: 45.523064,
 	longitude: -122.676483,

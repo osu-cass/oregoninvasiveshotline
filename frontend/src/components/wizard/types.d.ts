@@ -24,4 +24,8 @@ export type ContactInfo = {
 export interface WizardStepProps {
 	/** The Inertia precognitive form instance. */
 	form: InertiaPrecognitiveFormProps<WizardFormData>;
+	/** Current EXIF-based location, if any. */
+	exifLocation?: google.maps.LatLngLiteral;
+	/** Whether any images are currently attached. */
+	hasImages?: boolean;
 }

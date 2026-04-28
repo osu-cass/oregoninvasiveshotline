@@ -2,8 +2,13 @@ import Field from "../../forms/field";
 import ImageUpload from "../../forms/images/upload";
 import type { WizardStepProps } from "../types";
 
+interface StepOneProps extends WizardStepProps {
+	/** Called when the EXIF-based location changes. */
+	onExifLocationChange: (location?: google.maps.LatLngLiteral) => void;
+}
+
 /** Step 1: Photo upload and description of the find. */
-export default function StepOne({ form }: WizardStepProps) {
+export default function StepOne({ form, onExifLocationChange }: StepOneProps) {
 	return (
 		<div className="row g-3 mt-1">
 			<ImageUpload
@@ -15,7 +20,11 @@ export default function StepOne({ form }: WizardStepProps) {
 						images,
 						image_captions: captions,
 					}));
+					if (images.length === 0) {
+						onExifLocationChange(undefined);
+					}
 				}}
+				onExifLocationChange={onExifLocationChange}
 				optional
 			/>
 			<div className="col-12">

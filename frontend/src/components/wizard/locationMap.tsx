@@ -8,10 +8,8 @@ import {
 	useMapsLibrary,
 } from "@vis.gl/react-google-maps";
 import clsx from "clsx";
-import { useAtomValue } from "jotai";
 import { useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
-import { exifLocationAtom } from "../../features/reportWizard";
 
 type PlaceSelectEvent = Event & {
 	placePrediction?: google.maps.places.PlacePrediction;
@@ -22,6 +20,8 @@ export interface LocationMapProps {
 	defaultCenter: google.maps.LatLngLiteral;
 	/** Current marker position, or null before selection. */
 	marker: google.maps.LatLngLiteral | null;
+	/** EXIF-based location from uploaded photos, if any. */
+	exifLocation?: google.maps.LatLngLiteral;
 	/** Optional Google Map style ID. */
 	mapId?: string;
 	/** Called when the user selects a new map location. */
@@ -40,6 +40,7 @@ enum LocationPlacementType {
 export default function LocationMap({
 	defaultCenter,
 	marker,
+	exifLocation,
 	mapId,
 	onLocationChange,
 	defaultZoom = 18,
@@ -48,7 +49,6 @@ export default function LocationMap({
 	const placesLibrary = useMapsLibrary("places");
 	const [locationPlacementType, setLocationPlacementType] =
 		useState<LocationPlacementType>(LocationPlacementType.OTHER);
-	const exifLocation = useAtomValue(exifLocationAtom);
 	const locationRanYet = useRef(false);
 	const searchContainerRef = useRef<HTMLDivElement | null>(null);
 	const searchInputId = useId();

@@ -1,5 +1,4 @@
 import { useForm } from "@inertiajs/react";
-import { atom } from "jotai";
 import { useState } from "react";
 import ConfirmNoImagesDialog from "../components/wizard/confirmNoImagesDialog";
 import {
@@ -12,10 +11,7 @@ import StepFour from "../components/wizard/steps/four";
 import StepOne from "../components/wizard/steps/one";
 import StepThree from "../components/wizard/steps/three";
 import StepTwo from "../components/wizard/steps/two";
-import type {
-	CategoryWithSpecies,
-	ContactInfo,
-} from "../components/wizard/types";
+import type { CategoryWithSpecies, ContactInfo } from "../components/wizard/types";
 
 interface FormWizardProps {
 	/** Logged-in user's contact info, pre-fills step 4. */
@@ -28,12 +24,11 @@ interface FormWizardProps {
 	google_map_id?: string;
 }
 
-export const exifLocationAtom = atom<google.maps.LatLngLiteral>();
-
 /** Multi-step report form with progress bar and per-step validation. */
 export default function FormWizard(props: FormWizardProps) {
 	const [step, setStep] = useState(0);
 	const [showNoImagesDialog, setShowNoImagesDialog] = useState(false);
+	const [exifLocation, setExifLocation] = useState<google.maps.LatLngLiteral>();
 
 	const form = useForm<WizardFormData>({
 		...initialWizardData,
@@ -69,22 +64,30 @@ export default function FormWizard(props: FormWizardProps) {
 					/>
 				</div>
 
-				{step >= Steps.length ? (
-					<div>
-						You reached a page that shouldn't be possible.... please refresh.
-					</div>
-				) : (
-					<>
-						{step === 0 && <StepOne form={form} />}
-						{step === 1 && <StepTwo form={form} items={props.categories} />}
-						{step === 2 && (
-							<StepThree
-								form={form}
-								googleApiKey={props.google_api_key}
-								googleMapId={props.google_map_id}
-							/>
-						)}
-						{step === 3 && <StepFour form={form} />}
+			{step >= Steps.length ? (
+				<div>
+					You reached a page that shouldn't be possible.... please refresh.
+				</div>
+			) : (
+				<>
+					{step === 0 && (
+						<StepOne
+							form={form}
+							hasImages={form.data.images.length > 0}
+							onExifLocationChange={setExifLocation}
+						/>
+					)}
+					{step === 1 && <StepTwo form={form} items={props.categories} />}
+					{step === 2 && (
+						<StepThree
+							form={form}
+							exifLocation={exifLocation}
+							hasImages={form.data.images.length > 0}
+							googleApiKey={props.google_api_key}
+							googleMapId={props.google_map_id}
+						/>
+					)}
+					{step === 3 && <StepFour form={form} />}
 
 						<div className="d-flex justify-content-end mt-4 gap-2">
 							{step > 0 && (
@@ -126,14 +129,17 @@ export default function FormWizard(props: FormWizardProps) {
 									onClick={() => {
 										if (!currentStep) return;
 
-										if (step === 0 && form.data.images.length === 0) {
-											// Validate first, then show the dialog only if validation passes.
-											form.validate({
-												only: currentStep.fields,
-												onSuccess: () => setShowNoImagesDialog(true),
-											});
-											return;
-										}
+					if (step === 0 && form.data.images.length === 0) {
+						// Validate first, then show the dialog only if validation passes.
+						form.validate({
+							only: currentStep.fields,
+							onSuccess: () => {
+								setExifLocation(undefined);
+								setShowNoImagesDialog(true);
+							},
+						});
+						return;
+					}
 
 										form.validate({
 											only: currentStep.fields,
@@ -172,7 +178,10 @@ export default function FormWizard(props: FormWizardProps) {
 			<ConfirmNoImagesDialog
 				open={showNoImagesDialog}
 				onOpenChange={setShowNoImagesDialog}
-				onConfirm={() => setStep((s) => s + 1)}
+				onConfirm={() => {
+					setExifLocation(undefined);
+					setStep((s) => s + 1);
+				}}
 			/>
 		</div>
 	);
