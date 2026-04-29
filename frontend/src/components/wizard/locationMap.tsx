@@ -195,7 +195,7 @@ export default function LocationMap({
 
 	return (
 		<div className="d-grid gap-2">
-			{/* Location mode radio group */}
+			{/* Location mode toggle group. */}
 			<div>
 				<p className="form-label fw-medium small mb-1 text-body">
 					Set location
@@ -205,6 +205,7 @@ export default function LocationMap({
 						<button
 							key={mode.id}
 							type="button"
+							aria-pressed={locationPlacementType === mode.id}
 							className={`btn btn-sm w-100 ${
 								locationPlacementType === mode.id
 									? "btn-secondary"
