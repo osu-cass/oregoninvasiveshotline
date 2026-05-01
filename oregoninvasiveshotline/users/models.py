@@ -32,10 +32,6 @@ class User(AbstractBaseUser):
     affiliations = models.TextField(blank=True)
     biography = models.TextField(blank=True)
     photo = models.ImageField(upload_to="images", blank=True)
-    has_completed_ofpd = models.BooleanField(default=False, blank=True, verbose_name="""
-        Check this box if you have completed the Oregon
-        Forest Pest Detector training, offered by Oregon State
-        Extension.""")
 
     @classmethod
     def from_signature(cls, signature):
