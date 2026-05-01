@@ -3,8 +3,8 @@ import {
 	expectProgress,
 	fillStepOne,
 	openWizard,
-	TEST_IMAGE_PATH,
 	selectFirstComboboxOption,
+	TEST_IMAGE_PATH,
 } from "./shared";
 
 test.describe("report wizard", () => {
@@ -166,9 +166,7 @@ test.describe("report wizard", () => {
 				"At the south edge of the pond near the walking path and boardwalk.",
 			);
 
-			await wizard
-				.getByRole("button", { name: "Current location" })
-				.click();
+			await wizard.getByRole("button", { name: "Current location" }).click();
 			await expect(page.getByText("Lat: 45.523064")).toBeVisible();
 			await expect(page.getByText("Lng: -122.676483")).toBeVisible();
 			await expect(wizard.getByRole("button", { name: "Next" })).toBeEnabled();

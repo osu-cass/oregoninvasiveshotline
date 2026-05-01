@@ -25,6 +25,14 @@ interface ImageUploadProps {
 }
 
 /**
+ * Builds a stable key for an image file in the current form state.
+ * @param file - Image file to key.
+ */
+function getImageKey(file: File) {
+	return `${file.name}-${file.lastModified}` as const;
+}
+
+/**
  * Drag-and-drop image uploader with client-side resize, thumbnails, and captions.
  * This component is slightly less coupled compared to the other form components,
  * so you'll need to pass in a state and the onchange prop rather than just the form.
@@ -153,7 +161,7 @@ export default function ImageUpload({
 								const nextImages = images.filter((_, i) => i !== index);
 								const nextCaptions = captions.filter((_, i) => i !== index);
 								nextLocationVersion();
-								imageLocations.delete(`${file.name}-${file.lastModified}`);
+								imageLocations.delete(getImageKey(file));
 								onChange(nextImages, nextCaptions);
 								if (nextImages.length === 0) {
 									onExifLocationChange(undefined);

@@ -1,7 +1,7 @@
 import path from "node:path";
 import { expect, type Page, test } from "@playwright/test";
 
-export const WIZARD_URL = "http://localhost:8000/reports/create-new";
+export const WIZARD_URL = "/reports/create-new";
 export const TEST_IMAGE_PATH = path.resolve(
 	process.cwd(),
 	"oregoninvasiveshotline",
