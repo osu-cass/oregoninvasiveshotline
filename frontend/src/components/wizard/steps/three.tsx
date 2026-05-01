@@ -68,12 +68,12 @@ export default function StepThree({
 				<Field
 					form={form}
 					name="location_description"
-					label="Where it was found (site details)"
+					label="Anything else you can tell us about where you found this?"
 					as="textarea"
 					textareaProps={{
 						rows: 4,
 						placeholder:
-							"Add context for the location, like nearby landmarks or access points, and where in the area it was (ditch, fence line, field edge, along water)",
+							"Note where in the area you spotted it (ditch, fence line, field edge, along water), any hazards nearby (power lines, soft ground, locked gates), and landmarks or access points.",
 					}}
 				/>
 			</div>

@@ -169,12 +169,6 @@ export default function LocationMap({
 	]);
 
 	const locationModes = [
-		{
-			id: LocationPlacementType.GPS,
-			label: "Current location",
-			icon: "bi-crosshair",
-			onClick: setToCurrentLocation,
-		},
 		...(exifLocation
 			? [
 					{
@@ -185,6 +179,12 @@ export default function LocationMap({
 					},
 				]
 			: []),
+		{
+			id: LocationPlacementType.GPS,
+			label: "Current location",
+			icon: "bi-crosshair",
+			onClick: setToCurrentLocation,
+		},
 		{
 			id: LocationPlacementType.OTHER,
 			label: "Search",
@@ -197,7 +197,10 @@ export default function LocationMap({
 		<div className="d-grid gap-2">
 			{/* Location mode toggle group. */}
 			<div>
-				<p className="form-label fw-medium small mb-1 text-body">
+				<p
+					className="form-label fw-medium small mb-1 text-body"
+					data-label="set-location"
+				>
 					Set location
 				</p>
 				<div className="d-flex w-100 flex-column flex-sm-row gap-2">
@@ -246,6 +249,7 @@ export default function LocationMap({
 					defaultCenter={defaultCenter}
 					defaultZoom={defaultZoom}
 					mapId={mapId}
+					mapTypeControl
 					onClick={(event: MapMouseEvent) => {
 						onLocationChangeEvent(event.detail.latLng);
 					}}
