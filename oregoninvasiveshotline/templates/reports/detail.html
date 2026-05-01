@@ -35,9 +35,6 @@ Report #{{ report.pk }} - {{ report }}
 
             {% if user|can_create_comment:report %}
                 <strong>Submitted by:</strong> {{ report.created_by.first_name }} {{ report.created_by.last_name }} ({{ report.created_by.email }}) {% if report.created_by.phone %}{{ report.created_by.phone }}{% endif %}<br />
-                {% if report.created_by.has_completed_ofpd %}
-                    <em title="Oregon Forest Pest Detector">OFPD trained</em><br />
-                {% endif %}
             {% endif %}
 
             {% if report.edrr_status %}
