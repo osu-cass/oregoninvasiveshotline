@@ -249,7 +249,6 @@ class ReportForm(forms.ModelForm):
     last_name = forms.CharField()
     suffix = forms.CharField(required=False)
     phone = forms.CharField(required=False)
-    has_completed_ofpd = forms.BooleanField(required=False)
     questions = forms.CharField(
         required=False,
         widget=forms.Textarea,
@@ -280,8 +279,6 @@ class ReportForm(forms.ModelForm):
         reported_species_field.empty_label = 'Unknown'
         reported_species_field.required = False
 
-        has_completed_ofpd_label = User._meta.get_field('has_completed_ofpd').verbose_name
-        self.fields['has_completed_ofpd'].label = has_completed_ofpd_label
 
     def clean_email(self):
         # NOTE: Technically, email addresses are case-sensitive, but in
@@ -314,7 +311,6 @@ class ReportForm(forms.ModelForm):
             'last_name': self.cleaned_data.get('last_name'),
             'suffix': self.cleaned_data.get('suffix', ''),
             'phone': self.cleaned_data.get('phone', ''),
-            'has_completed_ofpd': self.cleaned_data.get('has_completed_ofpd'),
             'is_active': False,
         }
         user, _ = User.objects.get_or_create(email__iexact=email, defaults=defaults)
@@ -449,7 +445,6 @@ class NewReportForm(forms.Form):
             'last_name': self.cleaned_data.get('last_name'),
             'suffix': '',
             'phone': self.cleaned_data.get('phone', ''),
-            'has_completed_ofpd': False,
             'is_active': False,
         }
         user, _ = User.objects.get_or_create(email__iexact=email, defaults=defaults)
