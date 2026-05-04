@@ -1,7 +1,7 @@
 import re
 from collections.abc import Mapping
 from itertools import chain
-from typing import Any, MutableMapping, MutableSequence
+from typing import Any, MutableMapping, MutableSequence, cast
 
 from .util import NO_DEFAULT, NO_DEFAULT as PLACEHOLDER
 
@@ -86,7 +86,7 @@ class DottedAccessMixin:
         be used. See :meth:`_create_segment` for more info.
 
         """
-        obj = self
+        obj = cast(MutableMapping[Any, Any] | MutableSequence[Any], self)
         segments = self._parse_path(name)
 
         for segment, next_segment in zip(segments, segments[1:] + [None]):
