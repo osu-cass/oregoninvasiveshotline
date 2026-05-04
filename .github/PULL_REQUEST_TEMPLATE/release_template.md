@@ -1,12 +1,4 @@
----
-name: Release PR Template
-about: A pull request template to be used when creating a new release for the Hotline
-title: '[MAJOR.MINOR.PATCH]: Release'
-labels: ''
-assignees: ''
----
-
-<!-- Make sure to update the version number in the title of this PR. -->
+<!-- Make sure to update the version number in the title of this PR, like "[MAJOR.MINOR.PATCH]: Release". -->
 
 # Release Notes
 
