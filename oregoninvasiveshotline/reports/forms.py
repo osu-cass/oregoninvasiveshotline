@@ -8,6 +8,7 @@ from django.db import transaction
 from django.db.models import Q
 from django import forms
 
+from oregoninvasiveshotline.utils.images import is_webp
 from oregoninvasiveshotline.utils.search import SearchForm
 from oregoninvasiveshotline.comments.models import Comment
 from oregoninvasiveshotline.counties.models import County
@@ -379,7 +380,7 @@ class NewReportForm(forms.Form):
         if category and category.species.exists() and not species and not is_species_unknown:
             self.add_error("species", "Either choose a species or check the 'Mark as unknown' option.")
             self.add_error("is_species_unknown", "Either check the 'Mark as unknown' option or choose a species.")
-        
+
         # Currently this is an impossible state to get into based on the current UI code.
         # However, probably still worth handling.
         if species and is_species_unknown:
@@ -469,6 +470,8 @@ class NewReportForm(forms.Form):
 
         # Save uploaded images attached to this report.
         for i, image_file in enumerate(images or []):
+            if not is_webp(image_file):
+                raise forms.ValidationError("Images must be of type webp.")
             caption = (captions[i] if captions and i < len(captions) else '') or ''
             Image.objects.create(
                 image=image_file,
@@ -624,4 +627,3 @@ class ManagementForm(forms.ModelForm):
             self.instance.actual_species = None
 
         return super().save(*args, **kwargs)
-

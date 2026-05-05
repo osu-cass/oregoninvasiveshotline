@@ -1,5 +1,6 @@
 import logging
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
+from django.core.files.uploadedfile import UploadedFile
 
 log = logging.getLogger(__name__)
 
@@ -39,4 +40,30 @@ def generate_thumbnail(input_path, output_path, width, height):
         log.exception('Cannot resize image at: %s', input_path)
         return False
 
+    return True
+
+
+def is_webp(image_file: UploadedFile):
+    """Check whether an uploaded image file is a valid WebP image.
+
+    Resets the file pointer before and after inspection so the file can still
+    be read later by Django/storage.
+
+    Args:
+        image_file: Uploaded image file to inspect.
+
+    Returns:
+        bool: True if the file is a valid WebP image, otherwise False.
+    """
+    image_file.seek(0)
+    
+    try:
+        with Image.open(image_file) as img:
+            if img.format != "WEBP":
+                return False
+    except UnidentifiedImageError:
+        return False
+    finally:
+        image_file.seek(0)
+        
     return True
