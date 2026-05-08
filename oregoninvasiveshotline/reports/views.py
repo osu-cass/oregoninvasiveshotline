@@ -136,7 +136,6 @@ def _export(reports, format):
             ("Scientific Name", lambda report: report.species.scientific_name if report.species else ""),
             ("Species Confirmed", lambda report: bool(report.actual_species)),
             ("Reported By", lambda report: str(report.created_by)),
-            ("OFPD Trained", lambda report: str(report.created_by.has_completed_ofpd)),
             ("Reported On", lambda report: str(report.created_on)),
             ("Claimed By", lambda report: str(report.claimed_by)),
             ("Description", lambda report: report.description),
