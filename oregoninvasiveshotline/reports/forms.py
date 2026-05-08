@@ -2,7 +2,7 @@ from collections import namedtuple
 from typing import Any, List, cast
 
 from django.contrib.gis.geos import Point
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import SuspiciousFileOperation
 from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
 from django.db import transaction
@@ -474,7 +474,7 @@ class NewReportForm(forms.Form):
             if not is_webp(image_file):
                 # All submitted images MUST be of type webp
                 # This conversion is done on the client and if it isn't, then the user is an attacker
-                raise SuspiciousOperation("Images must be of type webp.")
+                raise SuspiciousFileOperation("Images must be of type webp.")
             caption = (captions[i] if captions and i < len(captions) else '') or ''
             Image.objects.create(
                 image=image_file,
