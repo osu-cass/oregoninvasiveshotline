@@ -406,6 +406,9 @@ def create_new(request: HttpRequest):
                     "species_id": species.species_id,
                     "name": species.name,
                     "scientific_name": species.scientific_name,
+                    "identification_image": species.identification_image.url if species.identification_image else None,
+                    "identification_image_alt": species.identification_image_alt,
+                    "identification_external_resource_link": species.identification_external_resource_link
                 } for species in category.species.all()
             ]
         } 

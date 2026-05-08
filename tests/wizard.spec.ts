@@ -1,7 +1,7 @@
 import path from "node:path";
 import { expect, type Page, test } from "@playwright/test";
 
-const WIZARD_URL = "http://localhost:8000/reports/create-new";
+const WIZARD_URL = "/reports/create-new";
 const TEST_IMAGE_PATH = path.resolve(
 	process.cwd(),
 	"oregoninvasiveshotline",
@@ -72,6 +72,29 @@ async function selectFirstComboboxOption(
 	await option.click();
 
 	await expect(input).not.toHaveValue("");
+}
+
+async function selectComboboxOptionByValue(
+	page: Page,
+	id: "category" | "species",
+	value: number,
+) {
+	await page.getByTestId(`${id}-combobox-trigger`).click();
+	const option = page.getByTestId(`${id}-option-${value}`);
+	await expect(option).toBeVisible();
+	await option.click();
+	await expect(page.getByTestId(`${id}-combobox-input`)).not.toHaveValue("");
+}
+
+async function advanceToStepTwoWithoutImages(page: Page) {
+	await openWizard(page);
+	await fillStepOne(page, "Species behavior variant coverage test.");
+	await page.getByTestId("wizard-next-button").click();
+	await expect(
+		page.getByRole("alertdialog", { name: "No photos attached" }),
+	).toBeVisible();
+	await page.getByTestId("confirm-no-images-continue").click();
+	await expectProgress(page, "25");
 }
 
 test.describe("report wizard", () => {
@@ -400,5 +423,97 @@ test.describe("report wizard", () => {
 		await expect(page.locator("#is_species_unknown")).toBeChecked();
 		await expect(page.locator("#species")).toBeDisabled();
 		await expectProgress(page, "25");
+	});
+
+	test("renders all species identification resource variants", async ({
+		page,
+	}) => {
+		await advanceToStepTwoWithoutImages(page);
+		await selectComboboxOptionByValue(page, "category", 3);
+
+		await test.step("nothing", async () => {
+			await selectComboboxOptionByValue(page, "species", 443);
+			await expect(
+				page.getByTestId("species-identification-panel"),
+			).toBeHidden();
+			await expect(
+				page.getByTestId("species-identification-link-only"),
+			).toBeHidden();
+			await expect(
+				page.getByTestId("species-identification-resource-link"),
+			).toBeHidden();
+			await expect(
+				page.getByTestId("species-identification-image"),
+			).toBeHidden();
+		});
+
+		await test.step("link only", async () => {
+			await selectComboboxOptionByValue(page, "species", 444);
+			await expect(
+				page.getByTestId("species-identification-panel"),
+			).toBeHidden();
+			await expect(
+				page.getByTestId("species-identification-link-only"),
+			).toBeVisible();
+			await expect(
+				page.getByTestId("species-identification-image"),
+			).toBeHidden();
+			await expect(
+				page.getByTestId("species-identification-resource-link"),
+			).toHaveAttribute("href", "https://example.org/identification/link-only");
+		});
+
+		await test.step("image only", async () => {
+			await selectComboboxOptionByValue(page, "species", 445);
+			await expect(
+				page.getByTestId("species-identification-panel"),
+			).toBeVisible();
+			await expect(
+				page.getByTestId("species-identification-link-only"),
+			).toBeHidden();
+			await expect(
+				page.getByTestId("species-identification-resource-link"),
+			).toBeHidden();
+			await expect(
+				page.getByTestId("species-identification-image"),
+			).toBeVisible();
+			await expect(
+				page.getByTestId("species-identification-image"),
+			).toHaveAttribute(
+				"alt",
+				"Close-up of leaves and stem for species verification.",
+			);
+			await expect(
+				page.getByTestId("species-identification-image"),
+			).toHaveAttribute(
+				"src",
+				/identification_images\/species-image-only\.png$/,
+			);
+		});
+
+		await test.step("image plus link", async () => {
+			await selectComboboxOptionByValue(page, "species", 446);
+			await expect(
+				page.getByTestId("species-identification-panel"),
+			).toBeVisible();
+			await expect(
+				page.getByTestId("species-identification-link-only"),
+			).toBeHidden();
+			await expect(
+				page.getByTestId("species-identification-image"),
+			).toBeVisible();
+			await expect(
+				page.getByTestId("species-identification-image"),
+			).toHaveAttribute(
+				"src",
+				/identification_images\/species-image-and-link\.png$/,
+			);
+			await expect(
+				page.getByTestId("species-identification-resource-link"),
+			).toHaveAttribute(
+				"href",
+				"https://example.org/identification/image-and-link",
+			);
+		});
 	});
 });
