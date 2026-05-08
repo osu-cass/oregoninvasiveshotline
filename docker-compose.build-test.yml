@@ -25,7 +25,7 @@ services:
       - ${VOLUME_PATH}/postgres/16/main:/var/lib/postgresql/data
       - ${VOLUME_PATH}/dumps:/archive
     ports:
-      - 5439:5432
+      - ${POSTGRES_PORT:-5439}:5432
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U invasives -d invasives"]
       interval: 5s
@@ -56,6 +56,8 @@ services:
     environment:
       - APP_SERVICE=wsgi
       - APP_ENVIRONMENT=development
+      - DJANGO_VITE_DEV_SERVER_HOST=localhost
+      - DJANGO_VITE_DEV_SERVER_PORT=${VITE_PORT:-5173}
     networks:
       - default
     ports:

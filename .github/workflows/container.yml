@@ -56,10 +56,10 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
             type=ref,event=pr
+            type=raw,value=main,enable=${{ steps.branch.outputs.ref == 'main' }}
+            type=raw,value=develop,enable=${{ steps.branch.outputs.ref == 'develop' }}
             type=raw,value=latest,enable=${{ steps.branch.outputs.ref == 'main' }}
-            type=raw,value=develop,enable=${{ steps.branch.outputs.ref == 'develop' && github.event_name != 'push' }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
