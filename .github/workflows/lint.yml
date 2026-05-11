@@ -21,7 +21,7 @@ jobs:
             - name: Install dependencies
               run: |
                   python -m pip install --upgrade pip
-                  pip install pipenv ruff
+                  pip install pipenv
                   pipenv install --dev
 
             # Add the Pipenv venv bin to PATH so pyright sees all packages
@@ -29,10 +29,12 @@ jobs:
               run: echo "$(pipenv --venv)/bin" >> $GITHUB_PATH
 
             - name: Run Ruff
-              run: ruff check --output-format=github .
+              run: pipenv run ruff check --output-format=github .
 
             - name: Run Pyright
-              uses: jakebailey/pyright-action@v2
+              uses: jakebailey/pyright-action@v3
+              with:
+                  version: PATH
     # Currently broken, see logs https://github.com/osu-cass/oregoninvasiveshotline/actions/runs/18291615676/job/52080025060?pr=6
     # The current docker container binds the test container a user, which it seems like GitHub doesn't support.
     # run-tests:

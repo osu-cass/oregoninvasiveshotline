@@ -97,6 +97,7 @@ export default function FormWizard(props: FormWizardProps) {
 								<button
 									type="button"
 									className="btn btn-secondary px-4"
+									data-testid="wizard-back-button"
 									style={{ width: "5rem" }}
 									onClick={() => setStep((step) => step - 1)}
 									disabled={form.processing}
@@ -109,6 +110,7 @@ export default function FormWizard(props: FormWizardProps) {
 								<button
 									type="button"
 									className="btn btn-primary px-4"
+									data-testid="wizard-submit-button"
 									onClick={() => {
 										if (!currentStep) return;
 										form.validate({
@@ -129,6 +131,7 @@ export default function FormWizard(props: FormWizardProps) {
 								<button
 									type="button"
 									className="btn btn-primary px-4"
+									data-testid="wizard-next-button"
 									onClick={() => {
 										if (!currentStep) return;
 

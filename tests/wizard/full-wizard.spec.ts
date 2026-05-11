@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import {
 	expectProgress,
 	fillStepOne,
@@ -6,6 +6,17 @@ import {
 	selectFirstComboboxOption,
 	TEST_IMAGE_PATH,
 } from "./shared";
+
+async function advanceToStepTwoWithoutImages(page: Page) {
+	await openWizard(page);
+	await fillStepOne(page, "Species behavior variant coverage test.");
+	await page.getByTestId("wizard-next-button").click();
+	await expect(
+		page.getByRole("alertdialog", { name: "No photos attached" }),
+	).toBeVisible();
+	await page.getByTestId("confirm-no-images-continue").click();
+	await expectProgress(page, "25");
+}
 
 test.describe("report wizard", () => {
 	test("completes the full wizard with strong field and button assertions", async ({
@@ -254,5 +265,6 @@ test.describe("report wizard", () => {
 			).toBeVisible();
 			await expect(page.getByText("Public Login")).toHaveCount(0);
 		});
+
 	});
 });

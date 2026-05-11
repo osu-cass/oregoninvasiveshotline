@@ -9,6 +9,9 @@ export type CategoryWithSpecies = {
 		species_id: number;
 		name: string;
 		scientific_name: string;
+		identification_image: string | null;
+		identification_image_alt: string | null;
+		identification_external_resource_link: string | null;
 	}[];
 };
 

@@ -1,6 +1,11 @@
+import { Collapsible } from "@base-ui/react";
+import { useState } from "react";
+import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import FormCombobox from "../../forms/combobox";
 import Field from "../../forms/field";
 import type { CategoryWithSpecies, WizardStepProps } from "../types";
+import "yet-another-react-lightbox/styles.css";
 
 interface StepTwoProps extends WizardStepProps {
 	/** Available categories with their species. */
@@ -9,6 +14,7 @@ interface StepTwoProps extends WizardStepProps {
 
 /** Step 2: Category and species identification. */
 export default function StepTwo({ form, items }: StepTwoProps) {
+	const [lightboxOpen, setLightboxOpen] = useState(false);
 	const comboboxCategoryItems = items.map((item) => ({
 		...item,
 		label: item.name,
@@ -22,6 +28,10 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 			label: item.name,
 			value: item.species_id,
 		}));
+
+	const selectedSpecies = comboboxSpeciesItems?.find(
+		(item) => item.value === Number(form.data.species),
+	);
 
 	return (
 		<div className="row g-3 mt-1">
@@ -73,6 +83,123 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 					</div>
 				</>
 			)}
+
+			{selectedSpecies?.identification_image && (
+				<Collapsible.Root
+					defaultOpen
+					data-testid="species-identification-panel"
+				>
+					<Collapsible.Trigger
+						className="d-flex justify-content-between w-100 rounded border p-1 px-3 py-2"
+						render={(props, state) => (
+							<button
+								{...props}
+								className="d-flex justify-content-between w-100 rounded border p-1 px-3 py-2"
+							>
+								<p className="fw-medium small mb-0 text-start">
+									Confirm Species Using Common Identifiers
+								</p>
+								<i
+									className={`bi ${state.open ? "bi-chevron-up" : "bi-chevron-down"} fs-6`}
+								/>
+							</button>
+						)}
+					/>
+					<Collapsible.Panel
+						className="border border-top-0 p-3"
+						data-testid="species-identification-panel-content"
+						style={{
+							borderBottomLeftRadius: "var(--bs-border-radius)",
+							borderBottomRightRadius: "var(--bs-border-radius)",
+							marginTop: "-0.5rem",
+						}}
+					>
+						<p className="small mt-1">
+							Optionally refer to the identifiers below to verify your selected
+							species matches what you're seeing.{" "}
+							{selectedSpecies.identification_external_resource_link && (
+								<span>
+									For more details,{" "}
+									<a
+										href={selectedSpecies.identification_external_resource_link}
+										target="_blank"
+										rel="noopener"
+										data-testid="species-identification-resource-link"
+									>
+										click here
+									</a>{" "}
+									to see a full identification guide.
+								</span>
+							)}
+						</p>
+						{selectedSpecies.identification_image && (
+							<>
+								<button
+									onClick={() => setLightboxOpen(true)}
+									type="button"
+									aria-label="View identification image in full size"
+									data-testid="species-identification-image-button"
+									className="border-0 bg-transparent p-0"
+								>
+									<img
+										src={selectedSpecies.identification_image}
+										alt={
+											selectedSpecies.identification_image_alt ||
+											"An image representing common species identifiers"
+										}
+										data-testid="species-identification-image"
+										className="w-100"
+									/>
+								</button>
+								<Lightbox
+									open={lightboxOpen}
+									close={() => setLightboxOpen(false)}
+									slides={[{ src: selectedSpecies.identification_image }]}
+									plugins={[Zoom]}
+									controller={{
+										closeOnBackdropClick: true,
+										focus: false,
+										disableSwipeNavigation: true,
+									}}
+									zoom={{
+										scrollToZoom: true,
+										maxZoomPixelRatio: 3,
+									}}
+									render={{
+										buttonPrev: () => null,
+										buttonNext: () => null,
+									}}
+									styles={{
+										container: {
+											backgroundColor: "rgba(0, 0, 0, 0.7)",
+											backdropFilter: "blur(5px)",
+										},
+									}}
+								/>
+							</>
+						)}
+					</Collapsible.Panel>
+				</Collapsible.Root>
+			)}
+
+			{selectedSpecies?.identification_external_resource_link &&
+				!selectedSpecies.identification_image && (
+					<p
+						className="small mt-1"
+						data-testid="species-identification-link-only"
+					>
+						To identify this species,{" "}
+						<a
+							href={selectedSpecies.identification_external_resource_link}
+							target="_blank"
+							rel="noopener"
+							data-testid="species-identification-resource-link"
+						>
+							click here
+						</a>{" "}
+						to learn more about verifying your selected species.
+					</p>
+				)}
 
 			<div className="col-12">
 				<Field

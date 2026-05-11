@@ -26,7 +26,8 @@
 		"laravel-precognition": "^1.0.2",
 		"react": "^19.2.4",
 		"react-dom": "^19.2.4",
-		"sonner": "^2.0.7"
+		"sonner": "^2.0.7",
+		"yet-another-react-lightbox": "^3.30.1"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.10",

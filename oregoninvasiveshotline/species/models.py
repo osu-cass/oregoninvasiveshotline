@@ -37,7 +37,7 @@ class Category(models.Model):
             'has a transparent background with a white foreground'
         )
     )
-    
+
     species: models.Manager["Species"]
 
     def __str__(self):
@@ -84,6 +84,11 @@ class Species(models.Model):
     resources = models.TextField(blank=True)
     scientific_name = models.CharField(max_length=255, blank=True)
     severity = models.ForeignKey(Severity, on_delete=models.CASCADE)
+
+    identification_image = models.ImageField(upload_to='identification_images/', null=True, blank=True)
+    identification_image_alt = models.CharField(null=True, blank=True)
+    # Admins can add link that will allow a user to learn more about identification
+    identification_external_resource_link = models.URLField(null=True, blank=True)
 
     @property
     def title(self):

@@ -21,6 +21,7 @@ if [[ ${APP_SERVICE} == "wsgi" ]]; then
         --access-logfile '-' \
         --error-logfile '-' \
         --log-file '-' \
+        --timeout 90 \
         --access-logformat '%({x-forwarded-for}i)s %(h)s %(l)s %(u)s %(t)s "%(r)s" %(s)s %(b)s "%(f)s" "%(a)s"' \
         --forwarded-allow-ips="${LOAD_BALANCER_IPS:-127.0.0.1}" \
         -w 4 \

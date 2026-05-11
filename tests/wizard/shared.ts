@@ -88,3 +88,21 @@ export async function selectFirstComboboxOption(
 
 	await expect(input).not.toHaveValue("");
 }
+
+/**
+ * Selects a combobox option by its test id value.
+ * @param page - Playwright page instance.
+ * @param id - Combobox field id to interact with.
+ * @param value - Option value to select.
+ */
+export async function selectComboboxOptionByValue(
+	page: Page,
+	id: "category" | "species",
+	value: number,
+) {
+	await page.getByTestId(`${id}-combobox-trigger`).click();
+	const option = page.getByTestId(`${id}-option-${value}`);
+	await expect(option).toBeVisible();
+	await option.click();
+	await expect(page.getByTestId(`${id}-combobox-input`)).not.toHaveValue("");
+}
