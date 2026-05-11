@@ -8,8 +8,11 @@ import {
 	useMapsLibrary,
 } from "@vis.gl/react-google-maps";
 import clsx from "clsx";
-import { useEffect, useId, useRef, useState } from "react";
+import { useAtom } from "jotai";
+import { useEffect, useId, useRef } from "react";
 import { toast } from "sonner";
+import { locationPlacementTypeAtom } from "./atoms";
+import { LocationPlacementType } from "./types";
 
 type PlaceSelectEvent = Event & {
 	placePrediction?: google.maps.places.PlacePrediction;
@@ -30,12 +33,6 @@ export interface LocationMapProps {
 	defaultZoom?: number;
 }
 
-enum LocationPlacementType {
-	OTHER = "other",
-	EXIF = "exif",
-	GPS = "gps",
-}
-
 /** Interactive location picker with map click, drag pin, search, and geolocation support. */
 export default function LocationMap({
 	defaultCenter,
@@ -47,8 +44,9 @@ export default function LocationMap({
 }: LocationMapProps) {
 	const map = useMap();
 	const placesLibrary = useMapsLibrary("places");
-	const [locationPlacementType, setLocationPlacementType] =
-		useState<LocationPlacementType>(LocationPlacementType.OTHER);
+	const [locationPlacementType, setLocationPlacementType] = useAtom(
+		locationPlacementTypeAtom,
+	);
 	const locationRanYet = useRef(false);
 	const searchContainerRef = useRef<HTMLDivElement | null>(null);
 	const searchInputId = useId();
@@ -80,6 +78,7 @@ export default function LocationMap({
 					"Unable to retrieve your location. Please allow location access and try again.",
 				);
 				setLocationPlacementType(LocationPlacementType.OTHER);
+				map?.setZoom(6)
 			},
 		);
 	};
@@ -93,10 +92,17 @@ export default function LocationMap({
 	useEffect(() => {
 		if (!map || locationRanYet.current) return;
 
-		if (marker) {
-			locationRanYet.current = true;
-			return;
+		if (
+			(locationPlacementType === LocationPlacementType.EXIF && exifLocation) ||
+			locationPlacementType !== LocationPlacementType.EXIF
+		) {
+			if (marker) {
+				locationRanYet.current = true;
+				map.panTo(marker)
+				return;
+			}
 		}
+
 		locationRanYet.current = true;
 		if (exifLocation) {
 			setToExifLocation();
@@ -104,7 +110,7 @@ export default function LocationMap({
 			setToCurrentLocation();
 		}
 		// biome-ignore lint/correctness/useExhaustiveDependencies: It does not run on every re-render like this claims
-	}, [map, marker, setToCurrentLocation, exifLocation, setToExifLocation]);
+	}, [map, marker, setToCurrentLocation, exifLocation, setToExifLocation, locationPlacementType]);
 
 	useEffect(() => {
 		const container = searchContainerRef.current;
