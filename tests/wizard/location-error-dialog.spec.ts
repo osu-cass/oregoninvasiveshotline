@@ -11,13 +11,19 @@ test.describe("report wizard", () => {
 	test("shows a dialog when current location cannot be retrieved", async ({
 		page,
 		context,
+		browserName,
 	}) => {
 		const wizard = page.getByRole("main");
 		const locationErrorMessage =
 			"Unable to retrieve your location. Please allow location access and try again.";
 
-		await context.clearPermissions();
-		await context.setGeolocation(null);
+		// Setting geo to null only works in firefox, and clear permissions only works in Safari.
+		// (Both works in chrome)
+		if (browserName === "firefox") {
+			await context.setGeolocation(null);
+		} else {
+			await context.clearPermissions();
+		}
 
 		await openWizard(page);
 		await page

@@ -253,7 +253,9 @@ test.describe("report wizard", () => {
 
 			await wizard.getByRole("button", { name: "Submit" }).click();
 
-			await expect(page).toHaveURL(/\/reports\/detail\/\d+\/?$/);
+			await page.waitForURL(/\/reports\/detail\/\d+\/?$/, {
+				waitUntil: "commit",
+			});
 			await expect(
 				page.getByText("Report submitted successfully"),
 			).toBeVisible();
