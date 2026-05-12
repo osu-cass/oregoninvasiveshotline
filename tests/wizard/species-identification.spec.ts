@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 import {
 	expectProgress,
-	selectComboboxOptionByValue,
 	fillStepOne,
 	openWizard,
+	selectComboboxOptionByValue,
 } from "./shared";
 
 test.describe("report wizard", () => {
@@ -16,7 +16,7 @@ test.describe("report wizard", () => {
 		await expect(
 			page.getByRole("alertdialog", { name: "No photos attached" }),
 		).toBeVisible();
-		
+
 		await page.getByTestId("confirm-no-images-continue").click();
 		await expectProgress(page, "25");
 		await selectComboboxOptionByValue(page, "category", 3);

@@ -9,9 +9,10 @@ import {
 } from "@vis.gl/react-google-maps";
 import clsx from "clsx";
 import { useAtom } from "jotai";
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 import { locationPlacementTypeAtom } from "./atoms";
+import LocationErrorDialog from "./locationErrorDialog";
 import { LocationPlacementType } from "./types";
 
 type PlaceSelectEvent = Event & {
@@ -50,7 +51,10 @@ export default function LocationMap({
 	const locationRanYet = useRef(false);
 	const searchContainerRef = useRef<HTMLDivElement | null>(null);
 	const searchInputId = useId();
+	const [showLocationErrorDialog, setShowLocationErrorDialog] = useState(false);
 	const markerPosition = marker ?? defaultCenter;
+	const locationErrorMessage =
+		"Unable to retrieve your location. Please allow location access and try again.";
 
 	const onLocationChangeEvent = (latLng: google.maps.LatLngLiteral | null) => {
 		if (!latLng) return;
@@ -67,6 +71,7 @@ export default function LocationMap({
 	const setToCurrentLocation = (showNotificationInsteadOfPopup?: boolean) => {
 		navigator.geolocation.getCurrentPosition(
 			(position) => {
+				setShowLocationErrorDialog(false);
 				changeLocation({
 					lat: position.coords.latitude,
 					lng: position.coords.longitude,
@@ -74,11 +79,14 @@ export default function LocationMap({
 				setLocationPlacementType(LocationPlacementType.GPS);
 			},
 			() => {
-				toast.error(
-					"Unable to retrieve your location. Please allow location access and try again.",
-				);
+				if (showNotificationInsteadOfPopup) {
+					setShowLocationErrorDialog(false);
+					toast.error(locationErrorMessage);
+				} else {
+					setShowLocationErrorDialog(true);
+				}
 				setLocationPlacementType(LocationPlacementType.OTHER);
-				map?.setZoom(6)
+				map?.setZoom(6);
 			},
 		);
 	};
@@ -98,7 +106,7 @@ export default function LocationMap({
 		) {
 			if (marker) {
 				locationRanYet.current = true;
-				map.panTo(marker)
+				map.panTo(marker);
 				return;
 			}
 		}
@@ -109,8 +117,16 @@ export default function LocationMap({
 		} else {
 			setToCurrentLocation(true);
 		}
+	}, [
+		map,
+		marker,
 		// biome-ignore lint/correctness/useExhaustiveDependencies: It does not run on every re-render like this claims
-	}, [map, marker, setToCurrentLocation, exifLocation, setToExifLocation, locationPlacementType]);
+		setToCurrentLocation,
+		exifLocation,
+		// biome-ignore lint/correctness/useExhaustiveDependencies: It does not run on every re-render like this claims
+		setToExifLocation,
+		locationPlacementType,
+	]);
 
 	useEffect(() => {
 		const container = searchContainerRef.current;
@@ -220,7 +236,7 @@ export default function LocationMap({
 									? "btn-secondary"
 									: "btn-outline-secondary"
 							} d-inline-flex justify-content-center gap-1 align-items-center`}
-							onClick={mode.onClick}
+							onClick={() => mode.onClick(false)}
 						>
 							<i className={`bi ${mode.icon}`} />
 							{mode.label}
@@ -278,6 +294,12 @@ export default function LocationMap({
 					)}
 				</GoogleMap>
 			</div>
+
+			<LocationErrorDialog
+				open={showLocationErrorDialog}
+				onOpenChange={setShowLocationErrorDialog}
+				description={locationErrorMessage}
+			/>
 		</div>
 	);
 }

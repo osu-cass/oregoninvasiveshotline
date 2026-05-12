@@ -168,8 +168,12 @@ test.describe("report wizard", () => {
 			);
 
 			await wizard.getByRole("button", { name: "Current location" }).click();
-			await expect(page.getByText(`Lat: ${TEST_COORDS.latitude}`)).toBeVisible();
-			await expect(page.getByText(`Lng: ${TEST_COORDS.longitude}`)).toBeVisible();
+			await expect(
+				page.getByText(`Lat: ${TEST_COORDS.latitude}`),
+			).toBeVisible();
+			await expect(
+				page.getByText(`Lng: ${TEST_COORDS.longitude}`),
+			).toBeVisible();
 			await expect(wizard.getByRole("button", { name: "Next" })).toBeEnabled();
 			await expectProgress(page, "50");
 
@@ -255,6 +259,5 @@ test.describe("report wizard", () => {
 			).toBeVisible();
 			await expect(page.getByText("Public Login")).toHaveCount(0);
 		});
-
 	});
 });

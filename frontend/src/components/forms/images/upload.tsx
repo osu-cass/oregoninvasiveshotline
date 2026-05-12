@@ -16,6 +16,8 @@ interface ImageUploadProps {
 	onChange: (images: File[], captions: string[]) => void;
 	/** Called when the EXIF-based location changes. */
 	onExifLocationChange: (location?: google.maps.LatLngLiteral) => void;
+	/** Called when image resizing starts or finishes. */
+	onResizingChange?: (resizing: boolean) => void;
 	/** Max number of images allowed. Defaults to 10. */
 	maxFiles?: number;
 	/** Label text above the drop zone. */
@@ -42,6 +44,7 @@ export default function ImageUpload({
 	captions,
 	onChange,
 	onExifLocationChange,
+	onResizingChange,
 	maxFiles = 10,
 	label = "Images",
 	optional,
@@ -95,6 +98,7 @@ export default function ImageUpload({
 
 		// Note that resizing strips exif data, so if/when we do location based on exif data, that is something to be aware of.
 		setResizing(true);
+		onResizingChange?.(true);
 		try {
 			const operationVersion = nextLocationVersion();
 			const resized = await Promise.all(incoming.map(resizeImage));
@@ -128,6 +132,7 @@ export default function ImageUpload({
 			);
 		} finally {
 			setResizing(false);
+			onResizingChange?.(false);
 		}
 	};
 

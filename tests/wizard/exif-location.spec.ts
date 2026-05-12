@@ -1,12 +1,12 @@
 import { expect, test } from "@playwright/test";
 import {
-	TEST_IMAGE_DSCN0010,
-	TEST_IMAGE_DSCN0042,
 	expectProgress,
 	fillStepOne,
 	openWizard,
 	selectFirstComboboxOption,
 	TEST_COORDS,
+	TEST_IMAGE_DSCN0010,
+	TEST_IMAGE_DSCN0042,
 } from "./shared";
 
 test.describe("report wizard", () => {
@@ -14,7 +14,9 @@ test.describe("report wizard", () => {
 		const wizard = page.getByRole("main");
 
 		await openWizard(page);
-		await page.locator("#file-drop-input").setInputFiles(TEST_IMAGE_DSCN0042.imagePath);
+		await page
+			.locator("#file-drop-input")
+			.setInputFiles(TEST_IMAGE_DSCN0042.imagePath);
 		await expect(page.getByText("1 / 10 images")).toBeVisible();
 		await expect(
 			page.getByRole("button", {
@@ -43,8 +45,12 @@ test.describe("report wizard", () => {
 		await expect(
 			page.getByRole("button", { name: "From photo" }),
 		).toBeVisible();
-		await expect(page.getByText(`Lat: ${TEST_IMAGE_DSCN0042.latitude}`)).toBeVisible();
-		await expect(page.getByText(`Lng: ${TEST_IMAGE_DSCN0042.longitude}`)).toBeVisible();
+		await expect(
+			page.getByText(`Lat: ${TEST_IMAGE_DSCN0042.latitude}`),
+		).toBeVisible();
+		await expect(
+			page.getByText(`Lng: ${TEST_IMAGE_DSCN0042.longitude}`),
+		).toBeVisible();
 		await expectProgress(page, "50");
 		await expect(
 			page.getByRole("button", { name: "From photo" }),
@@ -55,8 +61,12 @@ test.describe("report wizard", () => {
 		await expect(page.getByText(`Lng: ${TEST_COORDS.longitude}`)).toBeVisible();
 
 		await wizard.getByRole("button", { name: "From photo" }).click();
-		await expect(page.getByText(`Lat: ${TEST_IMAGE_DSCN0042.latitude}`)).toBeVisible();
-		await expect(page.getByText(`Lng: ${TEST_IMAGE_DSCN0042.longitude}`)).toBeVisible();
+		await expect(
+			page.getByText(`Lat: ${TEST_IMAGE_DSCN0042.latitude}`),
+		).toBeVisible();
+		await expect(
+			page.getByText(`Lng: ${TEST_IMAGE_DSCN0042.longitude}`),
+		).toBeVisible();
 	});
 
 	test("switches and clears the EXIF location when images are removed", async ({
@@ -135,8 +145,12 @@ test.describe("report wizard", () => {
 		await expect(
 			page.getByRole("button", { name: "From photo" }),
 		).toBeVisible();
-		await expect(page.getByText(`Lat: ${TEST_IMAGE_DSCN0010.latitude}`)).toBeVisible();
-		await expect(page.getByText(`Lng: ${TEST_IMAGE_DSCN0010.longitude}`)).toBeVisible();
+		await expect(
+			page.getByText(`Lat: ${TEST_IMAGE_DSCN0010.latitude}`),
+		).toBeVisible();
+		await expect(
+			page.getByText(`Lng: ${TEST_IMAGE_DSCN0010.longitude}`),
+		).toBeVisible();
 		await expectProgress(page, "50");
 
 		await wizard.getByRole("button", { name: "Back" }).click();

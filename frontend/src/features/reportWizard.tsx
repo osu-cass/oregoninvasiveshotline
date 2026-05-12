@@ -32,6 +32,7 @@ export default function FormWizard(props: FormWizardProps) {
 	const [step, setStep] = useState(0);
 	const [showNoImagesDialog, setShowNoImagesDialog] = useState(false);
 	const [exifLocation, setExifLocation] = useState<google.maps.LatLngLiteral>();
+	const [isResizingImages, setIsResizingImages] = useState(false);
 
 	const form = useForm<WizardFormData>({
 		...initialWizardData,
@@ -78,6 +79,7 @@ export default function FormWizard(props: FormWizardProps) {
 								form={form}
 								hasImages={form.data.images.length > 0}
 								onExifLocationChange={setExifLocation}
+								onResizingChange={setIsResizingImages}
 							/>
 						)}
 						{step === 1 && <StepTwo form={form} items={props.categories} />}
@@ -134,6 +136,7 @@ export default function FormWizard(props: FormWizardProps) {
 									data-testid="wizard-next-button"
 									onClick={() => {
 										if (!currentStep) return;
+										if (isResizingImages) return;
 
 										if (step === 0 && form.data.images.length === 0) {
 											// Validate first, then show the dialog only if validation passes.
@@ -152,9 +155,13 @@ export default function FormWizard(props: FormWizardProps) {
 											onSuccess: () => setStep((s) => s + 1),
 										});
 									}}
-									disabled={form.validating}
+									disabled={form.validating || isResizingImages}
 								>
-									{form.validating ? "Validating…" : "Next"}
+									{isResizingImages
+										? "Resizing…"
+										: form.validating
+											? "Validating…"
+											: "Next"}
 								</button>
 							)}
 						</div>

@@ -4,4 +4,3 @@ export const FIXTURES = [
 	"oregoninvasiveshotline/species/fixtures/category.json",
 	"oregoninvasiveshotline/species/fixtures/species.json",
 ];
-
