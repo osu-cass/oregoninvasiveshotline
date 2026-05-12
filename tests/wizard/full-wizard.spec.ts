@@ -1,22 +1,12 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import {
 	expectProgress,
 	fillStepOne,
 	openWizard,
 	selectFirstComboboxOption,
+	TEST_COORDS,
 	TEST_IMAGE_PATH,
 } from "./shared";
-
-async function advanceToStepTwoWithoutImages(page: Page) {
-	await openWizard(page);
-	await fillStepOne(page, "Species behavior variant coverage test.");
-	await page.getByTestId("wizard-next-button").click();
-	await expect(
-		page.getByRole("alertdialog", { name: "No photos attached" }),
-	).toBeVisible();
-	await page.getByTestId("confirm-no-images-continue").click();
-	await expectProgress(page, "25");
-}
 
 test.describe("report wizard", () => {
 	test("completes the full wizard with strong field and button assertions", async ({
@@ -178,8 +168,8 @@ test.describe("report wizard", () => {
 			);
 
 			await wizard.getByRole("button", { name: "Current location" }).click();
-			await expect(page.getByText("Lat: 45.523064")).toBeVisible();
-			await expect(page.getByText("Lng: -122.676483")).toBeVisible();
+			await expect(page.getByText(`Lat: ${TEST_COORDS.latitude}`)).toBeVisible();
+			await expect(page.getByText(`Lng: ${TEST_COORDS.longitude}`)).toBeVisible();
 			await expect(wizard.getByRole("button", { name: "Next" })).toBeEnabled();
 			await expectProgress(page, "50");
 

@@ -64,7 +64,7 @@ export default function LocationMap({
 		map.panTo(next);
 	};
 
-	const setToCurrentLocation = () => {
+	const setToCurrentLocation = (showNotificationInsteadOfPopup?: boolean) => {
 		navigator.geolocation.getCurrentPosition(
 			(position) => {
 				changeLocation({
@@ -107,7 +107,7 @@ export default function LocationMap({
 		if (exifLocation) {
 			setToExifLocation();
 		} else {
-			setToCurrentLocation();
+			setToCurrentLocation(true);
 		}
 		// biome-ignore lint/correctness/useExhaustiveDependencies: It does not run on every re-render like this claims
 	}, [map, marker, setToCurrentLocation, exifLocation, setToExifLocation, locationPlacementType]);

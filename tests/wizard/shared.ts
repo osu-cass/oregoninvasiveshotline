@@ -8,18 +8,31 @@ export const TEST_IMAGE_PATH = path.resolve(
 	"test_assets",
 	"fsm.png",
 );
-export const TEST_EXIF_IMAGE_PATH = path.resolve(
+export const TEST_IMAGE_DSCN0042_PATH = path.resolve(
 	process.cwd(),
 	"oregoninvasiveshotline",
 	"test_assets",
 	"DSCN0042.jpg",
 );
-export const TEST_EXIF_IMAGE_PATH_2 = path.resolve(
+export const TEST_IMAGE_DSCN0010_PATH = path.resolve(
 	process.cwd(),
 	"oregoninvasiveshotline",
 	"test_assets",
 	"DSCN0010.jpg",
 );
+
+export const TEST_IMAGE_DSCN0042 = {
+	imageName: "DSCN0042.jpg",
+	imagePath: TEST_IMAGE_DSCN0042_PATH,
+	latitude: 43.464455,
+	longitude: 11.881478,
+};
+export const TEST_IMAGE_DSCN0010 = {
+	imageName: "DSCN0010.jpg",
+	imagePath: TEST_IMAGE_DSCN0010_PATH,
+	latitude: 43.467448,
+	longitude: 11.885127,
+};
 export const TEST_COORDS = {
 	latitude: 45.523064,
 	longitude: -122.676483,
