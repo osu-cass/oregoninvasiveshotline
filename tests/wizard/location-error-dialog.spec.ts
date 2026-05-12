@@ -17,6 +17,7 @@ test.describe("report wizard", () => {
 			"Unable to retrieve your location. Please allow location access and try again.";
 
 		await context.clearPermissions();
+		await context.setGeolocation(null);
 
 		await openWizard(page);
 		await page

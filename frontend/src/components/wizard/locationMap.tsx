@@ -63,9 +63,8 @@ export default function LocationMap({
 	};
 
 	const changeLocation = (next: google.maps.LatLngLiteral) => {
-		if (!map) return;
 		onLocationChangeEvent(next);
-		map.panTo(next);
+		map?.panTo(next);
 	};
 
 	const setToCurrentLocation = (showNotificationInsteadOfPopup?: boolean) => {
