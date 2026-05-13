@@ -31,6 +31,8 @@ interface FormWizardProps {
 export default function FormWizard(props: FormWizardProps) {
 	const [step, setStep] = useState(0);
 	const [showNoImagesDialog, setShowNoImagesDialog] = useState(false);
+	const [exifLocation, setExifLocation] = useState<google.maps.LatLngLiteral>();
+	const [isResizingImages, setIsResizingImages] = useState(false);
 
 	const form = useForm<WizardFormData>({
 		...initialWizardData,
@@ -72,11 +74,20 @@ export default function FormWizard(props: FormWizardProps) {
 					</div>
 				) : (
 					<>
-						{step === 0 && <StepOne form={form} />}
+						{step === 0 && (
+							<StepOne
+								form={form}
+								hasImages={form.data.images.length > 0}
+								onExifLocationChange={setExifLocation}
+								onResizingChange={setIsResizingImages}
+							/>
+						)}
 						{step === 1 && <StepTwo form={form} items={props.categories} />}
 						{step === 2 && (
 							<StepThree
 								form={form}
+								exifLocation={exifLocation}
+								hasImages={form.data.images.length > 0}
 								googleApiKey={props.google_api_key}
 								googleMapId={props.google_map_id}
 							/>
@@ -125,12 +136,16 @@ export default function FormWizard(props: FormWizardProps) {
 									data-testid="wizard-next-button"
 									onClick={() => {
 										if (!currentStep) return;
+										if (isResizingImages) return;
 
 										if (step === 0 && form.data.images.length === 0) {
 											// Validate first, then show the dialog only if validation passes.
 											form.validate({
 												only: currentStep.fields,
-												onSuccess: () => setShowNoImagesDialog(true),
+												onSuccess: () => {
+													setExifLocation(undefined);
+													setShowNoImagesDialog(true);
+												},
 											});
 											return;
 										}
@@ -140,9 +155,13 @@ export default function FormWizard(props: FormWizardProps) {
 											onSuccess: () => setStep((s) => s + 1),
 										});
 									}}
-									disabled={form.validating}
+									disabled={form.validating || isResizingImages}
 								>
-									{form.validating ? "Validating…" : "Next"}
+									{isResizingImages
+										? "Resizing…"
+										: form.validating
+											? "Validating…"
+											: "Next"}
 								</button>
 							)}
 						</div>
@@ -172,7 +191,10 @@ export default function FormWizard(props: FormWizardProps) {
 			<ConfirmNoImagesDialog
 				open={showNoImagesDialog}
 				onOpenChange={setShowNoImagesDialog}
-				onConfirm={() => setStep((s) => s + 1)}
+				onConfirm={() => {
+					setExifLocation(undefined);
+					setStep((s) => s + 1);
+				}}
 			/>
 		</div>
 	);

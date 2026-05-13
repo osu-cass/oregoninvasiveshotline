@@ -1,11 +1,18 @@
-# Important rules/notes
+## Important rules/notes
 
-- Do not run python tests unless explicitly instructed to by the user
-- Entire project is greenfield, ok to change whatever
+- Do not run python tests unless explicitly instructed to by the user, or you are actively editing the tests
 - Do not have multiple react components in the same file
 - Comments should be short and to the point, but should generally have a capitol letter at the start and end with a period
 - While much of this project is unfortunately untyped, new code should include types (but don't be overly verbose)
 - This project uses the react compiler, be aware of this and do not add uneeded useMemos/useCallbacks
+
+## Maintainability
+
+Long term maintainability is a core priority. If you add new functionality, first check if there is shared logic that can be extracted to a separate module. Duplicate logic across multiple files is a code smell and should be avoided. Don't be afraid to change existing code. Don't take shortcuts by just adding local logic to solve a problem.
+
+## Project Information
+
+This project uses django and react. The react code is in `frontend/`. The django code is in `oregoninvasiveshotline/`.
 
 ## Documentation Conventions
 

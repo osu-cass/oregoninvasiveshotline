@@ -1,101 +1,12 @@
-import path from "node:path";
-import { expect, type Page, test } from "@playwright/test";
-
-const WIZARD_URL = "/reports/create-new";
-const TEST_IMAGE_PATH = path.resolve(
-	process.cwd(),
-	"oregoninvasiveshotline",
-	"test_assets",
-	"fsm.png",
-);
-const TEST_COORDS = {
-	latitude: 45.523064,
-	longitude: -122.676483,
-};
-
-test.use({
-	geolocation: TEST_COORDS,
-	permissions: ["geolocation"],
-});
-
-/**
- * Returns the wizard progressbar locator.
- * @param page - Playwright page instance.
- */
-function progressbar(page: Page) {
-	return page.locator('[role="progressbar"]').first();
-}
-
-/**
- * Asserts the progressbar percentage for the current step.
- * @param page - Playwright page instance.
- * @param value - Expected progress percentage value.
- */
-async function expectProgress(page: Page, value: "0" | "25" | "50" | "75") {
-	await expect(progressbar(page)).toHaveAttribute("aria-valuenow", value);
-}
-
-/**
- * Opens the report wizard page and waits for initial DOM content.
- * @param page - Playwright page instance.
- */
-async function openWizard(page: Page) {
-	await page.goto(WIZARD_URL, { waitUntil: "domcontentloaded" });
-}
-
-/**
- * Fills the step-one description textarea and verifies the value.
- * @param page - Playwright page instance.
- * @param description - Description text to enter.
- */
-async function fillStepOne(page: Page, description: string) {
-	await page.locator("#find_description").fill(description);
-	await expect(page.locator("#find_description")).toHaveValue(description);
-}
-
-/**
- * Opens a combobox and selects its first available option.
- * @param page - Playwright page instance.
- * @param id - Combobox field id to interact with.
- */
-async function selectFirstComboboxOption(
-	page: Page,
-	id: "category" | "species",
-) {
-	const input = page.locator(`#${id}`);
-
-	await input.click();
-	await input.press("ArrowDown");
-
-	const option = page.getByRole("option").first();
-	await expect(option).toBeVisible();
-	await option.click();
-
-	await expect(input).not.toHaveValue("");
-}
-
-async function selectComboboxOptionByValue(
-	page: Page,
-	id: "category" | "species",
-	value: number,
-) {
-	await page.getByTestId(`${id}-combobox-trigger`).click();
-	const option = page.getByTestId(`${id}-option-${value}`);
-	await expect(option).toBeVisible();
-	await option.click();
-	await expect(page.getByTestId(`${id}-combobox-input`)).not.toHaveValue("");
-}
-
-async function advanceToStepTwoWithoutImages(page: Page) {
-	await openWizard(page);
-	await fillStepOne(page, "Species behavior variant coverage test.");
-	await page.getByTestId("wizard-next-button").click();
-	await expect(
-		page.getByRole("alertdialog", { name: "No photos attached" }),
-	).toBeVisible();
-	await page.getByTestId("confirm-no-images-continue").click();
-	await expectProgress(page, "25");
-}
+import { expect, test } from "@playwright/test";
+import {
+	expectProgress,
+	fillStepOne,
+	openWizard,
+	selectFirstComboboxOption,
+	TEST_COORDS,
+	TEST_IMAGE_PATH,
+} from "./shared";
 
 test.describe("report wizard", () => {
 	test("completes the full wizard with strong field and button assertions", async ({
@@ -229,10 +140,10 @@ test.describe("report wizard", () => {
 			await expect(page.locator("#location_description")).toBeVisible();
 			await expect(page.locator("#location_description")).toBeEmpty();
 			await expect(
-				wizard.getByRole("button", { name: "Set to current location" }),
+				wizard.getByRole("button", { name: "Current location" }),
 			).toBeVisible();
 			await expect(
-				wizard.getByRole("button", { name: "Set to current location" }),
+				wizard.getByRole("button", { name: "Current location" }),
 			).toBeEnabled();
 			await expect(wizard.getByRole("button", { name: "Back" })).toBeVisible();
 			await expect(wizard.getByRole("button", { name: "Back" })).toBeEnabled();
@@ -256,11 +167,13 @@ test.describe("report wizard", () => {
 				"At the south edge of the pond near the walking path and boardwalk.",
 			);
 
-			await wizard
-				.getByRole("button", { name: "Set to current location" })
-				.click();
-			await expect(page.getByText("Lat: 45.523064")).toBeVisible();
-			await expect(page.getByText("Lng: -122.676483")).toBeVisible();
+			await wizard.getByRole("button", { name: "Current location" }).click();
+			await expect(
+				page.getByText(`Lat: ${TEST_COORDS.latitude}`),
+			).toBeVisible();
+			await expect(
+				page.getByText(`Lng: ${TEST_COORDS.longitude}`),
+			).toBeVisible();
 			await expect(wizard.getByRole("button", { name: "Next" })).toBeEnabled();
 			await expectProgress(page, "50");
 
@@ -340,180 +253,13 @@ test.describe("report wizard", () => {
 
 			await wizard.getByRole("button", { name: "Submit" }).click();
 
-			await expect(page).toHaveURL(/\/reports\/detail\/\d+\/?$/);
+			await page.waitForURL(/\/reports\/detail\/\d+\/?$/, {
+				waitUntil: "commit",
+			});
 			await expect(
 				page.getByText("Report submitted successfully"),
 			).toBeVisible();
 			await expect(page.getByText("Public Login")).toHaveCount(0);
-		});
-	});
-
-	test("requires explicit confirmation before continuing without photos", async ({
-		page,
-	}) => {
-		const wizard = page.getByRole("main");
-
-		await openWizard(page);
-		await fillStepOne(
-			page,
-			"Dense patch along the ditch line with purple flowers and seed heads.",
-		);
-
-		await wizard.getByRole("button", { name: "Next" }).click();
-
-		await expect(
-			page.getByRole("alertdialog", { name: "No photos attached" }),
-		).toBeVisible();
-		await expect(wizard.getByRole("button", { name: "Back" })).toBeHidden();
-		await expect(page.locator("#category")).toBeHidden();
-		await expectProgress(page, "0");
-
-		await page.getByRole("button", { name: "Go back" }).click();
-
-		await expect(page.locator("#find_description")).toHaveValue(
-			"Dense patch along the ditch line with purple flowers and seed heads.",
-		);
-		await expectProgress(page, "0");
-
-		await wizard.getByRole("button", { name: "Next" }).click();
-		await page.getByRole("button", { name: "Continue without photos" }).click();
-
-		await expect(page.locator("#category")).toBeVisible();
-		await expectProgress(page, "25");
-	});
-
-	test("supports the unknown-species path and preserves it when navigating back", async ({
-		page,
-	}) => {
-		const wizard = page.getByRole("main");
-
-		await openWizard(page);
-		await fillStepOne(
-			page,
-			"Single plant near a wetland edge with bright purple blooms.",
-		);
-
-		await wizard.getByRole("button", { name: "Next" }).click();
-		await expect(
-			page.getByRole("alertdialog", { name: "No photos attached" }),
-		).toBeVisible();
-		await page.getByRole("button", { name: "Continue without photos" }).click();
-
-		await expectProgress(page, "25");
-		await selectFirstComboboxOption(page, "category");
-		await expect(page.locator("#species")).toBeVisible();
-
-		await page.locator("#is_species_unknown").check();
-
-		await expect(page.locator("#is_species_unknown")).toBeChecked();
-		await expect(page.locator("#species")).toBeDisabled();
-		await expect(page.locator("#species")).toHaveAttribute(
-			"placeholder",
-			"You marked this species as unknown",
-		);
-		await expect(wizard.getByRole("button", { name: "Next" })).toBeEnabled();
-		await expectProgress(page, "25");
-
-		await wizard.getByRole("button", { name: "Next" }).click();
-		await expect(page.locator("#location_description")).toBeVisible();
-		await expectProgress(page, "50");
-
-		await wizard.getByRole("button", { name: "Back" }).click();
-
-		await expect(page.locator("#is_species_unknown")).toBeChecked();
-		await expect(page.locator("#species")).toBeDisabled();
-		await expectProgress(page, "25");
-	});
-
-	test("renders all species identification resource variants", async ({
-		page,
-	}) => {
-		await advanceToStepTwoWithoutImages(page);
-		await selectComboboxOptionByValue(page, "category", 3);
-
-		await test.step("nothing", async () => {
-			await selectComboboxOptionByValue(page, "species", 443);
-			await expect(
-				page.getByTestId("species-identification-panel"),
-			).toBeHidden();
-			await expect(
-				page.getByTestId("species-identification-link-only"),
-			).toBeHidden();
-			await expect(
-				page.getByTestId("species-identification-resource-link"),
-			).toBeHidden();
-			await expect(
-				page.getByTestId("species-identification-image"),
-			).toBeHidden();
-		});
-
-		await test.step("link only", async () => {
-			await selectComboboxOptionByValue(page, "species", 444);
-			await expect(
-				page.getByTestId("species-identification-panel"),
-			).toBeHidden();
-			await expect(
-				page.getByTestId("species-identification-link-only"),
-			).toBeVisible();
-			await expect(
-				page.getByTestId("species-identification-image"),
-			).toBeHidden();
-			await expect(
-				page.getByTestId("species-identification-resource-link"),
-			).toHaveAttribute("href", "https://example.org/identification/link-only");
-		});
-
-		await test.step("image only", async () => {
-			await selectComboboxOptionByValue(page, "species", 445);
-			await expect(
-				page.getByTestId("species-identification-panel"),
-			).toBeVisible();
-			await expect(
-				page.getByTestId("species-identification-link-only"),
-			).toBeHidden();
-			await expect(
-				page.getByTestId("species-identification-resource-link"),
-			).toBeHidden();
-			await expect(
-				page.getByTestId("species-identification-image"),
-			).toBeVisible();
-			await expect(
-				page.getByTestId("species-identification-image"),
-			).toHaveAttribute(
-				"alt",
-				"Close-up of leaves and stem for species verification.",
-			);
-			await expect(
-				page.getByTestId("species-identification-image"),
-			).toHaveAttribute(
-				"src",
-				/identification_images\/species-image-only\.png$/,
-			);
-		});
-
-		await test.step("image plus link", async () => {
-			await selectComboboxOptionByValue(page, "species", 446);
-			await expect(
-				page.getByTestId("species-identification-panel"),
-			).toBeVisible();
-			await expect(
-				page.getByTestId("species-identification-link-only"),
-			).toBeHidden();
-			await expect(
-				page.getByTestId("species-identification-image"),
-			).toBeVisible();
-			await expect(
-				page.getByTestId("species-identification-image"),
-			).toHaveAttribute(
-				"src",
-				/identification_images\/species-image-and-link\.png$/,
-			);
-			await expect(
-				page.getByTestId("species-identification-resource-link"),
-			).toHaveAttribute(
-				"href",
-				"https://example.org/identification/image-and-link",
-			);
 		});
 	});
 });

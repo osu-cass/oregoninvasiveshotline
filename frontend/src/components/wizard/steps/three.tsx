@@ -6,6 +6,10 @@ import type { WizardStepProps } from "../types";
 const defaultCenter = { lat: 44, lng: -120.578333 };
 
 interface StepThreeProps extends WizardStepProps {
+	/** EXIF-based location from uploaded photos, if any. */
+	exifLocation?: google.maps.LatLngLiteral;
+	/** Whether any images are currently attached. */
+	hasImages?: boolean;
 	/** Google Maps API key for the map. */
 	googleApiKey?: string;
 	/** Google Map ID for advanced marker support. */
@@ -15,6 +19,8 @@ interface StepThreeProps extends WizardStepProps {
 /** Step 3: Location details and map pin. */
 export default function StepThree({
 	form,
+	exifLocation,
+	hasImages,
 	googleApiKey,
 	googleMapId,
 }: StepThreeProps) {
@@ -24,7 +30,8 @@ export default function StepThree({
 
 	const lat = Number.parseFloat(form.data.latitude);
 	const lng = Number.parseFloat(form.data.longitude);
-	const marker = Number.isNaN(lat) || Number.isNaN(lng) ? null : { lat, lng };
+	const marker: google.maps.LatLngLiteral | null =
+		Number.isNaN(lat) || Number.isNaN(lng) ? null : { lat, lng };
 
 	return (
 		<div className="row g-3 mt-1">
@@ -33,6 +40,7 @@ export default function StepThree({
 					<APIProvider apiKey={googleApiKey} libraries={["places"]}>
 						<LocationMap
 							defaultCenter={defaultCenter}
+							exifLocation={hasImages ? exifLocation : undefined}
 							mapId={googleMapId}
 							marker={marker}
 							onLocationChange={(next) => {
@@ -60,12 +68,12 @@ export default function StepThree({
 				<Field
 					form={form}
 					name="location_description"
-					label="Where it was found (site details)"
+					label="Anything else you can tell us about where you found this?"
 					as="textarea"
 					textareaProps={{
 						rows: 4,
 						placeholder:
-							"Add context for the location, like nearby landmarks or access points, and where in the area it was (ditch, fence line, field edge, along water)",
+							"Note where in the area you spotted it (ditch, fence line, field edge, along water), any hazards nearby (power lines, soft ground, locked gates), and landmarks or access points.",
 					}}
 				/>
 			</div>

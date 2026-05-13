@@ -1,8 +1,9 @@
 import clsx from "clsx";
-import { useState } from "react";
+import ExifReader from "exifreader";
+import { useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import ImageThumb from "./imageThumbnail";
 import { resizeImage } from "./resizeImage";
-import { toast } from "sonner";
 
 const ACCEPT = "image/*";
 
@@ -13,12 +14,24 @@ interface ImageUploadProps {
 	captions: string[];
 	/** Called when the images or captions change. */
 	onChange: (images: File[], captions: string[]) => void;
+	/** Called when the EXIF-based location changes. */
+	onExifLocationChange: (location?: google.maps.LatLngLiteral) => void;
+	/** Called when image resizing starts or finishes. */
+	onResizingChange?: (resizing: boolean) => void;
 	/** Max number of images allowed. Defaults to 10. */
 	maxFiles?: number;
 	/** Label text above the drop zone. */
 	label?: string;
 	/** Shows "(optional)" next to the label. */
 	optional?: boolean;
+}
+
+/**
+ * Builds a stable key for an image file in the current form state.
+ * @param file - Image file to key.
+ */
+function getImageKey(file: File) {
+	return `${file.name}-${file.lastModified}` as const;
 }
 
 /**
@@ -30,21 +43,64 @@ export default function ImageUpload({
 	images,
 	captions,
 	onChange,
+	onExifLocationChange,
+	onResizingChange,
 	maxFiles = 10,
 	label = "Images",
 	optional,
 }: ImageUploadProps) {
 	const [dragging, setDragging] = useState(false);
 	const [resizing, setResizing] = useState(false);
+	// Key should be `${file.name}-${file.lastModified}` to avoid collisions as much as possible without using the actual file/hash.
+	const imageLocations = useMemo(
+		() => new Map<`${string}-${string}`, google.maps.LatLngLiteral>(),
+		[],
+	);
+	const locationVersion = useRef(0);
+
+	/** Updates the shared EXIF location from the current image map. */
+	const syncExifLocation = () => {
+		onExifLocationChange(imageLocations.values().next().value);
+	};
+
+	const nextLocationVersion = () => {
+		locationVersion.current += 1;
+		return locationVersion.current;
+	};
 
 	const addFiles = async (files: FileList | null) => {
 		if (!files) return;
 
-		const incoming = Array.from(files);
+		let incoming = Array.from(files);
+
+		if (
+			images.some((file) =>
+				incoming.some(
+					(incomingFile) =>
+						incomingFile.name === file.name &&
+						incomingFile.lastModified === file.lastModified,
+				),
+			)
+		) {
+			toast.error(
+				"One or more of your images was duplicated, and was not uploaded",
+			);
+		}
+
+		incoming = incoming.filter(
+			(file) =>
+				!images.some(
+					(imagesFile) =>
+						imagesFile.name === file.name &&
+						imagesFile.lastModified === file.lastModified,
+				),
+		);
 
 		// Note that resizing strips exif data, so if/when we do location based on exif data, that is something to be aware of.
 		setResizing(true);
+		onResizingChange?.(true);
 		try {
+			const operationVersion = nextLocationVersion();
 			const resized = await Promise.all(incoming.map(resizeImage));
 			const newImages = [...images, ...resized].slice(0, maxFiles);
 			const newCaptions = [...captions, ...resized.map(() => "")].slice(
@@ -52,10 +108,31 @@ export default function ImageUpload({
 				maxFiles,
 			);
 			onChange(newImages, newCaptions);
+			await Promise.allSettled(
+				incoming.map(async (file) => {
+					const tags = await ExifReader.load(file, { expanded: true });
+					const lng = tags.gps?.Longitude;
+					const lat = tags.gps?.Latitude;
+					if (lng != null && lat != null) {
+						if (operationVersion !== locationVersion.current) return;
+						imageLocations.set(`${file.name}-${file.lastModified}`, {
+							lat: Number(lat),
+							lng: Number(lng),
+						});
+					}
+				}),
+			);
+
+			if (operationVersion === locationVersion.current) {
+				syncExifLocation();
+			}
 		} catch {
-			toast.error("An unknown error occured while trying to process your images. Please try again.");
+			toast.error(
+				"An unknown error occured while trying to process one of your images. Please upload any missing images again.",
+			);
 		} finally {
 			setResizing(false);
+			onResizingChange?.(false);
 		}
 	};
 
@@ -85,12 +162,18 @@ export default function ImageUpload({
 								next[index] = caption;
 								onChange(images, next);
 							}}
-							onRemove={() =>
-								onChange(
-									images.filter((_, i) => i !== index),
-									captions.filter((_, i) => i !== index),
-								)
-							}
+							onRemove={() => {
+								const nextImages = images.filter((_, i) => i !== index);
+								const nextCaptions = captions.filter((_, i) => i !== index);
+								nextLocationVersion();
+								imageLocations.delete(getImageKey(file));
+								onChange(nextImages, nextCaptions);
+								if (nextImages.length === 0) {
+									onExifLocationChange(undefined);
+								} else {
+									syncExifLocation();
+								}
+							}}
 						/>
 					))}
 				</div>
