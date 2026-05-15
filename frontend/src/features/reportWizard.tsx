@@ -52,7 +52,7 @@ export default function FormWizard(props: FormWizardProps) {
 
 	return (
 		<div className="row justify-content-center">
-			<div className="col-12 col-lg-6 col-md-8">
+			<div className="col-12 col-lg-8 col-md-12 col-xxl-7">
 				<div
 					className="progress mb-4"
 					role="progressbar"
