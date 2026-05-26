@@ -4,7 +4,7 @@ import type { WizardStepProps } from "../types";
 /** Step 4: Reporter contact info and optional questions. */
 export default function StepFour({ form }: WizardStepProps) {
 	return (
-		<div className="row g-3 mt-1">
+		<div className="row g-3">
 			<div className="col-12 col-md-6">
 				<Field
 					form={form}

@@ -58,9 +58,15 @@ export default function ImageUpload({
 	);
 	const locationVersion = useRef(0);
 
-	/** Updates the shared EXIF location from the current image map. */
-	const syncExifLocation = () => {
-		onExifLocationChange(imageLocations.values().next().value);
+	/**
+	 * Updates the shared EXIF location from the first uploaded image with GPS data.
+	 * @param orderedImages - Image list in current upload order.
+	 */
+	const syncExifLocation = (orderedImages: File[]) => {
+		const firstLocation = orderedImages
+			.map((file) => imageLocations.get(getImageKey(file)))
+			.find((location) => location != null);
+		onExifLocationChange(firstLocation);
 	};
 
 	const nextLocationVersion = () => {
@@ -124,7 +130,7 @@ export default function ImageUpload({
 			);
 
 			if (operationVersion === locationVersion.current) {
-				syncExifLocation();
+				syncExifLocation(newImages);
 			}
 		} catch {
 			toast.error(
@@ -171,7 +177,7 @@ export default function ImageUpload({
 								if (nextImages.length === 0) {
 									onExifLocationChange(undefined);
 								} else {
-									syncExifLocation();
+									syncExifLocation(nextImages);
 								}
 							}}
 						/>
