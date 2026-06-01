@@ -1,5 +1,4 @@
 from collections import namedtuple
-import re
 from typing import Any, List, cast
 
 from django.contrib.gis.geos import Point
@@ -26,12 +25,27 @@ from oregoninvasiveshotline.reports.tasks import (
 )
 
 ALLOWED_REPORT_STATES = ("Oregon", "Washington")
-PHONE_EXTENSION_PATTERN = re.compile(r"(?:\s*(?:x|ext\.?|extension)\s*\d+)\s*$", re.IGNORECASE)
-PHONE_ALLOWED_PATTERN = re.compile(r"^[\d\s()+.\-]*(?:\s*(?:x|ext\.?|extension)\s*\d+)?$", re.IGNORECASE)
 PHONE_VALIDATION_ERROR = (
     "Enter a phone number with at least 10 digits. You may use spaces, parentheses, "
     "hyphens, periods, plus signs, or an extension."
 )
+PHONE_ALLOWED_CHARACTERS = set("0123456789 \t\r\n()+.-")
+PHONE_EXTENSION_MARKERS = ("extension", "ext.", "ext", "x")
+
+
+def split_phone_extension(phone: str) -> tuple[str, str]:
+    """Split a phone number from a trailing extension marker."""
+    lower_phone = phone.lower()
+    for marker in PHONE_EXTENSION_MARKERS:
+        marker_start = lower_phone.rfind(marker)
+        if marker_start == -1:
+            continue
+
+        extension = phone[marker_start + len(marker):].strip()
+        if extension.isdigit():
+            return phone[:marker_start].strip(), extension
+
+    return phone, ""
 
 
 def validate_phone_number(value: str) -> str:
@@ -40,11 +54,11 @@ def validate_phone_number(value: str) -> str:
     if not phone:
         return phone
 
-    if not PHONE_ALLOWED_PATTERN.fullmatch(phone):
+    phone_without_extension, _ = split_phone_extension(phone)
+    if any(char not in PHONE_ALLOWED_CHARACTERS for char in phone_without_extension):
         raise forms.ValidationError(PHONE_VALIDATION_ERROR)
 
-    phone_without_extension = PHONE_EXTENSION_PATTERN.sub("", phone)
-    digit_count = len(re.sub(r"\D", "", phone_without_extension))
+    digit_count = sum(char.isdigit() for char in phone_without_extension)
     if digit_count < 10:
         raise forms.ValidationError(PHONE_VALIDATION_ERROR)
 
