@@ -1,0 +1,31 @@
+{
+  "name": "oregon-hotline-dashboard-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "pnpm build && wrangler deploy"
+  },
+  "dependencies": {
+    "@astrojs/react": "^5.0.6",
+    "@cloudflare/kumo": "^2.4.1",
+    "@phosphor-icons/react": "^2.1.10",
+    "astro": "^5.16.4",
+    "d3-geo": "^3.1.1",
+    "echarts": "^6.0.0",
+    "lucide-react": "^0.561.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@types/d3-geo": "^3.1.0",
+    "@types/geojson": "^7946.0.16",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.2",
+    "wrangler": "^4.60.0"
+  }
+}

@@ -1,0 +1,7 @@
+name = "oregon-hotline-dashboard-demo"
+account_id = "db5905dc23332e3a68d3fda88eb14fbf"
+compatibility_date = "2026-05-29"
+
+[assets]
+directory = "./dist"
+not_found_handling = "single-page-application"

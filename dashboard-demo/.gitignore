@@ -1,0 +1,6 @@
+.astro/
+dist/
+node_modules/
+*.log
+dashboard-*.png
+worker-generated.mjs
