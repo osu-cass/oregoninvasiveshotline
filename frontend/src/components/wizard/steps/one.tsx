@@ -1,5 +1,6 @@
 import Field from "../../forms/field";
 import ImageUpload from "../../forms/images/upload";
+import { REPORT_LONG_TEXT_MAX_LENGTH } from "../limits";
 import type { WizardStepProps } from "../types";
 
 interface StepOneProps extends WizardStepProps {
@@ -51,6 +52,7 @@ export default function StepOne({
 						label="Details about what you found"
 						as="textarea"
 						textareaProps={{
+							maxLength: REPORT_LONG_TEXT_MAX_LENGTH,
 							rows: 5,
 							placeholder:
 								"Describe what you saw: estimated amount, size, life stage, condition, notable traits (color/markings, flowers/fruit), and anything else you feel is relevant",

@@ -1,4 +1,5 @@
 from collections import namedtuple
+import re
 from typing import Any, List, cast
 
 from django.contrib.gis.geos import Point
@@ -25,6 +26,30 @@ from oregoninvasiveshotline.reports.tasks import (
 )
 
 ALLOWED_REPORT_STATES = ("Oregon", "Washington")
+PHONE_EXTENSION_PATTERN = re.compile(r"(?:\s*(?:x|ext\.?|extension)\s*\d+)\s*$", re.IGNORECASE)
+PHONE_ALLOWED_PATTERN = re.compile(r"^[\d\s()+.\-]*(?:\s*(?:x|ext\.?|extension)\s*\d+)?$", re.IGNORECASE)
+PHONE_VALIDATION_ERROR = (
+    "Enter a phone number with at least 10 digits. You may use spaces, parentheses, "
+    "hyphens, periods, plus signs, or an extension."
+)
+
+
+def validate_phone_number(value: str) -> str:
+    """Validate a common phone number format while allowing optional extensions."""
+    phone = value.strip()
+    if not phone:
+        return phone
+
+    if not PHONE_ALLOWED_PATTERN.fullmatch(phone):
+        raise forms.ValidationError(PHONE_VALIDATION_ERROR)
+
+    phone_without_extension = PHONE_EXTENSION_PATTERN.sub("", phone)
+    digit_count = len(re.sub(r"\D", "", phone_without_extension))
+    if digit_count < 10:
+        raise forms.ValidationError(PHONE_VALIDATION_ERROR)
+
+    return phone
+
 
 def get_county(point: Point):
     """Return the first county polygon that intersects a point.
@@ -333,14 +358,21 @@ class ReportForm(forms.ModelForm):
         return report
 
 
+REPORT_LONG_TEXT_MAX_LENGTH = 3000
+
+
 class NewReportForm(forms.Form):
 
-    find_description = forms.CharField()
+    find_description = forms.CharField(max_length=REPORT_LONG_TEXT_MAX_LENGTH)
     category = forms.ModelChoiceField(queryset=Category.objects.all())
     species = forms.ModelChoiceField(queryset=Species.objects.all(), required=False)
     is_species_unknown = forms.BooleanField(required=False, label='Species unknown')
-    identification_process = forms.CharField(required=False, widget=forms.Textarea)
-    location_description = forms.CharField()
+    identification_process = forms.CharField(
+        max_length=REPORT_LONG_TEXT_MAX_LENGTH,
+        required=False,
+        widget=forms.Textarea,
+    )
+    location_description = forms.CharField(max_length=REPORT_LONG_TEXT_MAX_LENGTH)
     # Long/Lat are required, but we instead just set an error message on
     # latitude that's a bit more human friendly later on in the clean method.
     latitude = forms.FloatField(required=False)
@@ -362,6 +394,10 @@ class NewReportForm(forms.Form):
         email = self.cleaned_data['email']
         email = email.lower()
         return email
+
+    def clean_phone(self):
+        """Validate the optional reporter phone number."""
+        return validate_phone_number(self.cleaned_data.get('phone', ''))
 
     def clean(self):
         """Validate species-selection rules and required map coordinates.
