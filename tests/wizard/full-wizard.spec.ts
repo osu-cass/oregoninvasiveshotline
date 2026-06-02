@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
 	expectProgress,
 	fillStepOne,
+	mockCurrentLocationSuccess,
 	openWizard,
 	selectFirstComboboxOption,
 	TEST_COORDS,
@@ -13,6 +14,8 @@ test.describe("report wizard", () => {
 		page,
 	}) => {
 		const wizard = page.getByRole("main");
+
+		await mockCurrentLocationSuccess(page);
 
 		await test.step("shows the full initial step 1 state", async () => {
 			await openWizard(page);

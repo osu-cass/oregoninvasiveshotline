@@ -1,5 +1,7 @@
+/// <reference lib="dom" />
+
 import path from "node:path";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 export const WIZARD_URL = "/reports/create-new";
 export const TEST_IMAGE_PATH = path.resolve(
@@ -38,10 +40,83 @@ export const TEST_COORDS = {
 	longitude: -122.676483,
 };
 
-test.use({
-	geolocation: TEST_COORDS,
-	permissions: ["geolocation"],
-});
+/**
+ * Mocks successful browser geolocation before the page loads.
+ * @param page - Playwright page instance.
+ */
+export async function mockCurrentLocationSuccess(
+	page: Page,
+	coords = TEST_COORDS,
+) {
+	await page.addInitScript(
+		(mockCoords: typeof TEST_COORDS) => {
+			const position = {
+				coords: {
+					accuracy: 10,
+					altitude: null,
+					altitudeAccuracy: null,
+					heading: null,
+					latitude: mockCoords.latitude,
+					longitude: mockCoords.longitude,
+					speed: null,
+				},
+				timestamp: Date.now(),
+			};
+
+			Object.defineProperty(navigator, "geolocation", {
+				configurable: true,
+				value: {
+					clearWatch: () => undefined,
+					getCurrentPosition: (success: PositionCallback) => {
+						queueMicrotask(() => success(position as GeolocationPosition));
+					},
+					watchPosition: (success: PositionCallback) => {
+						queueMicrotask(() => success(position as GeolocationPosition));
+						return 1;
+					},
+				},
+			});
+		},
+		coords,
+	);
+}
+
+/**
+ * Mocks failed browser geolocation before the page loads.
+ * @param page - Playwright page instance.
+ * @param message - Error message returned by the browser API.
+ */
+export async function mockCurrentLocationFailure(page: Page, message: string) {
+	await page.addInitScript((mockMessage: string) => {
+		const error = {
+			code: 1,
+			message: mockMessage,
+			PERMISSION_DENIED: 1,
+			POSITION_UNAVAILABLE: 2,
+			TIMEOUT: 3,
+		} as GeolocationPositionError;
+
+		Object.defineProperty(navigator, "geolocation", {
+			configurable: true,
+			value: {
+				clearWatch: () => undefined,
+				getCurrentPosition: (
+					_success: PositionCallback,
+					failure?: PositionErrorCallback | null,
+				) => {
+					queueMicrotask(() => failure?.(error));
+				},
+				watchPosition: (
+					_success: PositionCallback,
+					failure?: PositionErrorCallback | null,
+				) => {
+					queueMicrotask(() => failure?.(error));
+					return 1;
+				},
+			},
+		});
+	}, message);
+}
 
 /**
  * Returns the wizard progressbar locator.
