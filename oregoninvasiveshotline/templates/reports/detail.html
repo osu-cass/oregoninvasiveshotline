@@ -57,6 +57,11 @@ Report #{{ report.pk }} - {{ report }}
         <h4>Description of specimen</h4>
         <blockquote>{{ report.description|default:"No description provided"|linebreaksbr }}</blockquote>
 
+        {% if report.identification_process %}
+	        <h4 class="h6">Identification process:</h4>
+	        <blockquote>{{ report.identification_process|linebreaksbr }}</blockquote>
+		{% endif %}
+
         {% if images %}
             <div class="f-carousel" id="myCarousel">
                 {% for image in images %}

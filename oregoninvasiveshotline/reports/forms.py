@@ -396,23 +396,6 @@ class NewReportForm(forms.Form):
 
         return cleaned_data
 
-    def _get_report_description(self):
-        """Build the final report description from wizard fields.
-
-        Returns:
-            str: Combined description text.
-        """
-        find_description = self.cleaned_data.get('find_description', '')
-        identification_process = self.cleaned_data.get('identification_process')
-        if identification_process and find_description:
-            return (
-                f"{find_description}\n\n"
-                f"Identification process: {identification_process}"
-            )
-        if identification_process:
-            return f"Identification process: {identification_process}"
-        return find_description
-
     def _get_report_point(self):
         """Create a WGS84 point from cleaned latitude and longitude values.
 
@@ -455,7 +438,8 @@ class NewReportForm(forms.Form):
         report = Report(
             reported_category=self.cleaned_data['category'],
             reported_species=self.cleaned_data.get('species'),
-            description=self._get_report_description(),
+            description=self.cleaned_data.get('find_description'),
+            identification_process=self.cleaned_data.get('identification_process'),
             location=self.cleaned_data.get('location_description'),
             point=point,
             has_specimen=False,

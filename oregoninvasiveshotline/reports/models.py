@@ -34,6 +34,7 @@ class Report(models.Model):
     reported_species = models.ForeignKey("species.Species", null=True, default=None, related_name="+", on_delete=models.SET_NULL)
 
     description = models.TextField(verbose_name="Please provide a description of your find")
+    identification_process = models.TextField(null=True)
     location = models.TextField(
         verbose_name="Please provide a description of the area where species was found",
         help_text="""

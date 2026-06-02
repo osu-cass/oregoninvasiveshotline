@@ -44,13 +44,13 @@ class SuppressPostSaveMixin:
     @classmethod
     def setUpClass(cls):
     		# Super class comes from tests, which is passed in but not available to static code analysis
-        super().setUpClass()  # pyright: ignore 
+        super().setUpClass()  # pyright: ignore
         post_save.disconnect(receiver__generate_icon, sender=Report)
 
     @classmethod
     def tearDownClass(cls):
   			# Super class comes from tests, which is passed in but not available to static code analysis
-        super().tearDownClass()  # pyright: ignore 
+        super().tearDownClass()  # pyright: ignore
         post_save.connect(receiver__generate_icon, sender=Report)
 
 
@@ -1024,7 +1024,7 @@ class UnclaimViewTest(TestCase, UserMixin):
 
         response = self.client.get(reverse("reports-unclaim", args=[report.pk]))
         self.assertEqual(response.status_code, 403)
-        
+
         # Self and report is not typed properly, so self.user/report.claimed_by is not typed properly
         report.claimed_by = self.user  # pyright: ignore
         report.save()
