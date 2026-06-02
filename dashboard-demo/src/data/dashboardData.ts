@@ -100,6 +100,8 @@ export interface MetricCardData {
   delta?: string;
   /** Visual tone for the delta. */
   tone?: "neutral" | "good" | "warning";
+  /** Small trend values shown inside operational cards. */
+  trend?: number[];
 }
 
 export interface CategoryDatum {
@@ -248,9 +250,9 @@ export function getStageLabel(stage: ReportStage | "all"): string {
   return labels[stage];
 }
 
-/** Generates a fake but coherent report dataset for the current reload. */
+/** Generates a stable fake but coherent report dataset. */
 export function createGeneratedReports(): HotlineReport[] {
-  return generateReports();
+  return generateReports(createSeededRandom(20260529));
 }
 
 /** Returns the display label for a date range key. */
@@ -285,21 +287,21 @@ export function getReportStage(report: HotlineReport): ReportStage {
   return "unclaimed";
 }
 
-function generateReports(): HotlineReport[] {
-  const reportCount = 185 + randomInt(0, 34);
+function generateReports(random: () => number): HotlineReport[] {
+  const reportCount = 206;
 
   return Array.from({ length: reportCount }, (_, index) => {
-    const submittedAt = daysAgo(randomInt(0, 220));
-    const category = pick(categories);
-    const wasClaimed = Math.random() > 0.16;
-    const wasResponded = wasClaimed && Math.random() > 0.28;
-    const wasConfirmed = wasResponded && Math.random() > 0.62;
-    const claimedAt = wasClaimed ? addDays(submittedAt, randomInt(0, 8)) : null;
+    const submittedAt = daysAgo(randomInt(random, 0, 220));
+    const category = pick(categories, random);
+    const wasClaimed = random() > 0.15;
+    const wasResponded = wasClaimed && random() > 0.31;
+    const wasConfirmed = wasResponded && random() > 0.64;
+    const claimedAt = wasClaimed ? addDays(submittedAt, randomInt(random, 0, 8)) : null;
     const respondedAt =
-      wasResponded && claimedAt ? addDays(claimedAt, randomInt(1, 18)) : null;
+      wasResponded && claimedAt ? addDays(claimedAt, randomInt(random, 1, 18)) : null;
     const confirmedAt =
-      wasConfirmed && respondedAt ? addDays(respondedAt, randomInt(0, 9)) : null;
-    const reportedSpecies = pick(reportedSpeciesByCategory[category]);
+      wasConfirmed && respondedAt ? addDays(respondedAt, randomInt(random, 0, 9)) : null;
+    const reportedSpecies = pick(reportedSpeciesByCategory[category], random);
 
     return {
       id: `2026-${String(index + 221).padStart(4, "0")}`,
@@ -307,13 +309,13 @@ function generateReports(): HotlineReport[] {
       claimedAt,
       respondedAt,
       confirmedAt,
-      claimant: wasClaimed ? pick(claimants) : null,
-      county: pickWeightedCounty(),
+      claimant: wasClaimed ? pick(claimants, random) : null,
+      county: pickWeightedCounty(random),
       category,
       reportedSpecies,
       actualSpecies: confirmedAt ? reportedSpecies : null,
-      flagged: Math.random() > 0.9,
-      public: Math.random() > 0.38,
+      flagged: random() > 0.91,
+      public: random() > 0.38,
     };
   });
 }
@@ -374,22 +376,22 @@ function createMetrics(reports: HotlineReport[]): MetricCardData[] {
   const needsResponse = reports.filter(
     (report) => report.claimedAt && !report.respondedAt,
   );
-  const flagged = reports.filter((report) => report.flagged);
-
   return [
     {
       label: "Needs response",
       value: String(needsResponse.length),
-      detail: "Claimed but not archived",
+      detail: "vs threshold",
       delta: `${needsResponse.filter((report) => ageInDays(report.submittedAt) > 7).length} over threshold`,
       tone: "warning",
+      trend: createRecentStageTrend(needsResponse),
     },
     {
       label: "Unclaimed",
       value: String(unclaimed.length),
-      detail: oldestDetail(unclaimed),
+      detail: oldestDetail(unclaimed).replace("Oldest is ", "oldest "),
       delta: `${unclaimed.filter((report) => ageInDays(report.submittedAt) > 2).length} over threshold`,
       tone: "warning",
+      trend: createRecentStageTrend(unclaimed),
     },
     {
       label: "Median time to claim",
@@ -399,7 +401,6 @@ function createMetrics(reports: HotlineReport[]): MetricCardData[] {
         ),
       ).toFixed(1)}d`,
       detail: "Generated from claimed reports",
-      delta: "Computed on reload",
       tone: "good",
     },
     {
@@ -412,13 +413,7 @@ function createMetrics(reports: HotlineReport[]): MetricCardData[] {
         ),
       ).toFixed(1)}d`,
       detail: "Archived response time",
-      delta: "Computed on reload",
       tone: "neutral",
-    },
-    {
-      label: "Flagged",
-      value: String(flagged.length),
-      detail: "Important reports",
     },
   ];
 }
@@ -430,14 +425,14 @@ function createGroups(reports: HotlineReport[]): StatusGroup[] {
       description: "Created but not assigned.",
       stage: "unclaimed",
       threshold: "Warn after 2 days",
-      defaultOpen: false,
+      defaultOpen: true,
     },
     {
       title: "Claimed, needs response",
       description: "Claimed reports that are not archived.",
       stage: "claimed_needs_response",
       threshold: "Warn after 7 days",
-      defaultOpen: false,
+      defaultOpen: true,
     },
     {
       title: "Responded",
@@ -449,7 +444,7 @@ function createGroups(reports: HotlineReport[]): StatusGroup[] {
       title: "Confirmed",
       description: "Responded reports with confirmed species.",
       stage: "confirmed",
-      defaultOpen: false,
+      defaultOpen: true,
     },
     {
       title: "Flagged reports",
@@ -487,6 +482,23 @@ function createSubmissionsByWeek(reports: HotlineReport[]): [number, number][] {
   }
 
   return Array.from(buckets.entries()).sort((a, b) => a[0] - b[0]);
+}
+
+function createRecentStageTrend(reports: HotlineReport[]): number[] {
+  const buckets = Array.from({ length: 8 }, () => 0);
+  const start = startOfWeek(daysAgo(56));
+
+  for (const report of reports) {
+    const weekIndex = Math.floor(
+      daysBetween(start, startOfWeek(report.submittedAt)) / 7,
+    );
+
+    if (weekIndex >= 0 && weekIndex < buckets.length) {
+      buckets[weekIndex] += 1;
+    }
+  }
+
+  return buckets;
 }
 
 function createClaimTimeByMonth(
@@ -620,11 +632,11 @@ function formatDate(date: Date): string {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-function pick<T>(items: readonly T[]): T {
-  return items[randomInt(0, items.length - 1)];
+function pick<T>(items: readonly T[], random: () => number): T {
+  return items[randomInt(random, 0, items.length - 1)];
 }
 
-function pickWeightedCounty(): string {
+function pickWeightedCounty(random: () => number): string {
   const weighted = [
     "Lane",
     "Lane",
@@ -637,9 +649,18 @@ function pickWeightedCounty(): string {
     "Jackson",
     ...counties,
   ];
-  return pick(weighted);
+  return pick(weighted, random);
 }
 
-function randomInt(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+function randomInt(random: () => number, min: number, max: number): number {
+  return Math.floor(random() * (max - min + 1)) + min;
+}
+
+function createSeededRandom(seed: number): () => number {
+  let state = seed >>> 0;
+
+  return () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
 }

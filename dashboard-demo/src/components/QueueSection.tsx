@@ -45,13 +45,15 @@ export function QueueSection({ group, rowsPerGroup }: QueueSectionProps) {
             <Icon aria-hidden="true" size={17} />
           </span>
           <div>
-            <h3>{group.title}</h3>
+            <h3>
+              {group.title}
+              <span className="section-count">{group.count}</span>
+            </h3>
             <p>{group.description}</p>
           </div>
         </div>
         <div className="section-meta">
           {group.threshold ? <Badge variant="warning">{group.threshold}</Badge> : null}
-          <span>{group.count} reports</span>
           <span>Oldest {group.oldestAge}</span>
         </div>
       </Collapsible.Trigger>

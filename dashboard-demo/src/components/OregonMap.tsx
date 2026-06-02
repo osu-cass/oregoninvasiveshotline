@@ -1,5 +1,5 @@
 import { geoMercator, geoPath } from "d3-geo";
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import type { CountyDatum } from "../data/dashboardData";
 import { oregonCounties } from "../data/oregonCounties";
 
@@ -14,14 +14,21 @@ const height = 210;
 /** Renders a real Oregon county map from US Atlas county geometry. */
 export function OregonMap({ countyLoad }: OregonMapProps) {
   const [hoveredCounty, setHoveredCounty] = useState<CountyDatum | null>(null);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const countyValues = new Map(
     countyLoad.map((county) => [county.county, county.value]),
   );
   const maxValue = Math.max(...countyLoad.map((county) => county.value), 1);
   const projection = geoMercator().fitSize([width, height], oregonCounties);
   const path = geoPath(projection);
-  const fallbackCounty = countyLoad[0] ?? { county: "Oregon", value: 0 };
-  const activeCounty = hoveredCounty ?? fallbackCounty;
+
+  const handleMouseMove = (event: MouseEvent<SVGSVGElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setTooltipPosition({
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    });
+  };
 
   return (
     <div className="map-shell">
@@ -31,6 +38,7 @@ export function OregonMap({ countyLoad }: OregonMapProps) {
         role="img"
         aria-label="Oregon county workload map"
         onMouseLeave={() => setHoveredCounty(null)}
+        onMouseMove={handleMouseMove}
       >
         {oregonCounties.features.map((county) => {
           const name = county.properties.name ?? "";
@@ -51,11 +59,19 @@ export function OregonMap({ countyLoad }: OregonMapProps) {
           );
         })}
       </svg>
-      <div className="map-readout">
-        <span>{hoveredCounty ? "County" : "Top county"}</span>
-        <strong>{activeCounty.county}</strong>
-        <em>{activeCounty.value} reports</em>
-      </div>
+      {hoveredCounty ? (
+        <div
+          className="map-readout"
+          style={{
+            left: tooltipPosition.x,
+            top: tooltipPosition.y,
+          }}
+        >
+          <span>County</span>
+          <strong>{hoveredCounty.county}</strong>
+          <em>{hoveredCounty.value} reports</em>
+        </div>
+      ) : null}
     </div>
   );
 }

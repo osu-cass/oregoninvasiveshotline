@@ -81,7 +81,6 @@ export function HeaderControls({
   return (
     <header className="page-header">
       <div>
-        <p className="eyebrow">Private Hotline</p>
         <h1>Report Operations</h1>
         <p className="page-subtitle">
           A client demo for seeing where reports are waiting and how the
