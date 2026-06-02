@@ -43,13 +43,13 @@ class SuppressPostSaveMixin:
 
     @classmethod
     def setUpClass(cls):
-    		# Super class comes from tests, which is passed in but not available to static code analysis
+        # Super class comes from tests, which is passed in but not available to static code analysis
         super().setUpClass()  # pyright: ignore
         post_save.disconnect(receiver__generate_icon, sender=Report)
 
     @classmethod
     def tearDownClass(cls):
-  			# Super class comes from tests, which is passed in but not available to static code analysis
+        # Super class comes from tests, which is passed in but not available to static code analysis
         super().tearDownClass()  # pyright: ignore
         post_save.connect(receiver__generate_icon, sender=Report)
 
@@ -783,12 +783,21 @@ class NewReportFormTest(TransactionTestCase):
         })
         self.assertTrue(form.is_valid())
 
+        with (
+            patch("oregoninvasiveshotline.reports.forms.notify_report_submission.delay"),
+            patch("oregoninvasiveshotline.reports.forms.notify_report_subscribers.delay"),
+        ):
+            report = form.save()
+
+        self.assertEqual(report.identification_process, "")
+
     def test_save_maps_wizard_fields(self):
         """Ensure wizard fields are persisted to report and follow-up comment records."""
         category = make(Category)
         form = NewReportForm({
             "find_description": "Leafy plant with white flowers",
             "category": category.pk,
+            "identification_process": "Compared leaves and flower clusters with a field guide",
             "location_description": "Along roadside ditch",
             "latitude": 44.0521,
             "longitude": -123.0867,
@@ -806,6 +815,10 @@ class NewReportFormTest(TransactionTestCase):
             report = form.save()
 
         self.assertEqual(report.description, "Leafy plant with white flowers")
+        self.assertEqual(
+            report.identification_process,
+            "Compared leaves and flower clusters with a field guide",
+        )
         self.assertEqual(
             report.location,
             "Along roadside ditch",

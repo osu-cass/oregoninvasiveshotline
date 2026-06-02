@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='report',
             name='identification_process',
-            field=models.TextField(null=True),
+            field=models.TextField(null=True, blank=True),
         ),
     ]
