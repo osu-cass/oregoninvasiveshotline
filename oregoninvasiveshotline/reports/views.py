@@ -393,9 +393,9 @@ def create_new(request: HttpRequest):
                 return inertia_location(f"/reports/detail/{report.pk}")
 
         props["errors"] = form.errors
-    
+
     categories = Category.objects.prefetch_related("species").all()
-    
+
     props["categories"] = [
     	{
         	"category_id": category.category_id,
@@ -410,15 +410,15 @@ def create_new(request: HttpRequest):
                     "identification_external_resource_link": species.identification_external_resource_link
                 } for species in category.species.all()
             ]
-        } 
+        }
      for category in categories
     ]
 
     props["google_api_key"] = settings.GOOGLE_API_KEY
     props["google_map_id"] = settings.GOOGLE_MAP_ID
-    
+
     user = request.user
-    
+
     props["user"] = {
         "email": user.email,
         "first_name": user.first_name,

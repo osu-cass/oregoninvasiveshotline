@@ -6,10 +6,6 @@ interface LayoutProps {
 }
 
 /** Root layout wrapper, used by Inertia's resolve callback. */
-const Layout = ({ children }: LayoutProps) => (
-	<>
-		<div>{children}</div>
-	</>
-);
+const Layout = ({ children }: LayoutProps) => <>{children}</>;
 
 export default (page: ReactNode) => <Layout>{page}</Layout>;

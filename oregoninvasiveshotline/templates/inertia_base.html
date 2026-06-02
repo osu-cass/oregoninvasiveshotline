@@ -21,8 +21,10 @@
         {% include '_navbar.html' %}
         
         <!-- Unsure why but bootstrap flex doesn't seem to be working -->
-        <main style="flex-grow: 1;" class="{% block main_class %}container{% endblock %} rounded-top pt-3">
-        	{% block inertia %}{% endblock %}
+        <main style="flex-grow: 1;" class="{% block main_class %}d-flex flex-column p-0 bg-hotline-green{% endblock %}">
+            <div class="d-flex flex-column flex-grow-1">
+        	    {% block inertia %}{% endblock %}
+            </div>
         </main>
             
         {% include '_footer.html' %}

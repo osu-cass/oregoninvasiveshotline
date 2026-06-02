@@ -34,7 +34,7 @@ export default function StepThree({
 		Number.isNaN(lat) || Number.isNaN(lng) ? null : { lat, lng };
 
 	return (
-		<div className="row g-3 mt-1">
+		<div className="row g-3">
 			<div className="col-12">
 				{googleApiKey ? (
 					<APIProvider apiKey={googleApiKey} libraries={["places"]}>
