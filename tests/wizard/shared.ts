@@ -41,77 +41,20 @@ export const TEST_COORDS = {
 };
 
 /**
- * Mocks successful browser geolocation before the page loads.
- * @param page - Playwright page instance.
- */
-export async function mockCurrentLocationSuccess(
-	page: Page,
-	coords = TEST_COORDS,
-) {
-	await page.addInitScript(
-		(mockCoords: typeof TEST_COORDS) => {
-			const position = {
-				coords: {
-					accuracy: 10,
-					altitude: null,
-					altitudeAccuracy: null,
-					heading: null,
-					latitude: mockCoords.latitude,
-					longitude: mockCoords.longitude,
-					speed: null,
-				},
-				timestamp: Date.now(),
-			};
-
-			Object.defineProperty(navigator, "geolocation", {
-				configurable: true,
-				value: {
-					clearWatch: () => undefined,
-					getCurrentPosition: (success: PositionCallback) => {
-						queueMicrotask(() => success(position as GeolocationPosition));
-					},
-					watchPosition: (success: PositionCallback) => {
-						queueMicrotask(() => success(position as GeolocationPosition));
-						return 1;
-					},
-				},
-			});
-		},
-		coords,
-	);
-}
-
-/**
  * Mocks failed browser geolocation before the page loads.
  * @param page - Playwright page instance.
  * @param message - Error message returned by the browser API.
  */
 export async function mockCurrentLocationFailure(page: Page, message: string) {
 	await page.addInitScript((mockMessage: string) => {
-		const error = {
-			code: 1,
-			message: mockMessage,
-			PERMISSION_DENIED: 1,
-			POSITION_UNAVAILABLE: 2,
-			TIMEOUT: 3,
-		} as GeolocationPositionError;
-
 		Object.defineProperty(navigator, "geolocation", {
 			configurable: true,
 			value: {
-				clearWatch: () => undefined,
 				getCurrentPosition: (
-					_success: PositionCallback,
-					failure?: PositionErrorCallback | null,
+					_success: () => void,
+					failure?: (error: { code: number; message: string }) => void,
 				) => {
-					queueMicrotask(() => failure?.(error));
-				},
-				watchPosition: (
-					_success: PositionCallback,
-					failure?: PositionErrorCallback | null,
-				) => {
-					queueMicrotask(() => failure?.(error));
-					return 1;
+					queueMicrotask(() => failure?.({ code: 1, message: mockMessage }));
 				},
 			},
 		});

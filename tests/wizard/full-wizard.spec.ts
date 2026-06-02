@@ -2,20 +2,22 @@ import { expect, test } from "@playwright/test";
 import {
 	expectProgress,
 	fillStepOne,
-	mockCurrentLocationSuccess,
 	openWizard,
 	selectFirstComboboxOption,
 	TEST_COORDS,
 	TEST_IMAGE_PATH,
 } from "./shared";
 
+test.use({
+	geolocation: TEST_COORDS,
+	permissions: ["geolocation"],
+});
+
 test.describe("report wizard", () => {
 	test("completes the full wizard with strong field and button assertions", async ({
 		page,
 	}) => {
 		const wizard = page.getByRole("main");
-
-		await mockCurrentLocationSuccess(page);
 
 		await test.step("shows the full initial step 1 state", async () => {
 			await openWizard(page);

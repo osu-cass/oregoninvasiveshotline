@@ -2,7 +2,6 @@ import { expect, test } from "@playwright/test";
 import {
 	expectProgress,
 	fillStepOne,
-	mockCurrentLocationSuccess,
 	openWizard,
 	selectFirstComboboxOption,
 	TEST_COORDS,
@@ -10,11 +9,15 @@ import {
 	TEST_IMAGE_DSCN0042,
 } from "./shared";
 
+test.use({
+	geolocation: TEST_COORDS,
+	permissions: ["geolocation"],
+});
+
 test.describe("report wizard", () => {
 	test("uses photo EXIF data for the initial location", async ({ page }) => {
 		const wizard = page.getByRole("main");
 
-		await mockCurrentLocationSuccess(page);
 		await openWizard(page);
 		await page
 			.locator("#file-drop-input")
@@ -76,7 +79,6 @@ test.describe("report wizard", () => {
 	}) => {
 		const wizard = page.getByRole("main");
 
-		await mockCurrentLocationSuccess(page);
 		await openWizard(page);
 		await page
 			.locator("#file-drop-input")
