@@ -83,7 +83,7 @@ export default function FormWizard(props: FormWizardProps) {
 								) : (
 									<>
 										<h2 className="h6 mb-1">{currentStep.title}</h2>
-										<p className="small mb-0 text-muted">
+										<p className="small mb-2 text-muted">
 											{currentStep.description}
 										</p>
 
