@@ -39,7 +39,7 @@ env = environ.Env(
     CELERY_TASK_ALWAYS_EAGER=(bool, False),
     STATIC_ROOT=(str, ''),
     MEDIA_ROOT=(str, ''),
-    STATICFILES_STORAGE=(str, 'django.contrib.staticfiles.storage.StaticFilesStorage'),
+    STATICFILES_STORAGE=(str, 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'),
     CSRF_COOKIE_SECURE=(bool, True),
     SESSION_COOKIE_SECURE=(bool, True),
     SECURE_PROXY_SSL_HEADER=(str, ''),
@@ -133,6 +133,16 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(FILE_ROOT, 'media'))  # pyright: ignore
 MEDIA_URL = '/media/'
 STATICFILES_STORAGE = env('STATICFILES_STORAGE')
+if ENV == 'test':
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": STATICFILES_STORAGE,
+    },
+}
 
 # TODO: Temporary increase to 5MB to support many file uploads (see AB#4342);
 #   need to evaluate if this can be reduced after implementing a new file upload mechanism
