@@ -9,6 +9,11 @@ import {
 	TEST_IMAGE_DSCN0042,
 } from "./shared";
 
+test.use({
+	geolocation: TEST_COORDS,
+	permissions: ["geolocation"],
+});
+
 test.describe("report wizard", () => {
 	test("uses photo EXIF data for the initial location", async ({ page }) => {
 		const wizard = page.getByRole("main");

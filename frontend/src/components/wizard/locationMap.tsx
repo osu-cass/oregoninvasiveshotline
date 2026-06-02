@@ -87,6 +87,7 @@ export default function LocationMap({
 				setLocationPlacementType(LocationPlacementType.OTHER);
 				map?.setZoom(6);
 			},
+			{ maximumAge: 0, timeout: 10_000 },
 		);
 	};
 

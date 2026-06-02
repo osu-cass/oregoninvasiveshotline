@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import {
 	expectProgress,
 	fillStepOne,
+	mockCurrentLocationFailure,
 	openWizard,
 	selectFirstComboboxOption,
 	TEST_IMAGE_DSCN0042,
@@ -10,21 +11,12 @@ import {
 test.describe("report wizard", () => {
 	test("shows a dialog when current location cannot be retrieved", async ({
 		page,
-		context,
-		browserName,
 	}) => {
 		const wizard = page.getByRole("main");
 		const locationErrorMessage =
 			"Unable to retrieve your location. Please allow location access and try again.";
 
-		// Setting geo to null only works in firefox, and clear permissions only works in Safari.
-		// (Both works in chrome)
-		if (browserName === "firefox") {
-			await context.setGeolocation(null);
-		} else {
-			await context.clearPermissions();
-		}
-
+		await mockCurrentLocationFailure(page, locationErrorMessage);
 		await openWizard(page);
 		await page
 			.locator("#file-drop-input")

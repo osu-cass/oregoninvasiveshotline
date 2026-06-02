@@ -8,6 +8,11 @@ import {
 	TEST_IMAGE_PATH,
 } from "./shared";
 
+test.use({
+	geolocation: TEST_COORDS,
+	permissions: ["geolocation"],
+});
+
 test.describe("report wizard", () => {
 	test("completes the full wizard with strong field and button assertions", async ({
 		page,

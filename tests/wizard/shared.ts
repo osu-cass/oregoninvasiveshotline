@@ -1,5 +1,7 @@
+/// <reference lib="dom" />
+
 import path from "node:path";
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 export const WIZARD_URL = "/reports/create-new";
 export const TEST_IMAGE_PATH = path.resolve(
@@ -38,10 +40,26 @@ export const TEST_COORDS = {
 	longitude: -122.676483,
 };
 
-test.use({
-	geolocation: TEST_COORDS,
-	permissions: ["geolocation"],
-});
+/**
+ * Mocks failed browser geolocation before the page loads.
+ * @param page - Playwright page instance.
+ * @param message - Error message returned by the browser API.
+ */
+export async function mockCurrentLocationFailure(page: Page, message: string) {
+	await page.addInitScript((mockMessage: string) => {
+		Object.defineProperty(navigator, "geolocation", {
+			configurable: true,
+			value: {
+				getCurrentPosition: (
+					_success: () => void,
+					failure?: (error: { code: number; message: string }) => void,
+				) => {
+					queueMicrotask(() => failure?.({ code: 1, message: mockMessage }));
+				},
+			},
+		});
+	}, message);
+}
 
 /**
  * Returns the wizard progressbar locator.
