@@ -52,10 +52,13 @@ export default function FormWizard(props: FormWizardProps) {
 
 	return (
 		<div className="report-wizard-backdrop flex-grow-1 bg-hotline-green py-4">
-			<div className="container bg-transparent flex-grow-1">
+			<div className="container flex-grow-1 bg-transparent">
 				<div className="row justify-content-center">
 					<div className="col-12 col-lg-10 col-md-12 col-xxl-7">
-						<div className="card rounded-3 shadow-md">
+						<h1 className="h3 mb-2 text-center text-white">
+							Report an Invader
+						</h1>
+						<div className="card rounded-4 shadow-md">
 							<div className="card-body p-3 p-md-4">
 								<div
 									className="progress mb-4"
@@ -79,6 +82,11 @@ export default function FormWizard(props: FormWizardProps) {
 									</div>
 								) : (
 									<>
+										<h2 className="h6 mb-1">{currentStep.title}</h2>
+										<p className="small mb-0 text-muted">
+											{currentStep.description}
+										</p>
+
 										{step === 0 && (
 											<StepOne
 												form={form}
@@ -178,7 +186,7 @@ export default function FormWizard(props: FormWizardProps) {
 								{import.meta.env.DEV &&
 									Boolean(
 										Object.entries(form.errors).filter(
-										// @ts-expect-error
+											// @ts-expect-error
 											([k]) => !allFields.includes(k),
 										).length,
 									) && (
