@@ -29,7 +29,7 @@ PHONE_VALIDATION_ERROR = (
     "Enter a phone number with at least 10 digits. You may use spaces, parentheses, "
     "hyphens, periods, plus signs, or an extension."
 )
-PHONE_ALLOWED_CHARACTERS = set("0123456789 \t\r\n()+.-")
+PHONE_ALLOWED_CHARACTERS = set("0123456789 ()+.-")
 PHONE_EXTENSION_MARKERS = ("extension", "ext.", "ext", "x")
 
 
