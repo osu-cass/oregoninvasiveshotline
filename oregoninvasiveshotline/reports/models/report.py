@@ -1,19 +1,19 @@
-import posixpath
 import logging
 import os
+import posixpath
 
-from django.dispatch import receiver
+from django.conf import settings
 from django.contrib.gis.db import models
 from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.urls import reverse
-from django.conf import settings
 
+from oregoninvasiveshotline.counties.models import County
+from oregoninvasiveshotline.images.models import Image
+from oregoninvasiveshotline.reports.utils import generate_icon, icon_file_name
 from oregoninvasiveshotline.utils.images import generate_thumbnail
 from oregoninvasiveshotline.visibility import Visibility
-from oregoninvasiveshotline.images.models import Image
-from oregoninvasiveshotline.counties.models import County
 
-from .utils import generate_icon, icon_file_name
 
 log = logging.getLogger(__name__)
 
@@ -189,21 +189,3 @@ def receiver__generate_icon(sender, instance, **kwargs):
     Create or update icon for Report on save.
     """
     instance.generate_icon()
-
-
-class Invite(models.Model):
-    """An invitation to review a report.
-
-    Arbitrary people can be invited (via email) to review and leave
-    comments on a report.
-    """
-    class Meta:
-        db_table = 'invite'
-
-    invite_id = models.AutoField(primary_key=True)
-    created_by = models.ForeignKey('users.User', related_name='+', on_delete=models.CASCADE)
-    created_on = models.DateTimeField(auto_now_add=True)
-    report = models.ForeignKey(Report, on_delete=models.CASCADE)
-
-    # The invitee
-    user = models.ForeignKey('users.User', related_name='invites', on_delete=models.CASCADE)
