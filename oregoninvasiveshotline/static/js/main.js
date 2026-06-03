@@ -44,6 +44,61 @@ $(document).ready(function(){
     $('.nav-tabs a:first, .nav-tabs a[href="' + Cookies.get('tab') + '"]').click();
 });
 
+/**
+ * Handles CSP-safe click actions declared with data attributes.
+ *
+ * @param {MouseEvent} event
+ */
+function handleTemplateActionClick(event) {
+    const target = event.target;
+
+    if (!(target instanceof Element)) {
+        return;
+    }
+
+    const historyBack = target.closest("[data-history-back]");
+    if (historyBack) {
+        event.preventDefault();
+        window.history.go(-1);
+        return;
+    }
+
+    const confirmAction = target.closest("[data-confirm]");
+    if (confirmAction) {
+        const message = confirmAction.getAttribute("data-confirm");
+        if (message && !window.confirm(message)) {
+            event.preventDefault();
+        }
+    }
+}
+
+/**
+ * Handles multiple-checkbox group toggles declared by templates.
+ *
+ * @param {Event} event
+ */
+function handleTemplateActionChange(event) {
+    const target = event.target;
+
+    if (!(target instanceof HTMLInputElement) || !target.matches("[data-check-all]")) {
+        return;
+    }
+
+    const checkboxGroup = target.closest(".multiple-checkbox");
+    if (!checkboxGroup) {
+        return;
+    }
+
+    checkboxGroup.querySelectorAll('input[type="checkbox"]:not([data-check-all])').forEach(function(input) {
+        if (input instanceof HTMLInputElement) {
+            input.checked = target.checked;
+        }
+    });
+}
+
+document.addEventListener("click", handleTemplateActionClick);
+document.addEventListener("change", handleTemplateActionChange);
+
 /* This exists solely to avoid duplicating the icon dimension information
  * everywhere. If you are to change this make sure you update
  * `oregoninvasiveshotline/reports/views.py:icon`
