@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   createDashboardDataset,
   createDefaultFilters,
   createGeneratedReports,
   type DashboardFilters,
-  type DateRangeKey,
 } from "../data/dashboardData";
+import {
+  loadDashboardState,
+  saveDashboardState,
+  type DashboardSettings,
+} from "../data/dashboardSettings";
 import { HeaderControls } from "./HeaderControls";
 import { InsightsSection } from "./InsightsSection";
 import { MetricsGrid } from "./MetricsGrid";
@@ -13,50 +17,56 @@ import { QueueList } from "./QueueList";
 
 /** Renders the standalone dashboard demo shell. */
 export default function DashboardShell() {
-  const [dateRange, setDateRange] = useState<DateRangeKey>("last-90");
-  const [groupedByStatus, setGroupedByStatus] = useState(true);
-  const [showTrends, setShowTrends] = useState(true);
-  const [showMap, setShowMap] = useState(true);
-  const [rowsPerGroup, setRowsPerGroup] = useState(5);
+  const [storedState] = useState(() => loadDashboardState());
+  const [settings, setSettings] = useState<DashboardSettings>(
+    storedState.settings,
+  );
   const [filters, setFilters] = useState<DashboardFilters>(() =>
-    createDefaultFilters(),
+    storedState.filters,
   );
   const [sourceReports] = useState(() => createGeneratedReports());
-  const dataset = createDashboardDataset(sourceReports, dateRange, filters);
+  const dataset = createDashboardDataset(sourceReports, settings.dateRange, filters, {
+    responseDays: 7,
+    unclaimedDays: settings.unclaimedWarningDays,
+  });
+  const showInsights = settings.insightDisplay === "all";
+
+  useEffect(() => {
+    saveDashboardState({ filters, settings });
+  }, [filters, settings]);
+
+  const updateSettings = (nextSettings: Partial<DashboardSettings>) => {
+    setSettings((currentSettings) => ({
+      ...currentSettings,
+      ...nextSettings,
+    }));
+  };
 
   return (
     <main className="dashboard-shell">
       <HeaderControls
-        dateRange={dateRange}
         filters={filters}
-        groupedByStatus={groupedByStatus}
-        rowsPerGroup={rowsPerGroup}
-        showMap={showMap}
-        showTrends={showTrends}
-        onDateRangeChange={setDateRange}
+        settings={settings}
         onFiltersChange={setFilters}
-        onGroupedByStatusChange={setGroupedByStatus}
         onResetFilters={() => setFilters(createDefaultFilters())}
-        onRowsPerGroupChange={setRowsPerGroup}
-        onShowMapChange={setShowMap}
-        onShowTrendsChange={setShowTrends}
+        onSettingsChange={updateSettings}
       />
-      <MetricsGrid metrics={dataset.metrics} />
-      {showTrends || showMap ? (
+      {settings.showMetricCards ? <MetricsGrid metrics={dataset.metrics} /> : null}
+      {showInsights ? (
         <InsightsSection
           categoryMix={dataset.categoryMix}
           claimTimeByMonth={dataset.claimTimeByMonth}
           countyLoad={dataset.countyLoad}
-          showMap={showMap}
-          showTrends={showTrends}
+          showMap={true}
+          showTrends={true}
           submissionsByWeek={dataset.submissionsByWeek}
         />
       ) : null}
       <QueueList
-        groupedByStatus={groupedByStatus}
+        groupedByStatus={settings.groupedByStatus}
         groups={dataset.groups}
         rows={dataset.tableRows}
-        rowsPerGroup={rowsPerGroup}
+        rowsPerGroup={settings.rowsPerGroup}
       />
     </main>
   );

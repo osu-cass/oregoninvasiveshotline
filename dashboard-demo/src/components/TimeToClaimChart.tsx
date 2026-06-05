@@ -19,7 +19,6 @@ export function TimeToClaimChart({ data }: TimeToClaimChartProps) {
     <article className="insight-panel">
       <div className="panel-heading">
         <h2>Median time to claim</h2>
-        <span>Days by month</span>
       </div>
       <Chart
         echarts={echarts}

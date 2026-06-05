@@ -25,7 +25,6 @@ export function VolumeChart({ data }: VolumeChartProps) {
     <article className="insight-panel wide">
       <div className="panel-heading">
         <h2>Submissions over time</h2>
-        <span>Weekly reports</span>
       </div>
       <Chart
         echarts={echarts}

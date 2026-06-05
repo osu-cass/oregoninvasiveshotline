@@ -6,7 +6,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { MetricCardData } from "../data/dashboardData";
-import { MetricSparkline } from "./MetricSparkline";
+import { MetricTrendChart } from "./MetricTrendChart";
 
 interface MetricCardProps {
   /** Metric data to render. */
@@ -26,24 +26,26 @@ export function MetricCard({ metric }: MetricCardProps) {
 
   return (
     <article className={metric.trend ? "metric-card has-trend" : "metric-card"}>
-      <div className="metric-top">
-        <span className="metric-icon">
-          <Icon aria-hidden="true" size={22} />
-        </span>
-        <div className="metric-copy">
-          <div className="metric-label">{metric.label}</div>
-          <div className="metric-value">{metric.value}</div>
+      <div className="metric-card-header">
+        <div className="metric-top">
+          <span className="metric-icon">
+            <Icon aria-hidden="true" size={20} strokeWidth={2.15} />
+          </span>
+          <div className="metric-copy">
+            <div className="metric-label">{metric.label}</div>
+            <div className="metric-value">{metric.value}</div>
+            {metric.detail ? <div className="metric-detail">{metric.detail}</div> : null}
+          </div>
         </div>
-      </div>
-      <div className="metric-comparison">
         {metric.delta ? (
           <span className={`metric-delta metric-delta-${metric.tone ?? "neutral"}`}>
             {metric.delta}
           </span>
         ) : null}
-        <span>{metric.detail}</span>
       </div>
-      {metric.trend ? <MetricSparkline values={metric.trend} /> : null}
+      {metric.trend ? (
+        <MetricTrendChart unit={metric.trendUnit} values={metric.trend} />
+      ) : null}
     </article>
   );
 }

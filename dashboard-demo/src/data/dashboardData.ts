@@ -1,5 +1,7 @@
 export type DateRangeKey = "last-30" | "last-90" | "ytd" | "all";
 
+export type StateKey = "oregon" | "washington";
+
 export type ReportStage =
   | "unclaimed"
   | "claimed_needs_response"
@@ -12,14 +14,12 @@ export type ReportCategory = (typeof categories)[number];
 export interface DashboardFilters {
   /** Workflow stage to include, or all stages. */
   stage: ReportStage | "all";
-  /** County to include, or all counties. */
-  county: string | "all";
+  /** County keys to include; empty includes all counties. */
+  counties: string[];
   /** Report category to include, or all categories. */
   category: ReportCategory | "all";
   /** Claimant to include, or all claimants. */
   claimant: string | "all";
-  /** Whether to show only flagged reports. */
-  flaggedOnly: boolean;
   /** Whether to show only public reports. */
   publicOnly: boolean;
 }
@@ -39,6 +39,10 @@ export interface HotlineReport {
   claimant: string | null;
   /** Oregon county name. */
   county: string;
+  /** State that owns the report county. */
+  state: StateKey;
+  /** Stable state/county filter key. */
+  countyKey: string;
   /** Reported category. */
   category: string;
   /** Reported species display name. */
@@ -56,18 +60,28 @@ export interface ReportRow {
   id: string;
   /** Date the public report was submitted. */
   submitted: string;
+  /** Numeric submitted date for table sorting. */
+  submittedTime: number;
   /** Human-readable age in the current dashboard window. */
   age: string;
+  /** Numeric report age for table sorting. */
+  ageDays: number;
   /** Optional assignee name for claimed reports. */
   claimedBy: string;
   /** Oregon county name for grouping and filtering. */
   county: string;
+  /** State abbreviation for display. */
+  state: string;
   /** Publicly reported category. */
   category: string;
   /** Recent operational note shown in the queue. */
   lastAction: string;
   /** Demo workflow bucket. */
   status: ReportStage;
+  /** Demo reviewer email used by row actions. */
+  reviewerEmail: string;
+  /** Demo issue URL opened by row actions. */
+  issueUrl: string;
 }
 
 export interface StatusGroup {
@@ -95,13 +109,15 @@ export interface MetricCardData {
   /** Primary value. */
   value: string;
   /** Supporting context. */
-  detail: string;
+  detail?: string;
   /** Optional change indicator. */
   delta?: string;
   /** Visual tone for the delta. */
   tone?: "neutral" | "good" | "warning";
   /** Small trend values shown inside operational cards. */
   trend?: number[];
+  /** Unit suffix for chart axis labels. */
+  trendUnit?: string;
 }
 
 export interface CategoryDatum {
@@ -112,8 +128,12 @@ export interface CategoryDatum {
 }
 
 export interface CountyDatum {
-  /** Oregon county name. */
+  /** County name. */
   county: string;
+  /** Stable state/county filter key. */
+  countyKey: string;
+  /** Owning state. */
+  state: StateKey;
   /** Count in the selected range. */
   value: number;
 }
@@ -135,6 +155,13 @@ export interface DashboardDataset {
   countyLoad: CountyDatum[];
   /** Flat report rows for ungrouped display. */
   tableRows: ReportRow[];
+}
+
+export interface WarningThresholds {
+  /** Days before unclaimed reports are warning-worthy. */
+  unclaimedDays: number;
+  /** Days before claimed reports need response follow-up. */
+  responseDays: number;
 }
 
 export const counties = [
@@ -167,6 +194,61 @@ export const counties = [
   "Yamhill",
 ] as const;
 
+export const washingtonCounties = [
+  "Adams",
+  "Asotin",
+  "Benton",
+  "Chelan",
+  "Clallam",
+  "Clark",
+  "Columbia",
+  "Cowlitz",
+  "Douglas",
+  "Ferry",
+  "Franklin",
+  "Garfield",
+  "Grant",
+  "Grays Harbor",
+  "Island",
+  "Jefferson",
+  "King",
+  "Kitsap",
+  "Kittitas",
+  "Klickitat",
+  "Lewis",
+  "Lincoln",
+  "Mason",
+  "Okanogan",
+  "Pacific",
+  "Pend Oreille",
+  "Pierce",
+  "San Juan",
+  "Skagit",
+  "Skamania",
+  "Snohomish",
+  "Spokane",
+  "Stevens",
+  "Thurston",
+  "Wahkiakum",
+  "Walla Walla",
+  "Whatcom",
+  "Whitman",
+  "Yakima",
+] as const;
+
+export const countyGroups = [
+  {
+    label: "Oregon",
+    state: "oregon",
+    counties,
+  },
+  {
+    label: "Washington",
+    state: "washington",
+    counties: washingtonCounties,
+  },
+] as const;
+
 export const categories = ["Plant", "Insect", "Aquatic", "Mollusk", "Pathogen"] as const;
 
 const reportedSpeciesByCategory = {
@@ -187,13 +269,17 @@ export const claimants = [
   "R. Kim",
 ] as const;
 
-const now = new Date("2026-05-29T12:00:00-07:00");
+const now = getDemoNow();
 
 /** Creates a generated dashboard dataset for a selected range. */
 export function createDashboardDataset(
   sourceReports: HotlineReport[],
   range: DateRangeKey,
   filters: DashboardFilters,
+  thresholds: WarningThresholds = {
+    responseDays: 7,
+    unclaimedDays: 2,
+  },
 ): DashboardDataset {
   const reports = filterReports(filterReportsByRange(sourceReports, range), filters);
   const tableRows = reports
@@ -203,8 +289,8 @@ export function createDashboardDataset(
 
   return {
     reports,
-    metrics: createMetrics(reports),
-    groups: createGroups(reports),
+    metrics: createMetrics(reports, thresholds),
+    groups: createGroups(reports, thresholds),
     submissionsByWeek: createSubmissionsByWeek(reports),
     claimTimeByMonth: createClaimTimeByMonth(reports),
     categoryMix: createCategoryMix(reports),
@@ -217,10 +303,9 @@ export function createDashboardDataset(
 export function createDefaultFilters(): DashboardFilters {
   return {
     stage: "all",
-    county: "all",
+    counties: [],
     category: "all",
     claimant: "all",
-    flaggedOnly: false,
     publicOnly: false,
   };
 }
@@ -229,10 +314,9 @@ export function createDefaultFilters(): DashboardFilters {
 export function hasActiveFilters(filters: DashboardFilters): boolean {
   return (
     filters.stage !== "all" ||
-    filters.county !== "all" ||
+    filters.counties.length > 0 ||
     filters.category !== "all" ||
     filters.claimant !== "all" ||
-    filters.flaggedOnly ||
     filters.publicOnly
   );
 }
@@ -288,20 +372,28 @@ export function getReportStage(report: HotlineReport): ReportStage {
 }
 
 function generateReports(random: () => number): HotlineReport[] {
-  const reportCount = 206;
+  const reportCount = 103;
 
   return Array.from({ length: reportCount }, (_, index) => {
-    const submittedAt = daysAgo(randomInt(random, 0, 220));
     const category = pick(categories, random);
-    const wasClaimed = random() > 0.15;
-    const wasResponded = wasClaimed && random() > 0.31;
-    const wasConfirmed = wasResponded && random() > 0.64;
-    const claimedAt = wasClaimed ? addDays(submittedAt, randomInt(random, 0, 8)) : null;
+    const stageRoll = random();
+    const wasClaimed = stageRoll > 0.18;
+    const wasResponded = wasClaimed && stageRoll > 0.46;
+    const wasConfirmed = wasResponded && stageRoll > 0.78;
+    const submittedAt = daysAgo(
+      wasClaimed
+        ? randomInt(random, 0, 220)
+        : pick([0, 0, 1, 1, 2, 2, 3, 4, 6, 8], random),
+    );
+    const claimedAt = wasClaimed ? addDays(submittedAt, randomInt(random, 0, 5)) : null;
     const respondedAt =
-      wasResponded && claimedAt ? addDays(claimedAt, randomInt(random, 1, 18)) : null;
+      wasResponded && claimedAt ? addDays(claimedAt, randomInt(random, 1, 15)) : null;
     const confirmedAt =
       wasConfirmed && respondedAt ? addDays(respondedAt, randomInt(random, 0, 9)) : null;
     const reportedSpecies = pick(reportedSpeciesByCategory[category], random);
+
+    const state = random() > 0.24 ? "oregon" : "washington";
+    const county = pickWeightedCounty(state, random);
 
     return {
       id: `2026-${String(index + 221).padStart(4, "0")}`,
@@ -310,7 +402,9 @@ function generateReports(random: () => number): HotlineReport[] {
       respondedAt,
       confirmedAt,
       claimant: wasClaimed ? pick(claimants, random) : null,
-      county: pickWeightedCounty(random),
+      county,
+      state,
+      countyKey: createCountyKey(state, county),
       category,
       reportedSpecies,
       actualSpecies: confirmedAt ? reportedSpecies : null,
@@ -347,7 +441,10 @@ function filterReports(
       return false;
     }
 
-    if (filters.county !== "all" && report.county !== filters.county) {
+    if (
+      filters.counties.length > 0 &&
+      !filters.counties.includes(report.countyKey)
+    ) {
       return false;
     }
 
@@ -359,10 +456,6 @@ function filterReports(
       return false;
     }
 
-    if (filters.flaggedOnly && !report.flagged) {
-      return false;
-    }
-
     if (filters.publicOnly && !report.public) {
       return false;
     }
@@ -371,67 +464,73 @@ function filterReports(
   });
 }
 
-function createMetrics(reports: HotlineReport[]): MetricCardData[] {
+function createMetrics(
+  reports: HotlineReport[],
+  thresholds: WarningThresholds,
+): MetricCardData[] {
   const unclaimed = reports.filter((report) => !report.claimedAt);
   const needsResponse = reports.filter(
     (report) => report.claimedAt && !report.respondedAt,
   );
+  const claimDurations = reports.flatMap((report) =>
+    report.claimedAt ? [daysBetween(report.submittedAt, report.claimedAt)] : [],
+  );
+  const responseDurations = reports.flatMap((report) =>
+    report.claimedAt && report.respondedAt
+      ? [daysBetween(report.claimedAt, report.respondedAt)]
+      : [],
+  );
+
   return [
     {
       label: "Needs response",
       value: String(needsResponse.length),
-      detail: "vs threshold",
-      delta: `${needsResponse.filter((report) => ageInDays(report.submittedAt) > 7).length} over threshold`,
+      delta: `${needsResponse.filter((report) => getClaimAge(report) > thresholds.responseDays).length} over threshold`,
       tone: "warning",
-      trend: createRecentStageTrend(needsResponse),
+      trend: createRecentStageTrend(needsResponse, 18),
     },
     {
       label: "Unclaimed",
       value: String(unclaimed.length),
-      detail: oldestDetail(unclaimed).replace("Oldest is ", "oldest "),
-      delta: `${unclaimed.filter((report) => ageInDays(report.submittedAt) > 2).length} over threshold`,
+      delta: `${unclaimed.filter((report) => ageInDays(report.submittedAt) > thresholds.unclaimedDays).length} over threshold`,
       tone: "warning",
-      trend: createRecentStageTrend(unclaimed),
+      trend: createRecentStageTrend(unclaimed, 15),
     },
     {
       label: "Median time to claim",
-      value: `${medianDays(
-        reports.flatMap((report) =>
-          report.claimedAt ? [daysBetween(report.submittedAt, report.claimedAt)] : [],
-        ),
-      ).toFixed(1)}d`,
-      detail: "Generated from claimed reports",
+      value: `${medianDays(claimDurations).toFixed(1)}d`,
       tone: "good",
+      trend: createRecentDurationTrend(reports, "claim"),
+      trendUnit: "d",
     },
     {
       label: "Median time to respond",
-      value: `${medianDays(
-        reports.flatMap((report) =>
-          report.claimedAt && report.respondedAt
-            ? [daysBetween(report.claimedAt, report.respondedAt)]
-            : [],
-        ),
-      ).toFixed(1)}d`,
-      detail: "Archived response time",
-      tone: "neutral",
+      value: `${medianDays(responseDurations).toFixed(1)}d`,
+      delta: `${responseDurations.filter((duration) => duration > 7).length} over threshold`,
+      tone: "warning",
+      trend: createRecentDurationTrend(reports, "respond"),
+      trendUnit: "d",
     },
   ];
 }
 
-function createGroups(reports: HotlineReport[]): StatusGroup[] {
+function createGroups(
+  reports: HotlineReport[],
+  thresholds: WarningThresholds,
+): StatusGroup[] {
   const groups = [
     {
       title: "Unclaimed reports",
       description: "Created but not assigned.",
       stage: "unclaimed",
-      threshold: "Warn after 2 days",
+      threshold: `Warn after ${thresholds.unclaimedDays} days`,
       defaultOpen: true,
     },
     {
       title: "Claimed, needs response",
       description: "Claimed reports that are not archived.",
       stage: "claimed_needs_response",
-      threshold: "Warn after 7 days",
+      threshold: `Warn after ${thresholds.responseDays} days`,
       defaultOpen: true,
     },
     {
@@ -484,14 +583,17 @@ function createSubmissionsByWeek(reports: HotlineReport[]): [number, number][] {
   return Array.from(buckets.entries()).sort((a, b) => a[0] - b[0]);
 }
 
-function createRecentStageTrend(reports: HotlineReport[]): number[] {
-  const buckets = Array.from({ length: 8 }, () => 0);
-  const start = startOfWeek(daysAgo(56));
+function createRecentStageTrend(
+  reports: HotlineReport[],
+  baseline: number,
+): number[] {
+  const buckets = Array.from({ length: 22 }, (_, index) =>
+    Math.max(0, Math.round(baseline + Math.sin(index / 2) * 3)),
+  );
+  const start = daysAgo(21);
 
   for (const report of reports) {
-    const weekIndex = Math.floor(
-      daysBetween(start, startOfWeek(report.submittedAt)) / 7,
-    );
+    const weekIndex = Math.floor(daysBetween(start, report.submittedAt));
 
     if (weekIndex >= 0 && weekIndex < buckets.length) {
       buckets[weekIndex] += 1;
@@ -499,6 +601,47 @@ function createRecentStageTrend(reports: HotlineReport[]): number[] {
   }
 
   return buckets;
+}
+
+function createRecentDurationTrend(
+  reports: HotlineReport[],
+  durationType: "claim" | "respond",
+): number[] {
+  const buckets = Array.from({ length: 22 }, () => [] as number[]);
+  const start = daysAgo(21);
+
+  for (const report of reports) {
+    const eventDate =
+      durationType === "claim" ? report.claimedAt : report.respondedAt;
+    const duration =
+      durationType === "claim"
+        ? report.claimedAt
+          ? daysBetween(report.submittedAt, report.claimedAt)
+          : null
+        : report.claimedAt && report.respondedAt
+          ? daysBetween(report.claimedAt, report.respondedAt)
+          : null;
+
+    if (!eventDate || duration === null) {
+      continue;
+    }
+
+    const dayIndex = Math.floor(daysBetween(start, eventDate));
+
+    if (dayIndex >= 0 && dayIndex < buckets.length) {
+      buckets[dayIndex].push(duration);
+    }
+  }
+
+  return buckets.map((values, index) => {
+    if (values.length > 0) {
+      return Number(medianDays(values).toFixed(1));
+    }
+
+    return durationType === "claim"
+      ? Number((2.4 + Math.sin(index / 2.2) * 0.5).toFixed(1))
+      : Number((8.7 + Math.sin(index / 4) * 1.2).toFixed(1));
+  });
 }
 
 function createClaimTimeByMonth(
@@ -538,11 +681,17 @@ function createCategoryMix(reports: HotlineReport[]): CategoryDatum[] {
 }
 
 function createCountyLoad(reports: HotlineReport[]): CountyDatum[] {
-  return counties
-    .map((county) => ({
-      county,
-      value: reports.filter((report) => report.county === county).length,
-    }))
+  return countyGroups
+    .flatMap((group) =>
+      group.counties.map((county) => ({
+        county,
+        countyKey: createCountyKey(group.state, county),
+        state: group.state,
+        value: reports.filter(
+          (report) => report.countyKey === createCountyKey(group.state, county),
+        ).length,
+      })),
+    )
     .filter((item) => item.value > 0)
     .sort((a, b) => b.value - a.value);
 }
@@ -551,12 +700,17 @@ function toReportRow(report: HotlineReport): ReportRow {
   return {
     id: report.id,
     submitted: formatDate(report.submittedAt),
+    submittedTime: report.submittedAt.getTime(),
     age: `${ageInDays(report.submittedAt)}d`,
+    ageDays: ageInDays(report.submittedAt),
     claimedBy: report.claimant ?? "-",
     county: report.county,
+    state: report.state === "oregon" ? "OR" : "WA",
     category: report.category,
     lastAction: getLastAction(report),
     status: getReportStage(report),
+    reviewerEmail: createReviewerEmail(report.claimant),
+    issueUrl: `https://example.com/reports/${report.id}`,
   };
 }
 
@@ -595,6 +749,16 @@ function oldestAge(reports: HotlineReport[]): string {
 
 function daysAgo(days: number): Date {
   return addDays(now, -days);
+}
+
+function getDemoNow(): Date {
+  const date = new Date();
+  date.setHours(12, 0, 0, 0);
+  return date;
+}
+
+function getClaimAge(report: HotlineReport): number {
+  return report.claimedAt ? ageInDays(report.claimedAt) : ageInDays(report.submittedAt);
 }
 
 function addDays(date: Date, days: number): Date {
@@ -636,20 +800,45 @@ function pick<T>(items: readonly T[], random: () => number): T {
   return items[randomInt(random, 0, items.length - 1)];
 }
 
-function pickWeightedCounty(random: () => number): string {
-  const weighted = [
-    "Lane",
-    "Lane",
-    "Multnomah",
-    "Multnomah",
-    "Washington",
-    "Clackamas",
-    "Marion",
-    "Benton",
-    "Jackson",
-    ...counties,
-  ];
+function pickWeightedCounty(state: StateKey, random: () => number): string {
+  const weighted =
+    state === "oregon"
+      ? [
+          "Lane",
+          "Lane",
+          "Multnomah",
+          "Multnomah",
+          "Washington",
+          "Clackamas",
+          "Marion",
+          "Benton",
+          "Jackson",
+          ...counties,
+        ]
+      : [
+          "King",
+          "King",
+          "Pierce",
+          "Snohomish",
+          "Clark",
+          "Spokane",
+          "Yakima",
+          "Whatcom",
+          ...washingtonCounties,
+        ];
   return pick(weighted, random);
+}
+
+function createCountyKey(state: StateKey, county: string): string {
+  return `${state}:${county}`;
+}
+
+function createReviewerEmail(claimant: string | null): string {
+  if (!claimant) {
+    return "hotline-triage@example.org";
+  }
+
+  return `${claimant.toLowerCase().replaceAll(/[^a-z]+/g, ".").replace(/^\.+|\.+$/g, "")}@example.org`;
 }
 
 function randomInt(random: () => number, min: number, max: number): number {

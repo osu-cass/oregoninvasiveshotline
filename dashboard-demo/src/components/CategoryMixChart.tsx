@@ -20,7 +20,6 @@ export function CategoryMixChart({ categoryMix }: CategoryMixChartProps) {
     <article className="insight-panel">
       <div className="panel-heading">
         <h2>Category mix</h2>
-        <span>Selected range</span>
       </div>
       <Chart
         echarts={echarts}

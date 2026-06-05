@@ -1,25 +1,46 @@
-import { geoMercator, geoPath } from "d3-geo";
+import { geoIdentity, geoMercator, geoPath } from "d3-geo";
 import { useState, type MouseEvent } from "react";
-import type { CountyDatum } from "../data/dashboardData";
+import type { FeatureCollection, Geometry } from "geojson";
+import type { CountyDatum, StateKey } from "../data/dashboardData";
 import { oregonCounties } from "../data/oregonCounties";
+import { washingtonCounties as washingtonCountyGeometry } from "../data/washingtonCounties";
 
-interface OregonMapProps {
+interface StateCountyMapProps {
   /** County workload data used to shade counties. */
   countyLoad: CountyDatum[];
+  /** State geometry to render. */
+  selectedState: StateKey;
 }
+
+const mapGeometry = {
+  oregon: oregonCounties,
+  washington: washingtonCountyGeometry,
+} satisfies Record<StateKey, FeatureCollection<Geometry, { name?: string }>>;
+
+const stateLabel = {
+  oregon: "Oregon",
+  washington: "Washington",
+} satisfies Record<StateKey, string>;
 
 const width = 320;
 const height = 210;
 
-/** Renders a real Oregon county map from US Atlas county geometry. */
-export function OregonMap({ countyLoad }: OregonMapProps) {
+/** Renders county workload for the selected state. */
+export function StateCountyMap({
+  countyLoad,
+  selectedState,
+}: StateCountyMapProps) {
   const [hoveredCounty, setHoveredCounty] = useState<CountyDatum | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+  const geometry = mapGeometry[selectedState];
   const countyValues = new Map(
     countyLoad.map((county) => [county.county, county.value]),
   );
   const maxValue = Math.max(...countyLoad.map((county) => county.value), 1);
-  const projection = geoMercator().fitSize([width, height], oregonCounties);
+  const projection =
+    selectedState === "washington"
+      ? geoIdentity().reflectY(true).fitSize([width, height], geometry)
+      : geoMercator().fitSize([width, height], geometry);
   const path = geoPath(projection);
 
   const handleMouseMove = (event: MouseEvent<SVGSVGElement>) => {
@@ -33,14 +54,14 @@ export function OregonMap({ countyLoad }: OregonMapProps) {
   return (
     <div className="map-shell">
       <svg
-        className="oregon-map"
+        className="state-map"
         viewBox={`0 0 ${width} ${height}`}
         role="img"
-        aria-label="Oregon county workload map"
+        aria-label={`${stateLabel[selectedState]} county workload map`}
         onMouseLeave={() => setHoveredCounty(null)}
         onMouseMove={handleMouseMove}
       >
-        {oregonCounties.features.map((county) => {
+        {geometry.features.map((county) => {
           const name = county.properties.name ?? "";
           const value = countyValues.get(name) ?? 0;
           const intensity = value / maxValue;
@@ -48,12 +69,26 @@ export function OregonMap({ countyLoad }: OregonMapProps) {
 
           return (
             <path
-              className="oregon-county"
+              className="state-county"
               d={path(county) ?? undefined}
               fill={fill}
               key={String(county.id)}
-              onFocus={() => setHoveredCounty({ county: name, value })}
-              onMouseEnter={() => setHoveredCounty({ county: name, value })}
+              onFocus={() =>
+                setHoveredCounty({
+                  county: name,
+                  countyKey: `${selectedState}:${name}`,
+                  state: selectedState,
+                  value,
+                })
+              }
+              onMouseEnter={() =>
+                setHoveredCounty({
+                  county: name,
+                  countyKey: `${selectedState}:${name}`,
+                  state: selectedState,
+                  value,
+                })
+              }
               tabIndex={0}
             />
           );
