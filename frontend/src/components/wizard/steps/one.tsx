@@ -1,33 +1,32 @@
 import Field from "../../forms/field";
+import type { ImageUploadItem } from "../../forms/images/types";
 import ImageUpload from "../../forms/images/upload";
 import type { WizardStepProps } from "../types";
 
 interface StepOneProps extends WizardStepProps {
+	/** Current list of selected image items. */
+	imageItems: ImageUploadItem[];
+	/** Called when selected image items or captions change. */
+	onImageChange: (items: ImageUploadItem[], captions: string[]) => void;
 	/** Called when the EXIF-based location changes. */
 	onExifLocationChange: (location?: google.maps.LatLngLiteral) => void;
-	/** Called when the image uploader starts or finishes resizing. */
-	onResizingChange?: (resizing: boolean) => void;
 }
 
 /** Step 1: Photo upload and description of the find. */
 export default function StepOne({
 	form,
+	imageItems,
+	onImageChange,
 	onExifLocationChange,
-	onResizingChange,
 }: StepOneProps) {
 	return (
 		<div className="row g-3 mt-1">
 			<ImageUpload
-				images={form.data.images}
+				items={imageItems}
 				captions={form.data.image_captions}
-				onResizingChange={onResizingChange}
-				onChange={(images, captions) => {
-					form.setData((prev) => ({
-						...prev,
-						images,
-						image_captions: captions,
-					}));
-					if (images.length === 0) {
+				onChange={(items, captions) => {
+					onImageChange(items, captions);
+					if (items.length === 0) {
 						onExifLocationChange(undefined);
 					}
 				}}

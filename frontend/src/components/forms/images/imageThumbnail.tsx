@@ -1,20 +1,53 @@
 import { useEffect, useState } from "react";
+import type { ImageConversionStatus } from "./types";
 
 interface ImageThumbProps {
 	/** The image file. */
 	file: File;
 	/** The caption for this image. */
 	caption: string;
+	/** Current WebP conversion status. */
+	status: ImageConversionStatus;
+	/** Optional conversion error text. */
+	error?: string;
 	/** Called when the user edits the caption text. */
 	onCaptionChange: (caption: string) => void;
 	/** Called when the user clicks the remove button. */
 	onRemove: () => void;
 }
 
+/** Return the visual treatment for a conversion status badge. */
+function getStatusClassName(status: ImageConversionStatus) {
+	switch (status) {
+		case "done":
+			return "bg-success-subtle text-success-emphasis";
+		case "error":
+			return "bg-danger-subtle text-danger-emphasis";
+		default:
+			return "bg-secondary-subtle text-secondary-emphasis";
+	}
+}
+
+/** Return the short label for a conversion status badge. */
+function getStatusLabel(status: ImageConversionStatus) {
+	switch (status) {
+		case "queued":
+			return "Queued";
+		case "processing":
+			return "Converting";
+		case "done":
+			return "Ready";
+		case "error":
+			return "Failed";
+	}
+}
+
 /** Thumbnail preview for an uploaded image with caption input and remove button. */
 export default function ImageThumb({
 	file,
 	caption,
+	status,
+	error,
 	onCaptionChange,
 	onRemove,
 }: ImageThumbProps) {
@@ -60,6 +93,25 @@ export default function ImageThumb({
 				value={caption}
 				onChange={(e) => onCaptionChange(e.target.value)}
 			/>
+			<div className="d-flex flex-column flex-shrink-0 gap-1 align-items-end">
+				<span
+					className={`badge fw-medium rounded-pill ${getStatusClassName(status)}`}
+				>
+					{status === "processing" && (
+						<span
+							className="spinner-border spinner-border-sm me-1"
+							aria-hidden="true"
+							style={{ width: "0.7rem", height: "0.7rem" }}
+						/>
+					)}
+					{getStatusLabel(status)}
+				</span>
+				{status === "error" && (
+					<span className="small text-end text-danger">
+						{error ?? "Conversion failed."}
+					</span>
+				)}
+			</div>
 		</div>
 	);
 }

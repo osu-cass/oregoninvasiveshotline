@@ -1,23 +1,22 @@
 import clsx from "clsx";
 import ExifReader from "exifreader";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import ImageThumb from "./imageThumbnail";
-import { resizeImage } from "./resizeImage";
+import { createImageUploadItem, getImageConversionStats } from "./state";
+import type { ImageUploadItem } from "./types";
 
 const ACCEPT = "image/*";
 
 interface ImageUploadProps {
-	/** Current list of image files. */
-	images: File[];
-	/** Current list of captions, parallel to images. */
+	/** Current list of selected image items. */
+	items: ImageUploadItem[];
+	/** Current list of captions, parallel to image items. */
 	captions: string[];
-	/** Called when the images or captions change. */
-	onChange: (images: File[], captions: string[]) => void;
+	/** Called when the image items or captions change. */
+	onChange: (items: ImageUploadItem[], captions: string[]) => void;
 	/** Called when the EXIF-based location changes. */
 	onExifLocationChange: (location?: google.maps.LatLngLiteral) => void;
-	/** Called when image resizing starts or finishes. */
-	onResizingChange?: (resizing: boolean) => void;
 	/** Max number of images allowed. Defaults to 10. */
 	maxFiles?: number;
 	/** Label text above the drop zone. */
@@ -31,40 +30,34 @@ interface ImageUploadProps {
  * @param file - Image file to key.
  */
 function getImageKey(file: File) {
-	return `${file.name}-${file.lastModified}` as const;
+	return `${file.name}-${file.lastModified}-${file.size}`;
 }
 
 /**
- * Drag-and-drop image uploader with client-side resize, thumbnails, and captions.
- * This component is slightly less coupled compared to the other form components,
- * so you'll need to pass in a state and the onchange prop rather than just the form.
+ * Drag-and-drop image uploader with client-side WebP conversion, thumbnails, and captions.
+ * Pass state and the onChange prop rather than just the form.
  */
 export default function ImageUpload({
-	images,
+	items,
 	captions,
 	onChange,
 	onExifLocationChange,
-	onResizingChange,
 	maxFiles = 10,
 	label = "Images",
 	optional,
 }: ImageUploadProps) {
 	const [dragging, setDragging] = useState(false);
-	const [resizing, setResizing] = useState(false);
-	// Key should be `${file.name}-${file.lastModified}` to avoid collisions as much as possible without using the actual file/hash.
-	const imageLocations = useMemo(
-		() => new Map<`${string}-${string}`, google.maps.LatLngLiteral>(),
-		[],
-	);
+	const imageLocations = useRef(new Map<string, google.maps.LatLngLiteral>());
 	const locationVersion = useRef(0);
+	const stats = getImageConversionStats(items);
 
 	/**
 	 * Updates the shared EXIF location from the first uploaded image with GPS data.
-	 * @param orderedImages - Image list in current upload order.
+	 * @param orderedItems - Image item list in current upload order.
 	 */
-	const syncExifLocation = (orderedImages: File[]) => {
-		const firstLocation = orderedImages
-			.map((file) => imageLocations.get(getImageKey(file)))
+	const syncExifLocation = (orderedItems: ImageUploadItem[]) => {
+		const firstLocation = orderedItems
+			.map((item) => imageLocations.current.get(getImageKey(item.originalFile)))
 			.find((location) => location != null);
 		onExifLocationChange(firstLocation);
 	};
@@ -77,74 +70,65 @@ export default function ImageUpload({
 	const addFiles = async (files: FileList | null) => {
 		if (!files) return;
 
-		let incoming = Array.from(files);
+		const seenKeys = new Set(
+			items.map((item) => getImageKey(item.originalFile)),
+		);
+		let duplicated = false;
+		let incoming = Array.from(files).filter((file) => {
+			const key = getImageKey(file);
 
-		if (
-			images.some((file) =>
-				incoming.some(
-					(incomingFile) =>
-						incomingFile.name === file.name &&
-						incomingFile.lastModified === file.lastModified,
-				),
-			)
-		) {
+			if (seenKeys.has(key)) {
+				duplicated = true;
+				return false;
+			}
+
+			seenKeys.add(key);
+			return true;
+		});
+
+		if (duplicated) {
 			toast.error(
 				"One or more of your images was duplicated, and was not uploaded",
 			);
 		}
 
-		incoming = incoming.filter(
-			(file) =>
-				!images.some(
-					(imagesFile) =>
-						imagesFile.name === file.name &&
-						imagesFile.lastModified === file.lastModified,
-				),
+		const availableSlots = maxFiles - items.length;
+
+		if (incoming.length > availableSlots) {
+			toast.error(`You can only upload up to ${maxFiles} images.`);
+			incoming = incoming.slice(0, availableSlots);
+		}
+
+		if (incoming.length === 0) return;
+
+		const nextItems = [...items, ...incoming.map(createImageUploadItem)];
+		const nextCaptions = [...captions, ...incoming.map(() => "")];
+		onChange(nextItems, nextCaptions);
+
+		const operationVersion = nextLocationVersion();
+
+		await Promise.allSettled(
+			incoming.map(async (file) => {
+				const tags = await ExifReader.load(file, { expanded: true });
+				const lng = tags.gps?.Longitude;
+				const lat = tags.gps?.Latitude;
+				if (lng != null && lat != null) {
+					if (operationVersion !== locationVersion.current) return;
+					imageLocations.current.set(getImageKey(file), {
+						lat: Number(lat),
+						lng: Number(lng),
+					});
+				}
+			}),
 		);
 
-		// Note that resizing strips exif data, so if/when we do location based on exif data, that is something to be aware of.
-		setResizing(true);
-		onResizingChange?.(true);
-		try {
-			const operationVersion = nextLocationVersion();
-			const resized = await Promise.all(incoming.map(resizeImage));
-			const newImages = [...images, ...resized].slice(0, maxFiles);
-			const newCaptions = [...captions, ...resized.map(() => "")].slice(
-				0,
-				maxFiles,
-			);
-			onChange(newImages, newCaptions);
-			await Promise.allSettled(
-				incoming.map(async (file) => {
-					const tags = await ExifReader.load(file, { expanded: true });
-					const lng = tags.gps?.Longitude;
-					const lat = tags.gps?.Latitude;
-					if (lng != null && lat != null) {
-						if (operationVersion !== locationVersion.current) return;
-						imageLocations.set(`${file.name}-${file.lastModified}`, {
-							lat: Number(lat),
-							lng: Number(lng),
-						});
-					}
-				}),
-			);
-
-			if (operationVersion === locationVersion.current) {
-				syncExifLocation(newImages);
-			}
-		} catch {
-			toast.error(
-				"An unknown error occured while trying to process one of your images. Please upload any missing images again.",
-			);
-		} finally {
-			setResizing(false);
-			onResizingChange?.(false);
+		if (operationVersion === locationVersion.current) {
+			syncExifLocation(nextItems);
 		}
 	};
 
 	return (
 		<div>
-			{/* Form label. */}
 			<label
 				className="form-label fw-medium small mb-0"
 				htmlFor="file-drop-input"
@@ -155,29 +139,30 @@ export default function ImageUpload({
 				)}
 			</label>
 
-			{/* Thumbnails and caption fields. */}
-			{images.length > 0 && (
+			{items.length > 0 && (
 				<div className="d-flex my-2 flex-column gap-2">
-					{images.map((file, index) => (
+					{items.map((item, index) => (
 						<ImageThumb
-							key={`${file.name}-${file.lastModified}`}
-							file={file}
+							key={item.id}
+							file={item.originalFile}
 							caption={captions[index] ?? ""}
+							status={item.status}
+							error={item.error}
 							onCaptionChange={(caption) => {
 								const next = [...captions];
 								next[index] = caption;
-								onChange(images, next);
+								onChange(items, next);
 							}}
 							onRemove={() => {
-								const nextImages = images.filter((_, i) => i !== index);
+								const nextItems = items.filter((_, i) => i !== index);
 								const nextCaptions = captions.filter((_, i) => i !== index);
 								nextLocationVersion();
-								imageLocations.delete(getImageKey(file));
-								onChange(nextImages, nextCaptions);
-								if (nextImages.length === 0) {
+								imageLocations.current.delete(getImageKey(item.originalFile));
+								onChange(nextItems, nextCaptions);
+								if (nextItems.length === 0) {
 									onExifLocationChange(undefined);
 								} else {
-									syncExifLocation(nextImages);
+									syncExifLocation(nextItems);
 								}
 							}}
 						/>
@@ -185,8 +170,7 @@ export default function ImageUpload({
 				</div>
 			)}
 
-			{/* Drop zone and file input. */}
-			{images.length < maxFiles && (
+			{items.length < maxFiles && (
 				<label
 					htmlFor="file-drop-input"
 					onDragOver={(e) => {
@@ -215,13 +199,16 @@ export default function ImageUpload({
 				>
 					<i className="bi bi-cloud-arrow-up fs-1 text-muted" />
 					<p className="small mb-0 text-muted">
-						{resizing
-							? "Resizing images…"
-							: "Drag & drop images here, or click to browse/take photos"}
+						Drag & drop images here, or click to browse/take photos
 					</p>
 					<p className="small mb-0 text-muted">
-						{images.length} / {maxFiles} images
+						{items.length} / {maxFiles} images
 					</p>
+					{stats.pending && (
+						<p className="small mb-0 text-muted">
+							{stats.done} / {stats.total} ready
+						</p>
+					)}
 					<input
 						type="file"
 						id="file-drop-input"

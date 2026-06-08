@@ -255,6 +255,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "oregoninvasiveshotline.middleware.webp_worker_csp_middleware",
     "django.middleware.csp.ContentSecurityPolicyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

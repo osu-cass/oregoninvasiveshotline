@@ -1,5 +1,12 @@
 import { useForm } from "@inertiajs/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import {
+	getConvertedImages,
+	getImageConversionStats,
+} from "../components/forms/images/state";
+import type { ImageUploadItem } from "../components/forms/images/types";
+import { useImageConversionQueue } from "../components/forms/images/useImageConversionQueue";
 import ConfirmNoImagesDialog from "../components/wizard/confirmNoImagesDialog";
 import {
 	allFields,
@@ -7,6 +14,7 @@ import {
 	Steps,
 	type WizardFormData,
 } from "../components/wizard/fields";
+import ImageConversionDialog from "../components/wizard/imageConversionDialog";
 import StepFour from "../components/wizard/steps/four";
 import StepOne from "../components/wizard/steps/one";
 import StepThree from "../components/wizard/steps/three";
@@ -31,8 +39,12 @@ interface FormWizardProps {
 export default function FormWizard(props: FormWizardProps) {
 	const [step, setStep] = useState(0);
 	const [showNoImagesDialog, setShowNoImagesDialog] = useState(false);
+	const [showImageConversionDialog, setShowImageConversionDialog] =
+		useState(false);
+	const [submitAfterImageConversion, setSubmitAfterImageConversion] =
+		useState(false);
+	const [imageItems, setImageItems] = useState<ImageUploadItem[]>([]);
 	const [exifLocation, setExifLocation] = useState<google.maps.LatLngLiteral>();
-	const [isResizingImages, setIsResizingImages] = useState(false);
 
 	const form = useForm<WizardFormData>({
 		...initialWizardData,
@@ -47,8 +59,104 @@ export default function FormWizard(props: FormWizardProps) {
 		.setValidationTimeout(250);
 
 	const currentStep = Steps[step];
+	const imageConversionStats = getImageConversionStats(imageItems);
+	const hasImages = imageItems.length > 0;
 
-	/** Handles the Next button click, prompting if step one has no images. */
+	/**
+	 * Updates selected images and keeps the submitted file list in sync.
+	 * @param items - Next selected image item list.
+	 */
+	const updateImageItems = (items: ImageUploadItem[]) => {
+		setImageItems(items);
+		form.setData((prev) => ({
+			...prev,
+			images: getConvertedImages(items),
+		}));
+	};
+
+	/**
+	 * Updates selected images and captions from the upload control.
+	 * @param items - Next selected image item list.
+	 * @param captions - Next captions aligned to selected images.
+	 */
+	const updateImageUpload = (items: ImageUploadItem[], captions: string[]) => {
+		setImageItems(items);
+		form.setData((prev) => ({
+			...prev,
+			images: getConvertedImages(items),
+			image_captions: captions,
+		}));
+	};
+
+	useImageConversionQueue(imageItems, updateImageItems);
+
+	/** Validates the final step and submits the report. */
+	const submitReport = () => {
+		if (!currentStep) return;
+
+		form.validate({
+			only: currentStep.fields,
+			onSuccess: () =>
+				form.post("/reports/create-new", {
+					// Forces form data to always submit as FormData.
+					// See https://inertiajs.com/docs/v2/the-basics/file-uploads.
+					forceFormData: true,
+				}),
+		});
+	};
+
+	/** Handles the Submit button click, waiting for image conversion if needed. */
+	const requestSubmit = () => {
+		if (imageConversionStats.hasErrors) {
+			setShowImageConversionDialog(true);
+			toast.error(
+				"Remove or re-upload any photos that failed to process before submitting.",
+			);
+			return;
+		}
+
+		if (imageConversionStats.pending) {
+			setSubmitAfterImageConversion(true);
+			setShowImageConversionDialog(true);
+			return;
+		}
+
+		submitReport();
+	};
+
+	useEffect(() => {
+		if (!submitAfterImageConversion) return;
+
+		if (imageConversionStats.hasErrors) {
+			setSubmitAfterImageConversion(false);
+			toast.error(
+				"Remove or re-upload any photos that failed to process before submitting.",
+			);
+			return;
+		}
+
+		if (imageConversionStats.pending) return;
+
+		setSubmitAfterImageConversion(false);
+		setShowImageConversionDialog(false);
+		if (!currentStep) return;
+
+		form.validate({
+			only: currentStep.fields,
+			onSuccess: () =>
+				form.post("/reports/create-new", {
+					// Forces form data to always submit as FormData.
+					// See https://inertiajs.com/docs/v2/the-basics/file-uploads.
+					forceFormData: true,
+				}),
+		});
+	}, [
+		submitAfterImageConversion,
+		imageConversionStats.pending,
+		imageConversionStats.hasErrors,
+		currentStep,
+		form,
+	]);
 
 	return (
 		<div className="report-wizard-backdrop flex-grow-1 bg-hotline-green py-4">
@@ -90,9 +198,10 @@ export default function FormWizard(props: FormWizardProps) {
 										{step === 0 && (
 											<StepOne
 												form={form}
-												hasImages={form.data.images.length > 0}
+												hasImages={hasImages}
+												imageItems={imageItems}
+												onImageChange={updateImageUpload}
 												onExifLocationChange={setExifLocation}
-												onResizingChange={setIsResizingImages}
 											/>
 										)}
 										{step === 1 && (
@@ -102,7 +211,7 @@ export default function FormWizard(props: FormWizardProps) {
 											<StepThree
 												form={form}
 												exifLocation={exifLocation}
-												hasImages={form.data.images.length > 0}
+												hasImages={hasImages}
 												googleApiKey={props.google_api_key}
 												googleMapId={props.google_map_id}
 											/>
@@ -128,18 +237,7 @@ export default function FormWizard(props: FormWizardProps) {
 													type="button"
 													className="btn btn-primary px-4"
 													data-testid="wizard-submit-button"
-													onClick={() => {
-														if (!currentStep) return;
-														form.validate({
-															only: currentStep.fields,
-															onSuccess: () =>
-																form.post("/reports/create-new", {
-																	// Forces form data to be always submitted as a formdata object for consistancy.
-																	// see https://inertiajs.com/docs/v2/the-basics/file-uploads
-																	forceFormData: true,
-																}),
-														});
-													}}
+													onClick={requestSubmit}
 													disabled={form.processing}
 												>
 													{form.processing ? "Submitting…" : "Submit"}
@@ -151,9 +249,8 @@ export default function FormWizard(props: FormWizardProps) {
 													data-testid="wizard-next-button"
 													onClick={() => {
 														if (!currentStep) return;
-														if (isResizingImages) return;
 
-														if (step === 0 && form.data.images.length === 0) {
+														if (step === 0 && !hasImages) {
 															// Validate first, then show the dialog only if validation passes.
 															form.validate({
 																only: currentStep.fields,
@@ -170,13 +267,9 @@ export default function FormWizard(props: FormWizardProps) {
 															onSuccess: () => setStep((s) => s + 1),
 														});
 													}}
-													disabled={form.validating || isResizingImages}
+													disabled={form.validating}
 												>
-													{isResizingImages
-														? "Resizing…"
-														: form.validating
-															? "Validating…"
-															: "Next"}
+													{form.validating ? "Validating…" : "Next"}
 												</button>
 											)}
 										</div>
@@ -215,6 +308,15 @@ export default function FormWizard(props: FormWizardProps) {
 					setExifLocation(undefined);
 					setStep((s) => s + 1);
 				}}
+			/>
+			<ImageConversionDialog
+				open={showImageConversionDialog}
+				onOpenChange={(open) => {
+					if (submitAfterImageConversion && imageConversionStats.pending)
+						return;
+					setShowImageConversionDialog(open);
+				}}
+				stats={imageConversionStats}
 			/>
 		</div>
 	);
