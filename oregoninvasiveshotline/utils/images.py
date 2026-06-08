@@ -14,6 +14,11 @@ class ImageConversionError(Exception):
     """Raised when an uploaded image cannot be converted."""
 
 
+def _get_webp_mode(img: Image.Image) -> str:
+    """Return the image mode to use before saving as WebP."""
+    return "RGBA" if "A" in img.getbands() or "transparency" in img.info else "RGB"
+
+
 def generate_thumbnail(input_path, output_path, width, height):
     """Generate a thumbnail from the source image.
 
@@ -72,12 +77,13 @@ def get_webp_image(image_file: UploadedFile) -> UploadedFile | ContentFile:
                 return image_file
 
             output = BytesIO()
-            ImageOps.exif_transpose(img).convert("RGB").save(
+            img = ImageOps.exif_transpose(img)
+            img.convert(_get_webp_mode(img)).save(
                 output,
                 format=WEBP_FORMAT,
                 quality=85,
             )
-    except (OSError, UnidentifiedImageError) as error:
+    except (OSError, UnidentifiedImageError, Image.DecompressionBombError) as error:
         raise ImageConversionError("Image could not be converted to WebP.") from error
     finally:
         image_file.seek(0)

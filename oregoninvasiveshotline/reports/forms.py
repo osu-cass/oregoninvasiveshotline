@@ -422,7 +422,7 @@ class NewReportForm(forms.Form):
         except ImageConversionError as error:
             raise forms.ValidationError(
                 "One or more images could not be processed. "
-                "Please upload JPG, PNG, or WebP images."
+                "Please upload valid image files."
             ) from error
 
         # NOTE: If the user doesn't exist, a new inactive account is
