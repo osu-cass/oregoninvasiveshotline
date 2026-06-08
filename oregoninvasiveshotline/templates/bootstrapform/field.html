@@ -64,7 +64,7 @@
             <div class="checkbox multiple-checkbox">
         {% endif %}
             {% if field|is_multiple_checkbox %}
-                <label id='check-all-{{ field.auto_id }}' class="check-all" onclick="$(this).parent().find('input').prop('checked', $(this).find('input').prop('checked'))"><input type="checkbox" value="check-all" /> Check all</label>
+                <label id='check-all-{{ field.auto_id }}' class="check-all"><input type="checkbox" value="check-all" data-check-all /> Check all</label>
             {% endif %}
             {{ field }}
 

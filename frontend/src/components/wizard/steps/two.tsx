@@ -4,6 +4,7 @@ import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import FormCombobox from "../../forms/combobox";
 import Field from "../../forms/field";
+import { REPORT_LONG_TEXT_MAX_LENGTH } from "../limits";
 import type { CategoryWithSpecies, WizardStepProps } from "../types";
 import "yet-another-react-lightbox/styles.css";
 
@@ -209,6 +210,7 @@ export default function StepTwo({ form, items }: StepTwoProps) {
 					optional
 					as="textarea"
 					textareaProps={{
+						maxLength: REPORT_LONG_TEXT_MAX_LENGTH,
 						rows: 5,
 						placeholder:
 							"Describe how you identified this species (markings/size/behavior, tracks/sign, leaf/flower/fruit)",
