@@ -26,8 +26,11 @@ class ReportTest(SuppressPostSaveMixin, TestCase):
             self.report.delete()
 
     def _make_report_image(self):
+        with open(TEST_IMAGE_PATH, 'rb') as image_file:
+            image_data = image_file.read()
+
         return InMemoryUploadedFile(
-            io.BytesIO(open(TEST_IMAGE_PATH, 'rb').read()),
+            io.BytesIO(image_data),
             'image',
             'test.png',
             'image/png',

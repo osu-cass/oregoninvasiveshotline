@@ -167,16 +167,24 @@ class ReportSearchFormTest(TestCase, UserMixin):
 
     def test_order_by_field_sorts_reports(self):
         now = timezone.now()
-        make(Report, created_on=now - timedelta(days=1), point=ORIGIN)
-        make(Report, created_on=now, point=ORIGIN)
-        make(Report, created_on=now + timedelta(days=1), point=ORIGIN)
+        oldest_report = make(Report, point=ORIGIN)
+        middle_report = make(Report, point=ORIGIN)
+        newest_report = make(Report, point=ORIGIN)
+        Report.objects.filter(pk=oldest_report.pk).update(created_on=now - timedelta(days=1))
+        Report.objects.filter(pk=middle_report.pk).update(created_on=now)
+        Report.objects.filter(pk=newest_report.pk).update(created_on=now + timedelta(days=1))
 
         form = ReportSearchForm({
             "order_by": "-created_on",
         }, user=self.user)
-        reports = form.search(Report.objects.all())
+        reports = form.search(Report.objects.filter(
+            pk__in=[oldest_report.pk, middle_report.pk, newest_report.pk],
+        ))
 
-        self.assertTrue(reports, Report.objects.all().order_by("-created_on"))
+        self.assertEqual(
+            list(reports.values_list("pk", flat=True)),
+            [newest_report.pk, middle_report.pk, oldest_report.pk],
+        )
 
     def test_inactive_users_only_see_public_fields(self):
         self.user.is_active = False
