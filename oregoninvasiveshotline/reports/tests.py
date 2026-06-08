@@ -7,6 +7,7 @@ import io
 import os
 import tempfile
 from datetime import timedelta
+from typing import cast
 from unittest.mock import Mock, patch
 
 from django.utils import timezone
@@ -883,7 +884,8 @@ class NewReportFormTest(TransactionTestCase):
             self.assertTrue(saved_image.image.name.endswith(".webp"))
             with PILImage.open(saved_image.image.path) as img:
                 self.assertEqual(img.format, "WEBP")
-                self.assertEqual(img.convert("RGBA").getpixel((0, 0))[3], 0)
+                pixel = cast(tuple[int, int, int, int], img.convert("RGBA").getpixel((0, 0)))
+                self.assertEqual(pixel[3], 0)
 
     def test_save_raises_validation_error_when_image_conversion_fails(self):
         """Ensure conversion failures surface as validation errors."""
