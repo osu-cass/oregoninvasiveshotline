@@ -3,7 +3,12 @@ import { DropdownMenu } from "@cloudflare/kumo/components/dropdown";
 import { Select } from "@cloudflare/kumo/components/select";
 import { Switch } from "@cloudflare/kumo/components/switch";
 import { useForm } from "@tanstack/react-form";
-import { Filter, RotateCcw, SlidersHorizontal } from "lucide-react";
+import {
+  ChevronDown,
+  Filter,
+  RotateCcw,
+  SlidersHorizontal,
+} from "lucide-react";
 import { useState } from "react";
 import {
   categories,
@@ -29,6 +34,8 @@ const stageOptions: Array<ReportStage | "all"> = [
   "flagged",
 ];
 
+const dateRangeOptions: DateRangeKey[] = ["last-30", "last-90", "ytd", "all"];
+
 interface HeaderControlsProps {
   /** Active dashboard filters. */
   filters: DashboardFilters;
@@ -50,6 +57,7 @@ export function HeaderControls({
   onResetFilters,
   onSettingsChange,
 }: HeaderControlsProps) {
+  const [dateMenuOpen, setDateMenuOpen] = useState(false);
   const [displayMenuOpen, setDisplayMenuOpen] = useState(false);
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const activeFilters = hasActiveFilters(filters);
@@ -86,21 +94,37 @@ export function HeaderControls({
         </p>
       </div>
       <div className="header-actions">
-        <Select
-          aria-label="Date range"
-          value={settings.dateRange}
-          onValueChange={(value) =>
-            onSettingsChange({ dateRange: value as DateRangeKey })
-          }
-          renderValue={(value) => getDateRangeLabel(value as DateRangeKey)}
-          size="sm"
-          className="date-select"
+        <DropdownMenu
+          modal={false}
+          open={dateMenuOpen}
+          onOpenChange={setDateMenuOpen}
         >
-          <Select.Option value="last-30">Last 30 days</Select.Option>
-          <Select.Option value="last-90">Last 90 days</Select.Option>
-          <Select.Option value="ytd">Year to date</Select.Option>
-          <Select.Option value="all">All time</Select.Option>
-        </Select>
+          <DropdownMenu.Trigger>
+            <Button
+              aria-label="Date range"
+              className="date-select"
+              variant="secondary"
+              size="sm"
+            >
+              {getDateRangeLabel(settings.dateRange)}
+              <ChevronDown aria-hidden="true" size={14} />
+            </Button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content
+            className="demo-menu date-range-menu"
+            sideOffset={8}
+          >
+            {dateRangeOptions.map((range) => (
+              <DropdownMenu.Item
+                key={range}
+                selected={settings.dateRange === range}
+                onClick={() => onSettingsChange({ dateRange: range })}
+              >
+                {getDateRangeLabel(range)}
+              </DropdownMenu.Item>
+            ))}
+          </DropdownMenu.Content>
+        </DropdownMenu>
         <DropdownMenu
           modal={false}
           open={displayMenuOpen}
