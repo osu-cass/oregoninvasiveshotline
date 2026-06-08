@@ -40,11 +40,11 @@
         <div>
             <form method="post" class="form-horizontal">
                 {% csrf_token %}
-                <button class="btn btn-default" onclick="window.history.go(-1); return false">
+                <button type="button" class="btn btn-default" data-history-back>
                     Cancel
                 </button>
                 <button type="submit" name="finish" class="pull-right btn btn-danger"
-                        onclick="return confirm('Click OK if you are really sure')">
+                        data-confirm="Click OK if you are really sure">
                         Permanently Delete {{ object|model_name }} and All Related Objects
                 </button>
             </form>
