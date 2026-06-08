@@ -32,3 +32,5 @@ db.sql
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+/dashboard-demo
