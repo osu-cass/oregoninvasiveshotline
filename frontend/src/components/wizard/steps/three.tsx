@@ -1,5 +1,6 @@
 import { APIProvider } from "@vis.gl/react-google-maps";
 import Field from "../../forms/field";
+import { REPORT_LONG_TEXT_MAX_LENGTH } from "../limits";
 import LocationMap from "../locationMap";
 import type { WizardStepProps } from "../types";
 
@@ -71,6 +72,7 @@ export default function StepThree({
 					label="Anything else you can tell us about where you found this?"
 					as="textarea"
 					textareaProps={{
+						maxLength: REPORT_LONG_TEXT_MAX_LENGTH,
 						rows: 4,
 						placeholder:
 							"Note where in the area you spotted it (ditch, fence line, field edge, along water), any hazards nearby (power lines, soft ground, locked gates), and landmarks or access points.",

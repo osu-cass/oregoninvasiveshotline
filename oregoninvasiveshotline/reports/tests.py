@@ -29,7 +29,15 @@ from oregoninvasiveshotline.species.models import Category, Severity, Species
 from oregoninvasiveshotline.notifications.models import UserNotificationQuery
 from oregoninvasiveshotline.users.models import User
 
-from .forms import InviteForm, ManagementForm, NewReportForm, ReportForm, ReportSearchForm
+from .forms import (
+    InviteForm,
+    ManagementForm,
+    NewReportForm,
+    PHONE_VALIDATION_ERROR,
+    REPORT_LONG_TEXT_MAX_LENGTH,
+    ReportForm,
+    ReportSearchForm,
+)
 from .models import Invite, Report, receiver__generate_icon
 from .views import _export
 
@@ -768,10 +776,10 @@ class ReportFormTest(TransactionTestCase, UserMixin):
 
 class NewReportFormTest(TransactionTestCase):
 
-    def test_identification_process_not_required(self):
-        """Ensure the wizard form validates without an identification process note."""
+    def _valid_form_data(self, **overrides):
+        """Return valid default wizard form data with optional overrides."""
         category = make(Category)
-        form = NewReportForm({
+        data = {
             "find_description": "Found near trail edge",
             "category": category.pk,
             "location_description": "Near mile marker 3",
@@ -780,7 +788,39 @@ class NewReportFormTest(TransactionTestCase):
             "email": "foo@example.com",
             "first_name": "Foo",
             "last_name": "Bar",
-        })
+        }
+        data.update(overrides)
+        return data
+
+    def assert_field_has_error_code(self, form, field_name, error_code):
+        """Assert that a form field has an error with the expected code."""
+        field_errors = form.errors.as_data().get(field_name, [])
+        self.assertTrue(
+            any(error.code == error_code for error in field_errors),
+            f"Expected {field_name!r} to have an error with code {error_code!r}.",
+        )
+
+    def assert_phone_error(self, form):
+        """Assert that the phone field has the expected validation error."""
+        field_errors = form.errors.as_data().get("phone", [])
+        self.assertTrue(
+            any(error.message == PHONE_VALIDATION_ERROR for error in field_errors),
+            "Expected phone to have the configured validation error.",
+        )
+
+    def test_complete_form_data_validates(self):
+        """Ensure a full wizard form submission validates successfully."""
+        form = NewReportForm(self._valid_form_data(
+            identification_process="Compared flower color and leaf shape to the field guide.",
+            phone="+1 (541) 555-1212 ext. 123",
+            questions="Can someone confirm whether removal is recommended?",
+        ))
+
+        self.assertTrue(form.is_valid())
+
+    def test_identification_process_not_required(self):
+        """Ensure the wizard form validates without an identification process note."""
+        form = NewReportForm(self._valid_form_data())
         self.assertTrue(form.is_valid())
 
         with (
@@ -791,21 +831,71 @@ class NewReportFormTest(TransactionTestCase):
 
         self.assertEqual(report.identification_process, "")
 
+    def test_long_text_fields_validate_max_length(self):
+        """Ensure long wizard text fields reject values over the configured limit."""
+        too_long = "a" * (REPORT_LONG_TEXT_MAX_LENGTH + 1)
+        fields = [
+            "find_description",
+            "identification_process",
+            "location_description",
+        ]
+
+        for field_name in fields:
+            with self.subTest(field_name=field_name):
+                form = NewReportForm(self._valid_form_data(**{field_name: too_long}))
+
+                self.assertFalse(form.is_valid())
+                self.assert_field_has_error_code(form, field_name, "max_length")
+
+    def test_phone_is_optional(self):
+        """Ensure the optional phone field accepts blank values."""
+        form = NewReportForm(self._valid_form_data(phone=""))
+
+        self.assertTrue(form.is_valid())
+
+    def test_phone_accepts_common_formats(self):
+        """Ensure common phone number formats validate successfully."""
+        phone_numbers = [
+            "(541) 555-1212",
+            "541.555.1212",
+            "+1 541-555-1212",
+            "541 555 1212 x99",
+            "541-555-1212 ext. 123",
+            "541-555-1212 extension 12345",
+        ]
+
+        for phone_number in phone_numbers:
+            with self.subTest(phone_number=phone_number):
+                form = NewReportForm(self._valid_form_data(phone=phone_number))
+
+                self.assertTrue(form.is_valid())
+
+    def test_phone_rejects_invalid_values(self):
+        """Ensure phone validation rejects short numbers and invalid characters."""
+        phone_numbers = [
+            "555-1212",
+            "541-555-1212 office",
+            "541-555-1212 ext abc",
+            "541-555-1212 #123",
+        ]
+
+        for phone_number in phone_numbers:
+            with self.subTest(phone_number=phone_number):
+                form = NewReportForm(self._valid_form_data(phone=phone_number))
+
+                self.assertFalse(form.is_valid())
+                self.assert_phone_error(form)
+
     def test_save_maps_wizard_fields(self):
         """Ensure wizard fields are persisted to report and follow-up comment records."""
-        category = make(Category)
-        form = NewReportForm({
-            "find_description": "Leafy plant with white flowers",
-            "category": category.pk,
-            "identification_process": "Compared leaves and flower clusters with a field guide",
-            "location_description": "Along roadside ditch",
-            "latitude": 44.0521,
-            "longitude": -123.0867,
-            "email": "foo@example.com",
-            "first_name": "Foo",
-            "last_name": "Bar",
-            "questions": "Can someone confirm species?",
-        })
+        form = NewReportForm(self._valid_form_data(
+            find_description="Leafy plant with white flowers",
+            identification_process="Compared leaves and flower clusters with a field guide",
+            location_description="Along roadside ditch",
+            latitude=44.0521,
+            longitude=-123.0867,
+            questions="Can someone confirm species?",
+        ))
         self.assertTrue(form.is_valid())
 
         with (

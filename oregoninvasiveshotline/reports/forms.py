@@ -25,6 +25,45 @@ from oregoninvasiveshotline.reports.tasks import (
 )
 
 ALLOWED_REPORT_STATES = ("Oregon", "Washington")
+PHONE_VALIDATION_ERROR = (
+    "Enter a phone number with at least 10 digits. You may use spaces, parentheses, "
+    "hyphens, periods, plus signs, or an extension."
+)
+PHONE_ALLOWED_CHARACTERS = set("0123456789 ()+.-")
+PHONE_EXTENSION_MARKERS = ("extension", "ext.", "ext", "x")
+
+
+def split_phone_extension(phone: str) -> tuple[str, str]:
+    """Split a phone number from a trailing extension marker."""
+    lower_phone = phone.lower()
+    for marker in PHONE_EXTENSION_MARKERS:
+        marker_start = lower_phone.rfind(marker)
+        if marker_start == -1:
+            continue
+
+        extension = phone[marker_start + len(marker):].strip()
+        if extension.isdigit():
+            return phone[:marker_start].strip(), extension
+
+    return phone, ""
+
+
+def validate_phone_number(value: str) -> str:
+    """Validate a common phone number format while allowing optional extensions."""
+    phone = value.strip()
+    if not phone:
+        return phone
+
+    phone_without_extension, _ = split_phone_extension(phone)
+    if any(char not in PHONE_ALLOWED_CHARACTERS for char in phone_without_extension):
+        raise forms.ValidationError(PHONE_VALIDATION_ERROR)
+
+    digit_count = sum(char.isdigit() for char in phone_without_extension)
+    if digit_count < 10:
+        raise forms.ValidationError(PHONE_VALIDATION_ERROR)
+
+    return phone
+
 
 def get_county(point: Point):
     """Return the first county polygon that intersects a point.
@@ -333,14 +372,21 @@ class ReportForm(forms.ModelForm):
         return report
 
 
+REPORT_LONG_TEXT_MAX_LENGTH = 3000
+
+
 class NewReportForm(forms.Form):
 
-    find_description = forms.CharField()
+    find_description = forms.CharField(max_length=REPORT_LONG_TEXT_MAX_LENGTH)
     category = forms.ModelChoiceField(queryset=Category.objects.all())
     species = forms.ModelChoiceField(queryset=Species.objects.all(), required=False)
     is_species_unknown = forms.BooleanField(required=False, label='Species unknown')
-    identification_process = forms.CharField(required=False, widget=forms.Textarea)
-    location_description = forms.CharField()
+    identification_process = forms.CharField(
+        max_length=REPORT_LONG_TEXT_MAX_LENGTH,
+        required=False,
+        widget=forms.Textarea,
+    )
+    location_description = forms.CharField(max_length=REPORT_LONG_TEXT_MAX_LENGTH)
     # Long/Lat are required, but we instead just set an error message on
     # latitude that's a bit more human friendly later on in the clean method.
     latitude = forms.FloatField(required=False)
@@ -362,6 +408,10 @@ class NewReportForm(forms.Form):
         email = self.cleaned_data['email']
         email = email.lower()
         return email
+
+    def clean_phone(self):
+        """Validate the optional reporter phone number."""
+        return validate_phone_number(self.cleaned_data.get('phone', ''))
 
     def clean(self):
         """Validate species-selection rules and required map coordinates.
