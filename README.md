@@ -206,3 +206,5 @@ Expand this dropdown to see the service architecture when working in production.
 ## Miscellaneous Notes
 
 Prefix archived or otherwise unused branches with `archive/`. These branches are typically used for experiments or other work that is not currently active. For example, `archive/experiment-with-new-approach`.
+
+In the frontend, when adding charahcter limits, use "limits.ts"
