@@ -52,52 +52,31 @@ def generate_thumbnail(input_path, output_path, width, height):
     return True
 
 
-def get_webp_filename(file_name: str) -> str:
-    """Return a WebP filename based on an uploaded file name."""
-    stem = Path(file_name).stem or "image"
-    return f"{stem}.webp"
-
-
-def is_webp(image_file: UploadedFile) -> bool:
-    """Check whether an uploaded image file is a valid WebP image.
-
-    Resets the file pointer before and after inspection so the file can still
-    be read later by Django/storage.
+def get_webp_image(image_file: UploadedFile) -> UploadedFile | ContentFile:
+    """Return an uploaded image as WebP, converting when necessary.
 
     Args:
-        image_file: Uploaded image file to inspect.
+        image_file: Uploaded image file to inspect and optionally convert.
 
     Returns:
-        bool: True if the file is a valid WebP image, otherwise False.
+        UploadedFile | ContentFile: Original WebP upload or converted WebP file.
+
+    Raises:
+        ImageConversionError: If the upload cannot be read or converted.
     """
     image_file.seek(0)
 
     try:
         with Image.open(image_file) as img:
-            if img.format != WEBP_FORMAT:
-                return False
-    except UnidentifiedImageError:
-        return False
-    finally:
-        image_file.seek(0)
+            if img.format == WEBP_FORMAT:
+                return image_file
 
-    return True
-
-
-def get_webp_image(image_file: UploadedFile) -> UploadedFile | ContentFile:
-    """Return an uploaded image as WebP, converting when necessary."""
-    if is_webp(image_file):
-        return image_file
-
-    image_file.seek(0)
-
-    try:
-        with Image.open(image_file) as img:
-            img = ImageOps.exif_transpose(img)
             output = BytesIO()
-            has_alpha = img.mode in {"RGBA", "LA"} or "transparency" in img.info
-            img = img.convert("RGBA" if has_alpha else "RGB")
-            img.save(output, format=WEBP_FORMAT, quality=80, method=6)
+            ImageOps.exif_transpose(img).convert("RGB").save(
+                output,
+                format=WEBP_FORMAT,
+                quality=85,
+            )
     except (OSError, UnidentifiedImageError) as error:
         raise ImageConversionError("Image could not be converted to WebP.") from error
     finally:
@@ -105,5 +84,5 @@ def get_webp_image(image_file: UploadedFile) -> UploadedFile | ContentFile:
 
     return ContentFile(
         output.getvalue(),
-        name=get_webp_filename(image_file.name),
+        name=f"{Path(image_file.name).stem or 'image'}.webp",
     )
