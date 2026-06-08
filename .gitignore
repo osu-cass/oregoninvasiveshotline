@@ -32,3 +32,8 @@ db.sql
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+/dashboard-demo
+
+# VS Hidden Folders
+.vs/

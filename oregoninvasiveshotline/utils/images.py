@@ -1,8 +1,22 @@
 import logging
-from PIL import Image, UnidentifiedImageError
+from io import BytesIO
+from pathlib import Path
+
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import UploadedFile
+from PIL import Image, ImageOps, UnidentifiedImageError
 
 log = logging.getLogger(__name__)
+WEBP_FORMAT = "WEBP"
+
+
+class ImageConversionError(Exception):
+    """Raised when an uploaded image cannot be converted."""
+
+
+def _get_webp_mode(img: Image.Image) -> str:
+    """Return the image mode to use before saving as WebP."""
+    return "RGBA" if "A" in img.getbands() or "transparency" in img.info else "RGB"
 
 
 def generate_thumbnail(input_path, output_path, width, height):
@@ -43,27 +57,38 @@ def generate_thumbnail(input_path, output_path, width, height):
     return True
 
 
-def is_webp(image_file: UploadedFile):
-    """Check whether an uploaded image file is a valid WebP image.
-
-    Resets the file pointer before and after inspection so the file can still
-    be read later by Django/storage.
+def get_webp_image(image_file: UploadedFile) -> UploadedFile | ContentFile:
+    """Return an uploaded image as WebP, converting when necessary.
 
     Args:
-        image_file: Uploaded image file to inspect.
+        image_file: Uploaded image file to inspect and optionally convert.
 
     Returns:
-        bool: True if the file is a valid WebP image, otherwise False.
+        UploadedFile | ContentFile: Original WebP upload or converted WebP file.
+
+    Raises:
+        ImageConversionError: If the upload cannot be read or converted.
     """
     image_file.seek(0)
-    
+
     try:
         with Image.open(image_file) as img:
-            if img.format != "WEBP":
-                return False
-    except UnidentifiedImageError:
-        return False
+            if img.format == WEBP_FORMAT:
+                return image_file
+
+            output = BytesIO()
+            img = ImageOps.exif_transpose(img)
+            img.convert(_get_webp_mode(img)).save(
+                output,
+                format=WEBP_FORMAT,
+                quality=85,
+            )
+    except (OSError, UnidentifiedImageError, Image.DecompressionBombError) as error:
+        raise ImageConversionError("Image could not be converted to WebP.") from error
     finally:
         image_file.seek(0)
-        
-    return True
+
+    return ContentFile(
+        output.getvalue(),
+        name=f"{Path(image_file.name).stem or 'image'}.webp",
+    )

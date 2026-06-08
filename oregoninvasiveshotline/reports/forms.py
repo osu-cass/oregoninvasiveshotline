@@ -2,14 +2,13 @@ from collections import namedtuple
 from typing import Any, List, cast
 
 from django.contrib.gis.geos import Point
-from django.core.exceptions import SuspiciousFileOperation
 from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Q
 from django import forms
 
-from oregoninvasiveshotline.utils.images import is_webp
+from oregoninvasiveshotline.utils.images import ImageConversionError, get_webp_image
 from oregoninvasiveshotline.utils.search import SearchForm
 from oregoninvasiveshotline.comments.models import Comment
 from oregoninvasiveshotline.counties.models import County
@@ -468,6 +467,14 @@ class NewReportForm(forms.Form):
         """
         if images and images.__len__() > 10:
             raise forms.ValidationError("You can only upload up to 10 images.")
+        try:
+            webp_images = [get_webp_image(image_file) for image_file in images or []]
+        except ImageConversionError as error:
+            raise forms.ValidationError(
+                "One or more images could not be processed. "
+                "Please upload valid image files."
+            ) from error
+
         # NOTE: If the user doesn't exist, a new inactive account is
         #       automatically created here, which seems to me like a
         #       tremendously bad idea (still trying to work out how to
@@ -499,11 +506,7 @@ class NewReportForm(forms.Form):
         report.save()
 
         # Save uploaded images attached to this report.
-        for i, image_file in enumerate(images or []):
-            if not is_webp(image_file):
-                # All submitted images MUST be of type webp
-                # This conversion is done on the client and if it isn't, then the user is an attacker
-                raise SuspiciousFileOperation("Images must be of type webp.")
+        for i, image_file in enumerate(webp_images):
             caption = (captions[i] if captions and i < len(captions) else '') or ''
             Image.objects.create(
                 image=image_file,
