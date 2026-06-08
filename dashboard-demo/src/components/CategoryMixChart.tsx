@@ -1,11 +1,11 @@
 import { Chart } from "@cloudflare/kumo/components/chart";
 import * as echarts from "echarts/core";
-import { BarChart } from "echarts/charts";
-import { GridComponent, TooltipComponent } from "echarts/components";
+import { PieChart } from "echarts/charts";
+import { LegendComponent, TooltipComponent } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
 import type { CategoryDatum } from "../data/dashboardData";
 
-echarts.use([BarChart, TooltipComponent, GridComponent, CanvasRenderer]);
+echarts.use([PieChart, TooltipComponent, LegendComponent, CanvasRenderer]);
 
 interface CategoryMixChartProps {
   /** Category mix data. */
@@ -14,7 +14,7 @@ interface CategoryMixChartProps {
 
 /** Renders report category mix as a compact Kumo chart. */
 export function CategoryMixChart({ categoryMix }: CategoryMixChartProps) {
-  const sortedMix = categoryMix.slice().sort((a, b) => a.value - b.value);
+  const sortedMix = categoryMix.slice().sort((a, b) => b.value - a.value);
 
   return (
     <article className="insight-panel">
@@ -25,34 +25,49 @@ export function CategoryMixChart({ categoryMix }: CategoryMixChartProps) {
         echarts={echarts}
         height={190}
         options={{
-          grid: { left: 72, right: 18, top: 8, bottom: 16 },
-          tooltip: { trigger: "axis", axisPointer: { type: "shadow" } },
-          xAxis: {
-            type: "value",
-            axisLabel: { show: false },
-            axisLine: { show: false },
-            axisTick: { show: false },
-            splitLine: { lineStyle: { color: "#edf1f5" } },
+          color: ["#2563eb", "#16a34a", "#f59e0b", "#7c3aed", "#0f766e"],
+          legend: {
+            bottom: 0,
+            icon: "circle",
+            itemGap: 10,
+            itemHeight: 8,
+            itemWidth: 8,
+            textStyle: {
+              color: "#4f6075",
+              fontSize: 11,
+              fontWeight: 600,
+            },
           },
-          yAxis: {
-            type: "category",
-            data: sortedMix.map((item) => item.label),
-            axisLine: { show: false },
-            axisTick: { show: false },
-            axisLabel: { color: "#4f6075", fontWeight: 600 },
+          tooltip: {
+            trigger: "item",
+            valueFormatter: (value) => `${value} reports`,
           },
           series: [
             {
               name: "Reports",
-              type: "bar",
-              data: sortedMix.map((item) => item.value),
-              itemStyle: { color: "#2563eb", borderRadius: [0, 5, 5, 0] },
-              barMaxWidth: 18,
+              type: "pie",
+              radius: ["48%", "70%"],
+              center: ["50%", "42%"],
+              avoidLabelOverlap: true,
+              data: sortedMix.map((item) => ({
+                name: item.label,
+                value: item.value,
+              })),
+              itemStyle: {
+                borderColor: "#ffffff",
+                borderRadius: 4,
+                borderWidth: 2,
+              },
               label: {
                 show: true,
-                position: "right",
+                formatter: "{c}",
                 color: "#334155",
-                fontWeight: 700,
+                fontSize: 11,
+                fontWeight: 650,
+              },
+              labelLine: {
+                length: 8,
+                length2: 6,
               },
             },
           ],
