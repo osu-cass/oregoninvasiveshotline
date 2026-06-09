@@ -18,15 +18,6 @@ export default function StepOne({
 }: StepOneProps) {
 	return (
 		<>
-			<h1 className="h5">Report an Invader</h1>
-
-			<p className="text-muted">
-				Use this form to report a possible invasive species in Oregon or get
-				help identifying an unknown species. The information you provide helps
-				experts identify your report as accurately as possible. Please include
-				as much detail as you can.
-			</p>
-
 			<div className="row g-3 mt-1">
 				<ImageUpload
 					images={form.data.images}
