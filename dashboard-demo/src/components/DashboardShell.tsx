@@ -25,11 +25,7 @@ export default function DashboardShell() {
     storedState.filters,
   );
   const [sourceReports] = useState(() => createGeneratedReports());
-  const dataset = createDashboardDataset(sourceReports, settings.dateRange, filters, {
-    responseDays: 7,
-    unclaimedDays: settings.unclaimedWarningDays,
-  });
-  const showInsights = settings.insightDisplay === "all";
+  const dataset = createDashboardDataset(sourceReports, settings.dateRange, filters);
 
   useEffect(() => {
     saveDashboardState({ filters, settings });
@@ -41,9 +37,19 @@ export default function DashboardShell() {
       ...nextSettings,
     }));
   };
+  const toggleCountyFilter = (countyKey: string) => {
+    setFilters((currentFilters) => ({
+      ...currentFilters,
+      counties: currentFilters.counties.includes(countyKey)
+        ? currentFilters.counties.filter(
+            (selectedCountyKey) => selectedCountyKey !== countyKey,
+          )
+        : [...currentFilters.counties, countyKey],
+    }));
+  };
 
   return (
-    <main className="dashboard-shell">
+    <main className="mx-auto w-[min(1480px,calc(100vw-40px))] py-8 pb-12 max-[720px]:w-[min(1480px,calc(100vw-24px))] max-[720px]:pt-5">
       <HeaderControls
         filters={filters}
         settings={settings}
@@ -51,20 +57,28 @@ export default function DashboardShell() {
         onResetFilters={() => setFilters(createDefaultFilters())}
         onSettingsChange={updateSettings}
       />
-      {settings.showMetricCards ? <MetricsGrid metrics={dataset.metrics} /> : null}
-      {showInsights ? (
-        <InsightsSection
-          categoryMix={dataset.categoryMix}
-          claimTimeByMonth={dataset.claimTimeByMonth}
-          countyLoad={dataset.countyLoad}
-          showMap={true}
-          showTrends={true}
-          submissionsByWeek={dataset.submissionsByWeek}
-        />
-      ) : null}
+      <MetricsGrid metrics={dataset.metrics} />
+      <InsightsSection
+        categoryDetails={dataset.categoryDetails}
+        categoryMix={dataset.categoryMix}
+        claimTimeByMonth={dataset.claimTimeByMonth}
+        countyLoad={dataset.countyLoad}
+        onCountySelectionChange={toggleCountyFilter}
+        selectedCountyKeys={filters.counties}
+        showMap={true}
+        showTrends={true}
+        submissionsByWeek={dataset.submissionsByWeek}
+      />
       <QueueList
         groupedByStatus={settings.groupedByStatus}
         groups={dataset.groups}
+        onGroupedByStatusChange={(groupedByStatus) =>
+          updateSettings({ groupedByStatus })
+        }
+        onRowsPerGroupChange={(rowsPerGroup) =>
+          updateSettings({ rowsPerGroup })
+        }
+        reviewerScores={dataset.reviewerScores}
         rows={dataset.tableRows}
         rowsPerGroup={settings.rowsPerGroup}
       />

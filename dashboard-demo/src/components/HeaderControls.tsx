@@ -7,7 +7,6 @@ import {
   ChevronDown,
   Filter,
   RotateCcw,
-  SlidersHorizontal,
 } from "lucide-react";
 import { useState } from "react";
 import {
@@ -15,24 +14,21 @@ import {
   claimants,
   countyGroups,
   getDateRangeLabel,
-  getStageLabel,
   hasActiveFilters,
   type DashboardFilters,
   type DateRangeKey,
-  type ReportStage,
 } from "../data/dashboardData";
 import type {
   DashboardSettings,
 } from "../data/dashboardSettings";
-
-const stageOptions: Array<ReportStage | "all"> = [
-  "all",
-  "unclaimed",
-  "claimed_needs_response",
-  "responded",
-  "confirmed",
-  "flagged",
-];
+import {
+  menuContent,
+  menuControl,
+  menuField,
+  menuFooter,
+  menuForm,
+  menuLabel,
+} from "../styles/tailwindClasses";
 
 const dateRangeOptions: DateRangeKey[] = ["last-30", "last-90", "ytd", "all"];
 
@@ -58,7 +54,6 @@ export function HeaderControls({
   onSettingsChange,
 }: HeaderControlsProps) {
   const [dateMenuOpen, setDateMenuOpen] = useState(false);
-  const [displayMenuOpen, setDisplayMenuOpen] = useState(false);
   const [filterMenuOpen, setFilterMenuOpen] = useState(false);
   const activeFilters = hasActiveFilters(filters);
   const form = useForm({
@@ -85,15 +80,17 @@ export function HeaderControls({
       : `${filters.counties.length} selected`;
 
   return (
-    <header className="page-header">
+    <header className="mb-5 flex items-start justify-between gap-6 max-[1180px]:flex-col">
       <div>
-        <h1>Report Operations</h1>
-        <p className="page-subtitle">
+        <h1 className="mb-2 text-[clamp(1.8rem,3vw,2.65rem)] font-[760] tracking-normal text-[#172033]">
+          Report Operations
+        </h1>
+        <p className="mb-0 max-w-[640px] text-[0.98rem] leading-normal text-[#607086]">
           A client demo for seeing where reports are waiting and how the
           hotline is performing.
         </p>
       </div>
-      <div className="header-actions">
+      <div className="flex min-w-[430px] flex-wrap justify-end gap-2.5 max-[1180px]:min-w-0 max-[1180px]:justify-start max-[720px]:w-full">
         <DropdownMenu
           modal={false}
           open={dateMenuOpen}
@@ -102,7 +99,7 @@ export function HeaderControls({
           <DropdownMenu.Trigger>
             <Button
               aria-label="Date range"
-              className="date-select"
+              className="min-w-[140px] justify-between"
               variant="secondary"
               size="sm"
             >
@@ -111,7 +108,7 @@ export function HeaderControls({
             </Button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content
-            className="demo-menu date-range-menu"
+            className={`${menuContent} min-w-[150px]`}
             sideOffset={8}
           >
             {dateRangeOptions.map((range) => (
@@ -127,118 +124,6 @@ export function HeaderControls({
         </DropdownMenu>
         <DropdownMenu
           modal={false}
-          open={displayMenuOpen}
-          onOpenChange={setDisplayMenuOpen}
-        >
-          <DropdownMenu.Trigger>
-            <Button variant="secondary" size="sm">
-              <SlidersHorizontal aria-hidden="true" size={15} />
-              <span className="header-action-label">Display</span>
-            </Button>
-          </DropdownMenu.Trigger>
-          <DropdownMenu.Content className="demo-menu" sideOffset={8}>
-            <form
-              className="menu-form"
-              onSubmit={(event) => event.preventDefault()}
-            >
-              <div className="menu-label">Display</div>
-              <form.Field name="showMetricCards">
-                {(field) => (
-                  <div className="menu-control">
-                    <Switch
-                      checked={settings.showMetricCards}
-                      label="Show top cards"
-                      onCheckedChange={(checked) => {
-                        field.handleChange(checked);
-                        onSettingsChange({ showMetricCards: checked });
-                      }}
-                      size="sm"
-                    />
-                  </div>
-                )}
-              </form.Field>
-              <form.Field name="groupedByStatus">
-                {(field) => (
-                  <div className="menu-control">
-                    <Switch
-                      checked={settings.groupedByStatus}
-                      label="Grouped by status"
-                      onCheckedChange={(checked) => {
-                        field.handleChange(checked);
-                        onSettingsChange({ groupedByStatus: checked });
-                      }}
-                      size="sm"
-                    />
-                  </div>
-                )}
-              </form.Field>
-              <form.Field name="insightDisplay">
-                {(field) => (
-                  <div className="menu-control">
-                    <Switch
-                      checked={settings.insightDisplay !== "hidden"}
-                      label="Show insights"
-                      onCheckedChange={(checked) => {
-                        const insightDisplay = checked ? "all" : "hidden";
-                        field.handleChange(insightDisplay);
-                        onSettingsChange({ insightDisplay });
-                      }}
-                      size="sm"
-                    />
-                  </div>
-                )}
-              </form.Field>
-              <DropdownMenu.Separator />
-              <div className="menu-field">
-                <span>Rows per group</span>
-                <form.Field name="rowsPerGroup">
-                  {(field) => (
-                    <Select
-                      aria-label="Rows per group"
-                      value={String(settings.rowsPerGroup)}
-                      onValueChange={(value) => {
-                        const rows = Number(value);
-                        field.handleChange(rows);
-                        onSettingsChange({ rowsPerGroup: rows });
-                      }}
-                      renderValue={(value) => `${value} rows`}
-                      size="sm"
-                    >
-                      <Select.Option value="3">3 rows</Select.Option>
-                      <Select.Option value="5">5 rows</Select.Option>
-                      <Select.Option value="8">8 rows</Select.Option>
-                    </Select>
-                  )}
-                </form.Field>
-              </div>
-              <div className="menu-field">
-                <span>Unclaimed warning</span>
-                <form.Field name="unclaimedWarningDays">
-                  {(field) => (
-                    <Select
-                      aria-label="Unclaimed warning threshold"
-                      value={String(settings.unclaimedWarningDays)}
-                      onValueChange={(value) => {
-                        const days = Number(value);
-                        field.handleChange(days);
-                        onSettingsChange({ unclaimedWarningDays: days });
-                      }}
-                      renderValue={(value) => `Warn after ${value} days`}
-                      size="sm"
-                    >
-                      <Select.Option value="1">Warn after 1 day</Select.Option>
-                      <Select.Option value="2">Warn after 2 days</Select.Option>
-                      <Select.Option value="3">Warn after 3 days</Select.Option>
-                      <Select.Option value="5">Warn after 5 days</Select.Option>
-                    </Select>
-                  )}
-                </form.Field>
-              </div>
-            </form>
-          </DropdownMenu.Content>
-        </DropdownMenu>
-        <DropdownMenu
-          modal={false}
           open={filterMenuOpen}
           onOpenChange={setFilterMenuOpen}
         >
@@ -248,151 +133,132 @@ export function HeaderControls({
               size="sm"
             >
               <Filter aria-hidden="true" size={15} />
-              <span className="header-action-label">
+              <span className="text-[0.76rem]">
                 {activeFilters ? "Filters active" : "Filters"}
               </span>
             </Button>
           </DropdownMenu.Trigger>
-          <DropdownMenu.Content className="demo-menu filter-menu" sideOffset={8}>
+          <DropdownMenu.Content className={`${menuContent} w-[294px]`} sideOffset={8}>
             <form
-              className="menu-form"
+              className={menuForm}
               onSubmit={(event) => event.preventDefault()}
             >
-              <div className="menu-label">Filters</div>
-            <div className="menu-field">
-              <span>Status</span>
-              <form.Field name="stage">
-                {(field) => (
-                  <Select
-                    aria-label="Status filter"
-                    value={filters.stage}
-                    onValueChange={(value) => {
-                      const stage = value as DashboardFilters["stage"];
-                      field.handleChange(stage);
-                      updateFilters({ stage });
-                    }}
-                    renderValue={(value) =>
-                      getStageLabel(value as ReportStage | "all")
-                    }
-                    size="sm"
-                  >
-                    {stageOptions.map((stage) => (
-                      <Select.Option key={stage} value={stage}>
-                        {getStageLabel(stage)}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                )}
-              </form.Field>
-            </div>
-            <div className="menu-field">
-              <span>County</span>
-              <div className="county-filter-summary">{countyFilterLabel}</div>
-              <div className="county-filter-list">
-                {countyGroups.map((group) => (
-                  <div className="county-filter-group" key={group.state}>
-                    <div className="county-filter-heading">{group.label}</div>
-                    {group.counties.map((county) => {
-                      const countyKey = `${group.state}:${county}`;
-
-                      return (
-                        <DropdownMenu.CheckboxItem
-                          checked={filters.counties.includes(countyKey)}
-                          closeOnClick={false}
-                          key={countyKey}
-                          onCheckedChange={(checked) =>
-                            updateCountyFilter(countyKey, Boolean(checked))
-                          }
-                        >
-                          {county}
-                        </DropdownMenu.CheckboxItem>
-                      );
-                    })}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="menu-field">
-              <span>Category</span>
-              <form.Field name="category">
-                {(field) => (
-                  <Select
-                    aria-label="Category filter"
-                    value={filters.category}
-                    onValueChange={(value) => {
-                      const category = value as DashboardFilters["category"];
-                      field.handleChange(category);
-                      updateFilters({ category });
-                    }}
-                    renderValue={(value) =>
-                      value === "all" ? "All categories" : String(value)
-                    }
-                    size="sm"
-                  >
-                    <Select.Option value="all">All categories</Select.Option>
-                    {categories.map((category) => (
-                      <Select.Option key={category} value={category}>
-                        {category}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                )}
-              </form.Field>
-            </div>
-            <div className="menu-field">
-              <span>Claimant</span>
-              <form.Field name="claimant">
-                {(field) => (
-                  <Select
-                    aria-label="Claimant filter"
-                    value={filters.claimant}
-                    onValueChange={(value) => {
-                      field.handleChange(value);
-                      updateFilters({ claimant: value });
-                    }}
-                    renderValue={(value) =>
-                      value === "all" ? "All claimants" : String(value)
-                    }
-                    size="sm"
-                  >
-                    <Select.Option value="all">All claimants</Select.Option>
-                    {claimants.map((claimant) => (
-                      <Select.Option key={claimant} value={claimant}>
-                        {claimant}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                )}
-              </form.Field>
-            </div>
-            <DropdownMenu.Separator />
-            <form.Field name="publicOnly">
-              {(field) => (
-                <div className="menu-control">
-                  <Switch
-                    checked={filters.publicOnly}
-                    label="Public only"
-                    onCheckedChange={(checked) => {
-                      field.handleChange(checked);
-                      updateFilters({ publicOnly: checked });
-                    }}
-                    size="sm"
-                  />
+              <div className={menuLabel}>Filters</div>
+              <div className={menuField}>
+                <span>County</span>
+                <div className="rounded-md border border-[rgba(118,130,150,0.26)] bg-white px-[9px] py-[7px] text-[0.78rem] text-slate-700">
+                  {countyFilterLabel}
                 </div>
-              )}
-            </form.Field>
-            <DropdownMenu.Separator />
-            <div className="menu-footer">
-              <Button
-                variant="secondary"
-                size="sm"
-                disabled={!activeFilters}
-                onClick={onResetFilters}
-              >
-                <RotateCcw aria-hidden="true" size={14} />
-                Reset filters
-              </Button>
-            </div>
+                <div className="max-h-[210px] overflow-auto rounded-md border border-[rgba(118,130,150,0.2)] bg-white p-1 [&_[role=menuitemcheckbox]]:w-full">
+                  {countyGroups.map((group) => (
+                    <div
+                      className="mt-1 border-t border-[rgba(118,130,150,0.14)] pt-1 first:mt-0 first:border-t-0 first:pt-0"
+                      key={group.state}
+                    >
+                      <div className="px-2 pb-1 pt-1.5 text-[0.72rem] font-[680] text-slate-500">
+                        {group.label}
+                      </div>
+                      {group.counties.map((county) => {
+                        const countyKey = `${group.state}:${county}`;
+
+                        return (
+                          <DropdownMenu.CheckboxItem
+                            checked={filters.counties.includes(countyKey)}
+                            closeOnClick={false}
+                            key={countyKey}
+                            onCheckedChange={(checked) =>
+                              updateCountyFilter(countyKey, Boolean(checked))
+                            }
+                          >
+                            {county}
+                          </DropdownMenu.CheckboxItem>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className={menuField}>
+                <span>Category</span>
+                <form.Field name="category">
+                  {(field) => (
+                    <Select
+                      aria-label="Category filter"
+                      value={filters.category}
+                      onValueChange={(value) => {
+                        const category = value as DashboardFilters["category"];
+                        field.handleChange(category);
+                        updateFilters({ category });
+                      }}
+                      renderValue={(value) =>
+                        value === "all" ? "All categories" : String(value)
+                      }
+                      size="sm"
+                    >
+                      <Select.Option value="all">All categories</Select.Option>
+                      {categories.map((category) => (
+                        <Select.Option key={category} value={category}>
+                          {category}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  )}
+                </form.Field>
+              </div>
+              <div className={menuField}>
+                <span>Claimant</span>
+                <form.Field name="claimant">
+                  {(field) => (
+                    <Select
+                      aria-label="Claimant filter"
+                      value={filters.claimant}
+                      onValueChange={(value) => {
+                        field.handleChange(value);
+                        updateFilters({ claimant: value });
+                      }}
+                      renderValue={(value) =>
+                        value === "all" ? "All claimants" : String(value)
+                      }
+                      size="sm"
+                    >
+                      <Select.Option value="all">All claimants</Select.Option>
+                      {claimants.map((claimant) => (
+                        <Select.Option key={claimant} value={claimant}>
+                          {claimant}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  )}
+                </form.Field>
+              </div>
+              <DropdownMenu.Separator />
+              <form.Field name="publicOnly">
+                {(field) => (
+                  <div className={menuControl}>
+                    <Switch
+                      checked={filters.publicOnly}
+                      label="Public only"
+                      onCheckedChange={(checked) => {
+                        field.handleChange(checked);
+                        updateFilters({ publicOnly: checked });
+                      }}
+                      size="sm"
+                    />
+                  </div>
+                )}
+              </form.Field>
+              <DropdownMenu.Separator />
+              <div className={menuFooter}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={!activeFilters}
+                  onClick={onResetFilters}
+                >
+                  <RotateCcw aria-hidden="true" size={14} />
+                  Reset filters
+                </Button>
+              </div>
             </form>
           </DropdownMenu.Content>
         </DropdownMenu>

@@ -66,7 +66,7 @@ export function MetricTrendChart({ unit = "", values }: MetricTrendChartProps) {
   return (
     <svg
       aria-hidden="true"
-      className="metric-trend-chart"
+      className="mt-auto block h-28 w-full overflow-hidden"
       onMouseLeave={() => setHoveredIndex(null)}
       onMouseMove={handleMouseMove}
       viewBox={`0 0 ${width} ${height}`}
@@ -76,41 +76,71 @@ export function MetricTrendChart({ unit = "", values }: MetricTrendChartProps) {
 
         return (
           <g key={value}>
-            <text x="0" y={y + 4}>
+            <text fill="#64748b" fontSize="0.72rem" x="0" y={y + 4}>
               {formatAxisLabel(value, unit)}
             </text>
-            <line x1={plot.left} x2={plot.right} y1={y} y2={y} />
+            <line
+              stroke="#dbe3ee"
+              strokeDasharray="4 4"
+              strokeWidth="1"
+              x1={plot.left}
+              x2={plot.right}
+              y1={y}
+              y2={y}
+            />
           </g>
         );
       })}
-      <polygon points={areaPoints.join(" ")} />
-      <polyline points={points.join(" ")} />
+      <polygon fill="rgba(37, 99, 235, 0.08)" points={areaPoints.join(" ")} />
+      <polyline
+        fill="none"
+        points={points.join(" ")}
+        stroke="#2563eb"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
+      />
       {hoveredPoint ? (
         <>
           <line
-            className="metric-trend-hover-line"
+            stroke="#94a3b8"
+            strokeDasharray="3 3"
             x1={hoveredPoint.x}
             x2={hoveredPoint.x}
             y1={plot.top}
             y2={plot.bottom}
           />
           <circle
-            className="metric-trend-hover-dot"
             cx={hoveredPoint.x}
             cy={hoveredPoint.y}
+            fill="#ffffff"
             r="4"
+            stroke="#2563eb"
+            strokeWidth="2"
           />
           <g
-            className="metric-trend-tooltip"
             transform={`translate(${Math.min(242, Math.max(52, hoveredPoint.x - 44))} ${
               hoveredPoint.y < 52 ? hoveredPoint.y + 14 : hoveredPoint.y - 48
             })`}
           >
-            <rect height="36" rx="6" width="88" />
-            <text x="8" y="14">
+            <rect
+              fill="rgba(255, 255, 255, 0.96)"
+              filter="drop-shadow(0 5px 14px rgba(28, 36, 50, 0.14))"
+              height="36"
+              rx="6"
+              stroke="rgba(118, 130, 150, 0.18)"
+              width="88"
+            />
+            <text fill="#64748b" fontSize="0.68rem" fontWeight="600" x="8" y="14">
               {hoveredPoint.label}
             </text>
-            <text className="metric-trend-tooltip-value" x="8" y="29">
+            <text
+              fill="#172033"
+              fontSize="0.78rem"
+              fontWeight="760"
+              x="8"
+              y="29"
+            >
               {formatAxisLabel(hoveredPoint.value, unit)}
             </text>
           </g>

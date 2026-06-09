@@ -3,6 +3,7 @@ import { LineChart } from "echarts/charts";
 import { GridComponent, TooltipComponent } from "echarts/components";
 import * as echarts from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
+import { insightPanel, panelHeading, panelTitle } from "../styles/tailwindClasses";
 
 echarts.use([LineChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
@@ -22,9 +23,9 @@ export function VolumeChart({ data }: VolumeChartProps) {
   const interval = Math.max(0, Math.ceil(labels.length / 4) - 1);
 
   return (
-    <article className="insight-panel wide">
-      <div className="panel-heading">
-        <h2>Submissions over time</h2>
+    <article className={insightPanel}>
+      <div className={panelHeading}>
+        <h2 className={panelTitle}>Submissions over time</h2>
       </div>
       <Chart
         echarts={echarts}

@@ -12,8 +12,6 @@ export type ReportStage =
 export type ReportCategory = (typeof categories)[number];
 
 export interface DashboardFilters {
-  /** Workflow stage to include, or all stages. */
-  stage: ReportStage | "all";
   /** County keys to include; empty includes all counties. */
   counties: string[];
   /** Report category to include, or all categories. */
@@ -93,8 +91,6 @@ export interface StatusGroup {
   count: number;
   /** Oldest item age shown as a triage cue. */
   oldestAge: string;
-  /** Optional warning threshold text. */
-  threshold?: string;
   /** Whether the group starts expanded. */
   defaultOpen: boolean;
   /** Demo rows displayed by the group. */
@@ -122,9 +118,51 @@ export interface MetricCardData {
 
 export interface CategoryDatum {
   /** Category label. */
-  label: string;
+  label: ReportCategory;
   /** Count in the selected range. */
   value: number;
+}
+
+export interface CategoryCountyDatum {
+  /** County display label. */
+  county: string;
+  /** State abbreviation. */
+  state: string;
+  /** Count in the selected range. */
+  value: number;
+}
+
+export interface CategoryDetail {
+  /** Category label. */
+  category: ReportCategory;
+  /** Accent color used in the chart and dialog. */
+  color: string;
+  /** Current report count. */
+  total: number;
+  /** Share of all reports in the selected range. */
+  share: number;
+  /** Unclaimed reports in this category. */
+  unclaimed: number;
+  /** Claimed reports that still need a response. */
+  needsResponse: number;
+  /** Confirmed reports in this category. */
+  confirmed: number;
+  /** Reports not yet confirmed. */
+  unresolved: number;
+  /** Public reports in this category. */
+  publicCount: number;
+  /** Private reports in this category. */
+  privateCount: number;
+  /** Median days from submission to claim. */
+  medianClaimDays: number;
+  /** Median days from claim to response. */
+  medianResponseDays: number;
+  /** Counties with the largest category load. */
+  topCounties: CategoryCountyDatum[];
+  /** Most common reported species in the category. */
+  topSpecies: { species: string; value: number }[];
+  /** Operational rows that most need attention. */
+  priorityReports: ReportRow[];
 }
 
 export interface CountyDatum {
@@ -136,6 +174,33 @@ export interface CountyDatum {
   state: StateKey;
   /** Count in the selected range. */
   value: number;
+}
+
+export interface ReviewerScoreRow {
+  /** Reviewer display name. */
+  reviewer: string;
+  /** Demo reviewer email. */
+  email: string;
+  /** Current assigned report count. */
+  assignedReports: number;
+  /** Current assigned reports that still need action. */
+  activeReports: number;
+  /** Average days from submission to claim. */
+  averageClaimDays: number;
+  /** Average days from claim to response. */
+  averageResponseDays: number;
+  /** Average age in days for active assigned reports. */
+  averageActiveAgeDays: number;
+  /** Share of assigned reports with a response. */
+  completionRate: number;
+  /** Combined score used for default triage sorting. */
+  global: number;
+  /** Timeliness score for claims and responses. */
+  response: number;
+  /** Score for reports that reach a resolved state. */
+  completion: number;
+  /** Workload pressure score from active assigned reports. */
+  workload: number;
 }
 
 export interface DashboardDataset {
@@ -151,10 +216,14 @@ export interface DashboardDataset {
   claimTimeByMonth: { label: string; value: number }[];
   /** Category mix derived from reports. */
   categoryMix: CategoryDatum[];
+  /** Category drilldown details derived from reports. */
+  categoryDetails: CategoryDetail[];
   /** County workload derived from reports. */
   countyLoad: CountyDatum[];
   /** Flat report rows for ungrouped display. */
   tableRows: ReportRow[];
+  /** Reviewer score rows sorted by global score ascending. */
+  reviewerScores: ReviewerScoreRow[];
 }
 
 export interface WarningThresholds {
@@ -251,6 +320,14 @@ export const countyGroups = [
 
 export const categories = ["Plant", "Insect", "Aquatic", "Mollusk", "Pathogen"] as const;
 
+export const categoryColors = {
+  Aquatic: "#2563eb",
+  Insect: "#f59e0b",
+  Mollusk: "#7c3aed",
+  Pathogen: "#0f766e",
+  Plant: "#16a34a",
+} satisfies Record<ReportCategory, string>;
+
 const reportedSpeciesByCategory = {
   Plant: ["Tree-of-heaven", "Garlic mustard", "Japanese knotweed", "Puncturevine"],
   Insect: ["Emerald ash borer", "Spotted lanternfly", "Japanese beetle"],
@@ -281,7 +358,12 @@ export function createDashboardDataset(
     unclaimedDays: 2,
   },
 ): DashboardDataset {
-  const reports = filterReports(filterReportsByRange(sourceReports, range), filters);
+  const rangeReports = filterReportsByRange(sourceReports, range);
+  const countyContextReports = filterReports(rangeReports, {
+    ...filters,
+    counties: [],
+  });
+  const reports = filterReports(rangeReports, filters);
   const tableRows = reports
     .slice()
     .sort((a, b) => b.submittedAt.getTime() - a.submittedAt.getTime())
@@ -290,11 +372,13 @@ export function createDashboardDataset(
   return {
     reports,
     metrics: createMetrics(reports, thresholds),
-    groups: createGroups(reports, thresholds),
+    groups: createGroups(reports),
     submissionsByWeek: createSubmissionsByWeek(reports),
     claimTimeByMonth: createClaimTimeByMonth(reports),
     categoryMix: createCategoryMix(reports),
-    countyLoad: createCountyLoad(reports),
+    categoryDetails: createCategoryDetails(reports),
+    countyLoad: createCountyLoad(countyContextReports),
+    reviewerScores: createReviewerScores(reports),
     tableRows,
   };
 }
@@ -302,7 +386,6 @@ export function createDashboardDataset(
 /** Creates an empty filter set for the dashboard controls. */
 export function createDefaultFilters(): DashboardFilters {
   return {
-    stage: "all",
     counties: [],
     category: "all",
     claimant: "all",
@@ -313,25 +396,11 @@ export function createDefaultFilters(): DashboardFilters {
 /** Returns whether any dashboard filter is active. */
 export function hasActiveFilters(filters: DashboardFilters): boolean {
   return (
-    filters.stage !== "all" ||
     filters.counties.length > 0 ||
     filters.category !== "all" ||
     filters.claimant !== "all" ||
     filters.publicOnly
   );
-}
-
-/** Returns a human-readable workflow stage label. */
-export function getStageLabel(stage: ReportStage | "all"): string {
-  const labels: Record<ReportStage | "all", string> = {
-    all: "All statuses",
-    unclaimed: "Unclaimed",
-    claimed_needs_response: "Needs response",
-    responded: "Responded",
-    confirmed: "Confirmed",
-    flagged: "Flagged",
-  };
-  return labels[stage];
 }
 
 /** Generates a stable fake but coherent report dataset. */
@@ -437,10 +506,6 @@ function filterReports(
   filters: DashboardFilters,
 ): HotlineReport[] {
   return reports.filter((report) => {
-    if (filters.stage !== "all" && getReportStage(report) !== filters.stage) {
-      return false;
-    }
-
     if (
       filters.counties.length > 0 &&
       !filters.counties.includes(report.countyKey)
@@ -485,14 +550,14 @@ function createMetrics(
     {
       label: "Needs response",
       value: String(needsResponse.length),
-      delta: `${needsResponse.filter((report) => getClaimAge(report) > thresholds.responseDays).length} over threshold`,
+      delta: `${needsResponse.filter((report) => getClaimAge(report) > thresholds.responseDays).length} waiting 7d+`,
       tone: "warning",
       trend: createRecentStageTrend(needsResponse, 18),
     },
     {
       label: "Unclaimed",
       value: String(unclaimed.length),
-      delta: `${unclaimed.filter((report) => ageInDays(report.submittedAt) > thresholds.unclaimedDays).length} over threshold`,
+      delta: `${unclaimed.filter((report) => ageInDays(report.submittedAt) > thresholds.unclaimedDays).length} waiting 2d+`,
       tone: "warning",
       trend: createRecentStageTrend(unclaimed, 15),
     },
@@ -506,7 +571,7 @@ function createMetrics(
     {
       label: "Median time to respond",
       value: `${medianDays(responseDurations).toFixed(1)}d`,
-      delta: `${responseDurations.filter((duration) => duration > 7).length} over threshold`,
+      delta: `${responseDurations.filter((duration) => duration > 7).length} took 7d+`,
       tone: "warning",
       trend: createRecentDurationTrend(reports, "respond"),
       trendUnit: "d",
@@ -516,21 +581,18 @@ function createMetrics(
 
 function createGroups(
   reports: HotlineReport[],
-  thresholds: WarningThresholds,
 ): StatusGroup[] {
   const groups = [
     {
       title: "Unclaimed reports",
       description: "Created but not assigned.",
       stage: "unclaimed",
-      threshold: `Warn after ${thresholds.unclaimedDays} days`,
       defaultOpen: true,
     },
     {
       title: "Claimed, needs response",
       description: "Claimed reports that are not archived.",
       stage: "claimed_needs_response",
-      threshold: `Warn after ${thresholds.responseDays} days`,
       defaultOpen: true,
     },
     {
@@ -554,7 +616,7 @@ function createGroups(
   ] satisfies Array<
     Pick<
       StatusGroup,
-      "defaultOpen" | "description" | "stage" | "threshold" | "title"
+      "defaultOpen" | "description" | "stage" | "title"
     >
   >;
 
@@ -680,6 +742,107 @@ function createCategoryMix(reports: HotlineReport[]): CategoryDatum[] {
     .filter((item) => item.value > 0);
 }
 
+/** Creates detailed category stats for the drilldown dialog. */
+function createCategoryDetails(reports: HotlineReport[]): CategoryDetail[] {
+  const totalReports = reports.length;
+
+  return categories
+    .map((category) => {
+      const categoryReports = reports.filter(
+        (report) => report.category === category,
+      );
+      const claimDurations = categoryReports.flatMap((report) =>
+        report.claimedAt
+          ? [daysBetween(report.submittedAt, report.claimedAt)]
+          : [],
+      );
+      const responseDurations = categoryReports.flatMap((report) =>
+        report.claimedAt && report.respondedAt
+          ? [daysBetween(report.claimedAt, report.respondedAt)]
+          : [],
+      );
+      const confirmed = categoryReports.filter(
+        (report) => report.confirmedAt,
+      ).length;
+
+      return {
+        category,
+        color: categoryColors[category],
+        confirmed,
+        medianClaimDays: medianDays(claimDurations),
+        medianResponseDays: medianDays(responseDurations),
+        needsResponse: categoryReports.filter(
+          (report) => report.claimedAt && !report.respondedAt,
+        ).length,
+        priorityReports: createPriorityReports(categoryReports),
+        privateCount: categoryReports.filter((report) => !report.public).length,
+        publicCount: categoryReports.filter((report) => report.public).length,
+        share:
+          totalReports === 0 ? 0 : categoryReports.length / totalReports,
+        topCounties: createTopCategoryCounties(categoryReports),
+        topSpecies: createTopSpecies(categoryReports),
+        total: categoryReports.length,
+        unclaimed: categoryReports.filter((report) => !report.claimedAt).length,
+        unresolved: categoryReports.length - confirmed,
+      };
+    })
+    .filter((detail) => detail.total > 0)
+    .sort((a, b) => b.total - a.total);
+}
+
+/** Returns the highest-priority category reports for the dialog. */
+function createPriorityReports(reports: HotlineReport[]): ReportRow[] {
+  return reports
+    .slice()
+    .sort((left, right) => {
+      const stagePriority =
+        getStagePriority(getReportStage(left)) - getStagePriority(getReportStage(right));
+
+      if (stagePriority !== 0) {
+        return stagePriority;
+      }
+
+      return left.submittedAt.getTime() - right.submittedAt.getTime();
+    })
+    .slice(0, 4)
+    .map(toReportRow);
+}
+
+/** Returns the counties with the largest category load. */
+function createTopCategoryCounties(reports: HotlineReport[]): CategoryCountyDatum[] {
+  const counts = new Map<string, CategoryCountyDatum>();
+
+  for (const report of reports) {
+    const key = report.countyKey;
+    const current = counts.get(key);
+    counts.set(key, {
+      county: report.county,
+      state: report.state === "oregon" ? "OR" : "WA",
+      value: (current?.value ?? 0) + 1,
+    });
+  }
+
+  return Array.from(counts.values())
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 3);
+}
+
+/** Returns the most common reported species names. */
+function createTopSpecies(
+  reports: HotlineReport[],
+): Array<{ species: string; value: number }> {
+  const counts = new Map<string, number>();
+
+  for (const report of reports) {
+    counts.set(report.reportedSpecies, (counts.get(report.reportedSpecies) ?? 0) + 1);
+  }
+
+  return Array.from(counts.entries())
+    .map(([species, value]) => ({ species, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 3);
+}
+
 function createCountyLoad(reports: HotlineReport[]): CountyDatum[] {
   return countyGroups
     .flatMap((group) =>
@@ -694,6 +857,65 @@ function createCountyLoad(reports: HotlineReport[]): CountyDatum[] {
     )
     .filter((item) => item.value > 0)
     .sort((a, b) => b.value - a.value);
+}
+
+/** Creates reviewer score rows sorted from lowest global score to highest. */
+function createReviewerScores(reports: HotlineReport[]): ReviewerScoreRow[] {
+  return claimants
+    .map((reviewer) => {
+      const assignedReports = reports.filter((report) => report.claimant === reviewer);
+      const activeReports = assignedReports.filter((report) => !report.respondedAt);
+      const respondedReports = assignedReports.filter((report) => report.respondedAt);
+      const confirmedReports = assignedReports.filter((report) => report.confirmedAt);
+      const claimDurations = assignedReports.flatMap((report) =>
+        report.claimedAt
+          ? [daysBetween(report.submittedAt, report.claimedAt)]
+          : [],
+      );
+      const responseDurations = assignedReports.flatMap((report) =>
+        report.claimedAt && report.respondedAt
+          ? [daysBetween(report.claimedAt, report.respondedAt)]
+          : [],
+      );
+      const activeAges = activeReports.map((report) => ageInDays(report.submittedAt));
+      const response =
+        assignedReports.length === 0
+          ? 0
+          : responseDurations.length === 0
+            ? 2
+            : clampScore(10 - medianDays(responseDurations) / 1.8);
+      const completion = clampScore(
+        assignedReports.length === 0
+          ? 0
+          : (respondedReports.length / assignedReports.length) * 7 +
+              (confirmedReports.length / assignedReports.length) * 3,
+      );
+      const workload = clampScore(Math.max(0, activeReports.length - 2) * 1.4);
+      const workloadHealth = 10 - workload;
+      const global = clampScore(
+        response * 0.4 + completion * 0.38 + workloadHealth * 0.22,
+      );
+
+      return {
+        activeReports: activeReports.length,
+        assignedReports: assignedReports.length,
+        averageActiveAgeDays: averageDays(activeAges),
+        averageClaimDays: averageDays(claimDurations),
+        averageResponseDays: averageDays(responseDurations),
+        completion,
+        completionRate:
+          assignedReports.length === 0
+            ? 0
+            : respondedReports.length / assignedReports.length,
+        email: createReviewerEmail(reviewer),
+        global,
+        response,
+        reviewer,
+        workload,
+      };
+    })
+    .filter((row) => row.assignedReports > 0)
+    .sort((a, b) => a.global - b.global);
 }
 
 function toReportRow(report: HotlineReport): ReportRow {
@@ -732,6 +954,19 @@ function getLastAction(report: HotlineReport): string {
   }
 
   return "Submitted with photos";
+}
+
+/** Returns the operational priority order for report stages. */
+function getStagePriority(stage: ReportStage): number {
+  const priority: Record<ReportStage, number> = {
+    claimed_needs_response: 1,
+    flagged: 2,
+    unclaimed: 3,
+    responded: 4,
+    confirmed: 5,
+  };
+
+  return priority[stage];
 }
 
 function oldestDetail(reports: HotlineReport[]): string {
@@ -783,6 +1018,22 @@ function medianDays(values: number[]): number {
   return sorted.length % 2 === 0
     ? (sorted[middle - 1] + sorted[middle]) / 2
     : sorted[middle];
+}
+
+/** Returns the average day value for a set of durations. */
+function averageDays(values: number[]): number {
+  if (values.length === 0) {
+    return 0;
+  }
+
+  return Number(
+    (values.reduce((total, value) => total + value, 0) / values.length).toFixed(1),
+  );
+}
+
+/** Keeps a report score within the visible zero-to-ten range. */
+function clampScore(score: number): number {
+  return Number(Math.max(0, Math.min(10, score)).toFixed(1));
 }
 
 function startOfWeek(date: Date): Date {

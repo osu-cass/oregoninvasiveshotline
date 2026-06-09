@@ -3,6 +3,7 @@ import * as echarts from "echarts/core";
 import { BarChart } from "echarts/charts";
 import { GridComponent, TooltipComponent } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
+import { insightPanel, panelHeading, panelTitle } from "../styles/tailwindClasses";
 
 echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer]);
 
@@ -16,9 +17,9 @@ export function TimeToClaimChart({ data }: TimeToClaimChartProps) {
   const max = Math.max(...data.map((item) => item.value), 1);
 
   return (
-    <article className="insight-panel">
-      <div className="panel-heading">
-        <h2>Median time to claim</h2>
+    <article className={insightPanel}>
+      <div className={panelHeading}>
+        <h2 className={panelTitle}>Median time to claim</h2>
       </div>
       <Chart
         echarts={echarts}
