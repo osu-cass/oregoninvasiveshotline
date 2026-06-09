@@ -22,6 +22,8 @@ interface ReportsTableProps {
   ariaLabel?: string;
   /** Whether to render table-level filter controls. */
   showControls?: boolean;
+  /** Visual treatment for the table container. */
+  variant?: "embedded" | "standalone";
   /** Rows to render in the report table. */
   rows: ReportRow[];
 }
@@ -47,11 +49,13 @@ export function ReportsTable({
   ariaLabel = "Reports",
   rows,
   showControls = true,
+  variant = "standalone",
 }: ReportsTableProps) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([
     { desc: false, id: "submitted" },
   ]);
+  const standalone = variant === "standalone";
   const table = useReactTable({
     columns: createReportColumns(),
     data: rows,
@@ -81,34 +85,45 @@ export function ReportsTable({
               onChange={(event) => setGlobalFilter(event.currentTarget.value)}
             />
           </label>
-          <span className="whitespace-nowrap text-[0.78rem] font-[620] text-slate-500 max-[720px]:whitespace-normal">
-            Default sort: submitted ascending
-          </span>
         </div>
       ) : null}
-      <div className="overflow-x-auto bg-white">
+      <div
+        className={
+          standalone
+            ? "overflow-x-auto rounded-lg border border-[rgba(118,130,150,0.2)] bg-white"
+            : "overflow-x-auto bg-white"
+        }
+      >
         <table
-          className="w-full min-w-[980px] table-fixed border-separate border-spacing-0 [&_tbody_td]:border-b [&_tbody_td]:border-[#edf1f5] [&_tbody_td]:align-middle [&_tbody_td]:text-[0.84rem] [&_tbody_td]:text-[#253247] [&_tbody_tr:hover_td]:bg-[#f8fbff] [&_tbody_tr:last-child_td]:border-b-0 [&_thead_th]:border-b [&_thead_th]:border-[#dfe5ec] [&_thead_th]:bg-[#f5f7fa] [&_thead_th]:text-left [&_thead_th]:text-[0.82rem] [&_thead_th]:font-[680] [&_thead_th]:tracking-normal [&_thead_th]:text-[#536173]"
+          className={`w-full border-separate border-spacing-0 [&_tbody_td]:border-b [&_tbody_td]:border-[#edf1f5] [&_tbody_td]:align-middle [&_tbody_td]:text-[0.84rem] [&_tbody_td]:text-[#253247] [&_tbody_tr:hover_td]:bg-[#f8fbff] [&_tbody_tr:last-child_td]:border-b-0 [&_thead_th]:border-b [&_thead_th]:border-[#dfe5ec] [&_thead_th]:bg-[#f5f7fa] [&_thead_th]:text-left [&_thead_th]:text-[0.82rem] [&_thead_th]:font-[680] [&_thead_th]:text-[#536173] [&_thead_th]:whitespace-nowrap ${
+            standalone ? "min-w-[1040px]" : "min-w-[980px] table-fixed"
+          }`}
           aria-label={ariaLabel}
         >
-          <colgroup>
-            <col className="w-[8%]" />
-            <col className="w-[8%]" />
-            <col className="w-[7%]" />
-            <col className="w-[10%]" />
-            <col className="w-[11%]" />
-            <col className="w-[12%]" />
-            <col className="w-[10%]" />
-            <col className="w-[28%]" />
-            <col className="w-[6%]" />
-          </colgroup>
+          {standalone ? null : (
+            <colgroup>
+              <col className="w-[8%]" />
+              <col className="w-[8%]" />
+              <col className="w-[7%]" />
+              <col className="w-[10%]" />
+              <col className="w-[11%]" />
+              <col className="w-[12%]" />
+              <col className="w-[10%]" />
+              <col className="w-[28%]" />
+              <col className="w-[6%]" />
+            </colgroup>
+          )}
           <thead>
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <th
                     aria-sort={getAriaSort(header.column.getIsSorted())}
-                    className="overflow-hidden text-ellipsis whitespace-nowrap px-3 py-2.5"
+                    className={
+                      standalone
+                        ? "px-3 py-2.5"
+                        : "overflow-hidden text-ellipsis whitespace-nowrap px-3 py-2.5"
+                    }
                     key={header.id}
                     scope="col"
                   >
@@ -138,7 +153,11 @@ export function ReportsTable({
                 <tr key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <td
-                      className="overflow-hidden text-ellipsis whitespace-nowrap px-3 py-[11px]"
+                      className={
+                        standalone
+                          ? "px-3 py-[11px]"
+                          : "overflow-hidden text-ellipsis whitespace-nowrap px-3 py-[11px]"
+                      }
                       key={cell.id}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}

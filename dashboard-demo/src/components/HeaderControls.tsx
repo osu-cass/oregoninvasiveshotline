@@ -82,13 +82,9 @@ export function HeaderControls({
   return (
     <header className="mb-5 flex items-start justify-between gap-6 max-[1180px]:flex-col">
       <div>
-        <h1 className="mb-2 text-[clamp(1.8rem,3vw,2.65rem)] font-[760] tracking-normal text-[#172033]">
-          Report Operations
+        <h1 className="mb-0 text-[clamp(1.45rem,2.1vw,2rem)] font-[760] tracking-normal text-[#172033]">
+          Hotline Console
         </h1>
-        <p className="mb-0 max-w-[640px] text-[0.98rem] leading-normal text-[#607086]">
-          A client demo for seeing where reports are waiting and how the
-          hotline is performing.
-        </p>
       </div>
       <div className="flex min-w-[430px] flex-wrap justify-end gap-2.5 max-[1180px]:min-w-0 max-[1180px]:justify-start max-[720px]:w-full">
         <DropdownMenu

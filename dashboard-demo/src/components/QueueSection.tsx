@@ -85,11 +85,12 @@ export function QueueSection({
               ariaLabel={`${group.title} reports`}
               rows={group.rows.slice(0, visibleRows)}
               showControls={false}
+              variant="embedded"
             />
             <div className="mt-0 flex items-center justify-between gap-4 border-t border-[rgba(118,130,150,0.14)] px-4 py-3 text-[0.82rem] text-[#5f6d7e] max-[720px]:items-start max-[720px]:flex-col">
               <span>
                 Showing {Math.min(visibleRows, group.rows.length)} of{" "}
-                {group.rows.length} sample rows.
+                {group.rows.length} reports.
               </span>
               <Button
                 variant="secondary"

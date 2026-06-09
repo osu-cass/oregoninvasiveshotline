@@ -46,12 +46,12 @@ const viewOptions: Array<{
   label: string;
 }> = [
   {
-    description: "Operational queue and report rows.",
+    description: "Reports by assignment and response status.",
     key: "reports",
     label: "Reports",
   },
   {
-    description: "Reviewer scores, lowest global score first.",
+    description: "Reviewer capacity and response timing.",
     key: "reviewers",
     label: "Reviewers",
   },
@@ -114,11 +114,11 @@ export function QueueList({
               ))}
             </DropdownMenu.Content>
           </DropdownMenu>
-          <p className="mb-0 mt-1 text-[0.88rem] text-[#5f6d7e]">
-            {showingReports
-              ? "Operational queue grouped by status or shown as a flat report list."
-              : "Reviewer table sorted by global score ascending."}
-          </p>
+          {!showingReports ? (
+            <p className="mb-0 mt-1 text-[0.88rem] text-[#5f6d7e]">
+              Reviewer capacity and response trends.
+            </p>
+          ) : null}
         </div>
         {showingReports ? (
           <div className="flex items-center gap-2 max-[720px]:flex-wrap max-[720px]:justify-start">

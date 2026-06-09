@@ -76,7 +76,7 @@ const reviewerHelpContent = {
       },
     ],
     summary:
-      "Scores are demo triage signals for balancing reviewer work. Lower scores mean the reviewer may need attention first.",
+      "Scores are triage signals for balancing reviewer work. Lower scores mean the reviewer may need attention first.",
     title: "Reviewer scores",
   },
   global: {
@@ -156,7 +156,7 @@ const reviewerHelpContent = {
       },
       {
         description:
-          "Only reports with a claim date are included. Unclaimed reports are not assigned to reviewers in this demo.",
+          "Only reports with a claim date are included. Unclaimed reports are not assigned to reviewers.",
         title: "Included rows",
       },
     ],
