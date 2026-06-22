@@ -15,6 +15,11 @@ about the species that was reported.
 
 Packages are managed with a jsDelivr script link in `templates/base.html`.
 
+## Deployment Links
+
+- Staging: <https://staging.oregoninvasiveshotline.org/>
+- Production: <https://oregoninvasiveshotline.org/>
+
 ## Getting started
 
 Ensure that you have Docker and Docker Compose installed in your host's environment.
