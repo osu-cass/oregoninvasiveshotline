@@ -7,6 +7,7 @@ import {
 	Steps,
 	type WizardFormData,
 } from "../components/wizard/fields";
+import AnnouncementBanner from "../components/wizard/announcementBanner";
 import StepFour from "../components/wizard/steps/four";
 import StepOne from "../components/wizard/steps/one";
 import StepThree from "../components/wizard/steps/three";
@@ -58,6 +59,9 @@ export default function FormWizard(props: FormWizardProps) {
 						<h1 className="h3 mb-2 text-center text-white">
 							Report an Invader
 						</h1>
+						<AnnouncementBanner>
+							Return to the old report page <a href="/reports/create">here!</a>
+						</AnnouncementBanner>
 						<div className="card rounded-4 shadow-md">
 							<div className="card-body p-3 p-md-4">
 								<div
