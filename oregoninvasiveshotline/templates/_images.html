@@ -11,7 +11,9 @@
         licensing guidelines.
       </em>
     </p>
-    <p class="alert alert-info">The total size of your images when uploading must not exceed 16MB.</p>
+    <p class="alert alert-info">
+        Attaching images is strongly encouraged, as they make your report more effective.
+    </p>
     <div class="formset">
         {{ formset.management_form }}
         <!-- the first form yielded is the empty form. We use that as a template for the JS, so make it hidden -->
@@ -56,6 +58,7 @@
             {% endfor %}
         </div>
 
+        <div class="form-text mb-2">The total size of your images when uploading must not exceed 16MB.</div>
         <a href="#" class="formset-adder">Add Another Image</a>
     </div>
 </fieldset>
