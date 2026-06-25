@@ -60,7 +60,7 @@ export default function FormWizard(props: FormWizardProps) {
 							Report an Invader
 						</h1>
 						<AnnouncementBanner>
-							Return to the old report page <a href="/reports/create">here!</a>
+						<a href="/reports/create">Click here to use the Hotline classic reporting tool.</a>
 						</AnnouncementBanner>
 						<div className="card rounded-4 shadow-md">
 							<div className="card-body p-3 p-md-4">
