@@ -11,12 +11,14 @@
         licensing guidelines.
       </em>
     </p>
-    <p class="alert alert-info">
-        <strong>We strongly encourage you to submit a photo with your report. Reports without photos make it extremely difficult for Hotline managers to handle your report.</strong>
-    </p>
-    <p class="alert alert-info">
-        <strong>Emerald Ash Borer reports must include a photo of the insect itself or signs/symptoms of the infested tree for identification.</strong>
-    </p>
+    {% if show_image_alerts %}
+        <p class="alert alert-info">
+            <strong>We strongly encourage you to submit a photo with your report. Reports without photos make it extremely difficult for Hotline managers to handle your report.</strong>
+        </p>
+        <p class="alert alert-info">
+            <strong>Emerald Ash Borer reports must include a photo of the insect itself or signs/symptoms of the infested tree for identification.</strong>
+        </p>
+    {% endif %}
     <div class="formset">
         {{ formset.management_form }}
         <!-- the first form yielded is the empty form. We use that as a template for the JS, so make it hidden -->
