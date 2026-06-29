@@ -18,7 +18,7 @@ env = environ.Env(
     DEBUG=(bool, False),
     TEMPLATE_DEBUG=(bool, False),
     DJANGO_ENV=(str, 'dev'),
-    ALLOWED_HOSTS=(list, []),
+    ALLOWED_HOSTS=(list, ["localhost", "127.0.0.1"]),
     SECRET_KEY=(str, 'not a secret'),
     DB_ENGINE=(str, 'django.contrib.gis.db.backends.postgis'),
     DB_NAME=(str, 'invasives'),
@@ -39,11 +39,12 @@ env = environ.Env(
     CELERY_TASK_ALWAYS_EAGER=(bool, False),
     STATIC_ROOT=(str, ''),
     MEDIA_ROOT=(str, ''),
-    STATICFILES_STORAGE=(str, 'django.contrib.staticfiles.storage.StaticFilesStorage'),
+    STATICFILES_STORAGE=(str, 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'),
     CSRF_COOKIE_SECURE=(bool, True),
     SESSION_COOKIE_SECURE=(bool, True),
     SECURE_PROXY_SSL_HEADER=(str, ''),
     GOOGLE_API_KEY=(str, ''),
+    GOOGLE_MAP_ID=(str, ''),
     GOOGLE_ANALYTICS_TRACKING_ID=(str, ''),
     SENTRY_DSN=(str, ''),
     SENTRY_ENVIRONMENT=(str, ''),
@@ -132,6 +133,16 @@ STATIC_URL = '/static/'
 MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(FILE_ROOT, 'media'))  # pyright: ignore
 MEDIA_URL = '/media/'
 STATICFILES_STORAGE = env('STATICFILES_STORAGE')
+if ENV == 'test':
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": STATICFILES_STORAGE,
+    },
+}
 
 # TODO: Temporary increase to 5MB to support many file uploads (see AB#4342);
 #   need to evaluate if this can be reduced after implementing a new file upload mechanism
@@ -254,16 +265,18 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django.middleware.http.ConditionalGetMiddleware",
 
+    "oregoninvasiveshotline.middleware.precognition_middleware",
     "inertia.middleware.InertiaMiddleware",
 ]
 
 SECURE_CSP = {
     "default-src": [CSP.SELF],
-    "script-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", CSP.NONCE],
+    "script-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", "https://places.googleapis.com", CSP.NONCE],
+    "worker-src": [CSP.SELF, "blob:"],
     "style-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", CSP.UNSAFE_INLINE],
-    "img-src": [CSP.SELF, "data:", "https:"],
+    "img-src": [CSP.SELF, "blob:", "data:", "https:"],
     "font-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://fonts.googleapis.com", "https://fonts.gstatic.com"],
-    "connect-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com"],
+    "connect-src": [CSP.SELF, "https://cdn.jsdelivr.net", "https://maps.googleapis.com", "https://places.googleapis.com", "https://www.gstatic.com", "data:"],
     "object-src": [CSP.NONE],
     "base-uri": [CSP.SELF],
     "form-action": [CSP.SELF],
@@ -272,13 +285,20 @@ SECURE_CSP = {
 }
 
 if DEBUG:
+    CSRF_COOKIE_SECURE = False
+    SESSION_COOKIE_SECURE = False
+    vite_dev_host = env("DJANGO_VITE_DEV_SERVER_HOST")
+    vite_dev_port = env("DJANGO_VITE_DEV_SERVER_PORT")
+    vite_dev_http_origin = f"http://{vite_dev_host}:{vite_dev_port}"
+    vite_dev_ws_origin = f"ws://{vite_dev_host}:{vite_dev_port}"
+    SECURE_CSP["upgrade-insecure-requests"] = False
     SECURE_CSP["script-src"].extend([
-        "http://localhost:5173",
+        vite_dev_http_origin,
         CSP.UNSAFE_INLINE,
     ])
     SECURE_CSP["connect-src"].extend([
-        "http://localhost:5173",
-        "ws://localhost:5173",  # For HMR websocket
+        vite_dev_http_origin,
+        vite_dev_ws_origin,  # For HMR websocket.
     ])
 
 if not DEBUG:
@@ -352,6 +372,7 @@ ICON_TYPE = "png"
 
 GOOGLE_ANALYTICS_TRACKING_ID = env('GOOGLE_ANALYTICS_TRACKING_ID', default=None)  # pyright: ignore
 GOOGLE_API_KEY = read_secret('GOOGLE_API_KEY', str(env('GOOGLE_API_KEY')))
+GOOGLE_MAP_ID = read_secret('GOOGLE_MAP_ID', str(env('GOOGLE_MAP_ID')))
 
 NOTIFICATIONS = {
     'from_email': env('NOTIFICATIONS_FROM_EMAIL'),

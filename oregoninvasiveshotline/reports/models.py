@@ -11,6 +11,7 @@ from django.conf import settings
 from oregoninvasiveshotline.utils.images import generate_thumbnail
 from oregoninvasiveshotline.visibility import Visibility
 from oregoninvasiveshotline.images.models import Image
+from oregoninvasiveshotline.counties.models import County
 
 from .utils import generate_icon, icon_file_name
 
@@ -33,6 +34,7 @@ class Report(models.Model):
     reported_species = models.ForeignKey("species.Species", null=True, default=None, related_name="+", on_delete=models.SET_NULL)
 
     description = models.TextField(verbose_name="Please provide a description of your find")
+    identification_process = models.TextField(null=True, blank=True)
     location = models.TextField(
         verbose_name="Please provide a description of the area where species was found",
         help_text="""
@@ -45,7 +47,7 @@ class Report(models.Model):
     has_specimen = models.BooleanField(default=False, verbose_name="Do you have a physical specimen?")
 
     point = models.PointField(srid=4326)
-    county = models.ForeignKey('counties.County', null=True, on_delete=models.SET_NULL)
+    county = models.ForeignKey[County | None]('counties.County', null=True, on_delete=models.SET_NULL)
 
     created_by = models.ForeignKey("users.User", related_name="reports", on_delete=models.CASCADE)
     created_on = models.DateTimeField(auto_now_add=True)

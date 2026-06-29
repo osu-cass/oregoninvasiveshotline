@@ -38,6 +38,8 @@ class Category(models.Model):
         )
     )
 
+    species: models.Manager["Species"]
+
     def __str__(self):
         return self.name
 
@@ -69,7 +71,7 @@ class Species(models.Model):
         ordering = ['name']
 
     species_id = models.AutoField(primary_key=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, related_name="species", on_delete=models.CASCADE)
     is_confidential = models.BooleanField(
         default=False,
         help_text=(
@@ -82,6 +84,11 @@ class Species(models.Model):
     resources = models.TextField(blank=True)
     scientific_name = models.CharField(max_length=255, blank=True)
     severity = models.ForeignKey(Severity, on_delete=models.CASCADE)
+
+    identification_image = models.ImageField(upload_to='identification_images/', null=True, blank=True)
+    identification_image_alt = models.CharField(null=True, blank=True)
+    # Admins can add link that will allow a user to learn more about identification
+    identification_external_resource_link = models.URLField(null=True, blank=True)
 
     @property
     def title(self):

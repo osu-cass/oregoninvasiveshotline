@@ -1,0 +1,84 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+concurrency:
+  group: playwright-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      GOOGLE_MAP_ID: ${{ secrets.GOOGLE_MAP_ID }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+
+      - name: Validate Google Maps configuration
+        run: |
+          test -n "$GOOGLE_API_KEY"
+          test -n "$GOOGLE_MAP_ID"
+
+      - name: Create Docker secrets directory
+        run: |
+          mkdir -p docker/secrets
+          printf '%s' 'test-secret-key-for-ci' > docker/secrets/secret_key.txt
+          printf '%s' 'invasives' > docker/secrets/db_password.txt
+          printf '%s' "$GOOGLE_API_KEY" > docker/secrets/google_api_key.txt
+          printf '%s' "$GOOGLE_MAP_ID" > docker/secrets/google_map_id.txt
+          chmod 600 docker/secrets/*.txt 
+
+      - name: Set up environment variables
+        run: |
+          echo "COMPOSE_PROJECT_NAME=playwright-${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
+          echo "USER_ID=$(id -u)" >> "$GITHUB_ENV"
+          echo "GROUP_ID=$(id -g)" >> "$GITHUB_ENV"
+          echo "VOLUME_PATH=./volumes/playwright-${GITHUB_RUN_ID}" >> "$GITHUB_ENV"
+
+      - name: Create volume directories
+        run: |
+          mkdir -p "${VOLUME_PATH}/media" "${VOLUME_PATH}/static"
+          chown -R "${USER_ID}:${GROUP_ID}" "${VOLUME_PATH}/media" "${VOLUME_PATH}/static"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+
+      - name: Install Playwright Browsers
+        timeout-minutes: 15
+        run: DEBUG=pw:install npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+
+      - name: Clean up
+        if: always()
+        run: docker compose down -v

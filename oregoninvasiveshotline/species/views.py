@@ -47,10 +47,11 @@ def list_(request):
         'form': form,
     })
 
+species_create_fields = ['name', 'scientific_name', 'remedy', 'resources', 'is_confidential', 'category', 'severity', 'identification_image', 'identification_image_alt', 'identification_external_resource_link']
 
 class SpeciesCreateView(SuccessMessageMixin, CreateView):
     model = Species
-    fields = ['name', 'scientific_name', 'remedy', 'resources', 'is_confidential', 'category', 'severity']
+    fields = species_create_fields
     success_message = "Species created successfully."
     template_name_suffix = '_detail_form'
 
@@ -60,7 +61,7 @@ class SpeciesCreateView(SuccessMessageMixin, CreateView):
 
 class SpeciesDetailView(SuccessMessageMixin, UpdateView):
     model = Species
-    fields = ['name', 'scientific_name', 'remedy', 'resources', 'is_confidential', 'category', 'severity']
+    fields = species_create_fields
     success_message = "Species updated successfully."
     template_name_suffix = '_detail_form'
 

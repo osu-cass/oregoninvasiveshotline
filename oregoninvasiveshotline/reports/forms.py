@@ -1,14 +1,19 @@
 from collections import namedtuple
-from typing import Any, cast
+from typing import Any, List, cast
 
+from django.contrib.gis.geos import Point
+from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Q
 from django import forms
 
+from oregoninvasiveshotline.utils.images import ImageConversionError, get_webp_image
 from oregoninvasiveshotline.utils.search import SearchForm
 from oregoninvasiveshotline.comments.models import Comment
 from oregoninvasiveshotline.counties.models import County
+from oregoninvasiveshotline.images.models import Image
+from oregoninvasiveshotline.visibility import Visibility
 from oregoninvasiveshotline.species.models import Category, Severity, Species
 from oregoninvasiveshotline.users.models import User
 from oregoninvasiveshotline.reports.models import Invite, Report
@@ -17,6 +22,60 @@ from oregoninvasiveshotline.reports.tasks import (
     notify_report_subscribers,
     notify_invited_reviewer
 )
+
+ALLOWED_REPORT_STATES = ("Oregon", "Washington")
+PHONE_VALIDATION_ERROR = (
+    "Enter a phone number with at least 10 digits. You may use spaces, parentheses, "
+    "hyphens, periods, plus signs, or an extension."
+)
+PHONE_ALLOWED_CHARACTERS = set("0123456789 ()+.-")
+PHONE_EXTENSION_MARKERS = ("extension", "ext.", "ext", "x")
+
+
+def split_phone_extension(phone: str) -> tuple[str, str]:
+    """Split a phone number from a trailing extension marker."""
+    lower_phone = phone.lower()
+    for marker in PHONE_EXTENSION_MARKERS:
+        marker_start = lower_phone.rfind(marker)
+        if marker_start == -1:
+            continue
+
+        extension = phone[marker_start + len(marker):].strip()
+        if extension.isdigit():
+            return phone[:marker_start].strip(), extension
+
+    return phone, ""
+
+
+def validate_phone_number(value: str) -> str:
+    """Validate a common phone number format while allowing optional extensions."""
+    phone = value.strip()
+    if not phone:
+        return phone
+
+    phone_without_extension, _ = split_phone_extension(phone)
+    if any(char not in PHONE_ALLOWED_CHARACTERS for char in phone_without_extension):
+        raise forms.ValidationError(PHONE_VALIDATION_ERROR)
+
+    digit_count = sum(char.isdigit() for char in phone_without_extension)
+    if digit_count < 10:
+        raise forms.ValidationError(PHONE_VALIDATION_ERROR)
+
+    return phone
+
+
+def get_county(point: Point):
+    """Return the first county polygon that intersects a point.
+
+    Args:
+        point: Geographic point to test for county intersection.
+
+    Returns:
+        County | None: First matching county, if any.
+    """
+    return County.objects.filter(
+        the_geom__intersects=point,
+    ).first()
 
 
 def get_category_choices():
@@ -230,7 +289,6 @@ class ReportForm(forms.ModelForm):
     last_name = forms.CharField()
     suffix = forms.CharField(required=False)
     phone = forms.CharField(required=False)
-    has_completed_ofpd = forms.BooleanField(required=False)
     questions = forms.CharField(
         required=False,
         widget=forms.Textarea,
@@ -261,8 +319,6 @@ class ReportForm(forms.ModelForm):
         reported_species_field.empty_label = 'Unknown'
         reported_species_field.required = False
 
-        has_completed_ofpd_label = User._meta.get_field('has_completed_ofpd').verbose_name
-        self.fields['has_completed_ofpd'].label = has_completed_ofpd_label
 
     def clean_email(self):
         # NOTE: Technically, email addresses are case-sensitive, but in
@@ -272,6 +328,15 @@ class ReportForm(forms.ModelForm):
         return email
 
     def save(self, *args, **kwargs):
+        """Save the report, attach reporter details, and queue notifications.
+
+        Args:
+            *args: Positional arguments passed to ModelForm.save.
+            **kwargs: Keyword arguments passed to ModelForm.save.
+
+        Returns:
+            Report: The saved report instance.
+        """
         report = self.instance
 
         # NOTE: If the user doesn't exist, a new inactive account is
@@ -286,15 +351,170 @@ class ReportForm(forms.ModelForm):
             'last_name': self.cleaned_data.get('last_name'),
             'suffix': self.cleaned_data.get('suffix', ''),
             'phone': self.cleaned_data.get('phone', ''),
-            'has_completed_ofpd': self.cleaned_data.get('has_completed_ofpd'),
             'is_active': False,
         }
         user, _ = User.objects.get_or_create(email__iexact=email, defaults=defaults)
 
         report.created_by = user
-        report.county = County.objects.filter(the_geom__intersects=report.point).first()
+        report.county = get_county(report.point)
 
         super().save(*args, **kwargs)
+
+        questions = self.cleaned_data.get('questions')
+        if questions:
+            Comment.objects.create(
+                report=report, created_by=user, body=questions, visibility=Comment.PROTECTED)
+
+        transaction.on_commit(lambda: notify_report_submission.delay(report.pk, user.pk))
+        transaction.on_commit(lambda: notify_report_subscribers.delay(report.pk))
+
+        return report
+
+
+REPORT_LONG_TEXT_MAX_LENGTH = 3000
+
+
+class NewReportForm(forms.Form):
+
+    find_description = forms.CharField(max_length=REPORT_LONG_TEXT_MAX_LENGTH)
+    category = forms.ModelChoiceField(queryset=Category.objects.all())
+    species = forms.ModelChoiceField(queryset=Species.objects.all(), required=False)
+    is_species_unknown = forms.BooleanField(required=False, label='Species unknown')
+    identification_process = forms.CharField(
+        max_length=REPORT_LONG_TEXT_MAX_LENGTH,
+        required=False,
+        widget=forms.Textarea,
+    )
+    location_description = forms.CharField(max_length=REPORT_LONG_TEXT_MAX_LENGTH)
+    # Long/Lat are required, but we instead just set an error message on
+    # latitude that's a bit more human friendly later on in the clean method.
+    latitude = forms.FloatField(required=False)
+    longitude = forms.FloatField(required=False)
+    email = forms.EmailField()
+    first_name = forms.CharField()
+    last_name = forms.CharField()
+    phone = forms.CharField(required=False)
+    questions = forms.CharField(required=False, widget=forms.Textarea)
+
+    def clean_email(self):
+        """Normalize the submitted email address to lowercase.
+
+        Returns:
+            str: Normalized lowercase email address.
+        """
+        # NOTE: Technically, email addresses are case-sensitive, but in
+        #       practice we can ignore that.
+        email = self.cleaned_data['email']
+        email = email.lower()
+        return email
+
+    def clean_phone(self):
+        """Validate the optional reporter phone number."""
+        return validate_phone_number(self.cleaned_data.get('phone', ''))
+
+    def clean(self):
+        """Validate species-selection rules and required map coordinates.
+
+        Returns:
+            dict[str, Any]: Cleaned form data.
+        """
+        cleaned_data = super().clean()
+        category = cleaned_data.get('category')
+        species = cleaned_data.get('species')
+        is_species_unknown = cleaned_data.get('is_species_unknown')
+
+        if category and category.species.exists() and not species and not is_species_unknown:
+            self.add_error("species", "Either choose a species or check the 'Mark as unknown' option.")
+            self.add_error("is_species_unknown", "Either check the 'Mark as unknown' option or choose a species.")
+
+        # Currently this is an impossible state to get into based on the current UI code.
+        # However, probably still worth handling.
+        if species and is_species_unknown:
+            self.add_error("species", "You cannot choose a species and mark it as unknown at the same time.")
+            self.add_error("is_species_unknown", "You cannot choose a species and mark it as unknown at the same time.")
+
+        latitude = cleaned_data.get("latitude")
+        longitude = cleaned_data.get("longitude")
+        if latitude is None or longitude is None:
+            self.add_error("latitude", "Select a location on the map.")
+            return cleaned_data
+
+        # point = Point(longitude, latitude, srid=4326)
+        # if not get_allowed_county(point):
+        #     self.add_error("latitude", "Report location must be in Oregon or Washington.")
+
+        return cleaned_data
+
+    def _get_report_point(self):
+        """Create a WGS84 point from cleaned latitude and longitude values.
+
+        Returns:
+            Point: Geographic point using SRID 4326.
+        """
+        latitude = self.cleaned_data.get("latitude")
+        longitude = self.cleaned_data.get("longitude")
+        return Point(longitude, latitude, srid=4326)
+
+    def save(self, images: List[UploadedFile] | None = None, captions: List[str] | None = None):
+        """Create a report, attach uploaded images, and queue notifications.
+
+        Args:
+            images: Uploaded image files from the wizard.
+            captions: Optional captions aligned to uploaded images by index.
+
+        Returns:
+            Report: The created report instance.
+        """
+        if images and images.__len__() > 10:
+            raise forms.ValidationError("You can only upload up to 10 images.")
+        try:
+            webp_images = [get_webp_image(image_file) for image_file in images or []]
+        except ImageConversionError as error:
+            raise forms.ValidationError(
+                "One or more images could not be processed. "
+                "Please upload valid image files."
+            ) from error
+
+        # NOTE: If the user doesn't exist, a new inactive account is
+        #       automatically created here, which seems to me like a
+        #       tremendously bad idea (still trying to work out how to
+        #       fix this).
+        email = self.cleaned_data['email']
+        defaults = {
+            'email': email.lower(),
+            'prefix': '',
+            'first_name': self.cleaned_data.get('first_name'),
+            'last_name': self.cleaned_data.get('last_name'),
+            'suffix': '',
+            'phone': self.cleaned_data.get('phone', ''),
+            'is_active': False,
+        }
+        user, _ = User.objects.get_or_create(email__iexact=email, defaults=defaults)
+
+        point = self._get_report_point()
+        report = Report(
+            reported_category=self.cleaned_data['category'],
+            reported_species=self.cleaned_data.get('species'),
+            description=self.cleaned_data.get('find_description'),
+            identification_process=self.cleaned_data.get('identification_process'),
+            location=self.cleaned_data.get('location_description'),
+            point=point,
+            has_specimen=False,
+            created_by=user,
+        )
+        report.county = get_county(point)
+        report.save()
+
+        # Save uploaded images attached to this report.
+        for i, image_file in enumerate(webp_images):
+            caption = (captions[i] if captions and i < len(captions) else '') or ''
+            Image.objects.create(
+                image=image_file,
+                name=caption,
+                created_by=user,
+                report=report,
+                visibility=Visibility.PUBLIC,
+            )
 
         questions = self.cleaned_data.get('questions')
         if questions:
@@ -442,14 +662,3 @@ class ManagementForm(forms.ModelForm):
             self.instance.actual_species = None
 
         return super().save(*args, **kwargs)
-
-class TestForm(forms.Form):
-    STATE_CHOICES = [
-        ('', 'Choose...'),
-        ('OR', 'Oregon'),
-        ('WA', 'Washington'),
-        ('CA', 'California'),
-    ]
-
-    name = forms.CharField(label="Your Name", max_length=100, required=True)
-    state = forms.ChoiceField(label="State", choices=STATE_CHOICES, required=True)

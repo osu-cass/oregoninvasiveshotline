@@ -24,3 +24,16 @@ docker/secrets/
 *.swp
 
 /frontend/dist
+db.sql
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+/dashboard-demo
+
+# VS Hidden Folders
+.vs/

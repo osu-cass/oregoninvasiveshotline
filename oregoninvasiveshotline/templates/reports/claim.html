@@ -8,8 +8,8 @@ Steal Report
     <form method="post">
         {% csrf_token %}
         <p>Are you sure you want to steal this report from {{ report.claimed_by }}?</p>
-        <button class="btn btn-default" onclick="window.history.go(-1); return false">Cancel</button>
-        <button type="submit" name="steal" class="btn btn-danger" onclick="return confirm('Click OK if you are really sure')">Steal this report</button>
+        <button type="button" class="btn btn-default" data-history-back>Cancel</button>
+        <button type="submit" name="steal" class="btn btn-danger" data-confirm="Click OK if you are really sure">Steal this report</button>
     </form>
 </div>
 {% endblock %}

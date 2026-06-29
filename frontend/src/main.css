@@ -1,0 +1,12 @@
+:root {
+	--bs-hotline-green: #3a7a16;
+}
+
+.bg-hotline-green {
+	background-color: var(--bs-hotline-green);
+}
+
+.report-wizard-backdrop {
+	display: flex;
+	flex-direction: column;
+}

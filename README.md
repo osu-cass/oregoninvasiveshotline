@@ -27,6 +27,8 @@ You must configure a few API keys for this project. To create them, make files w
   - Recommended: `invasives`
 - `google_api_key.txt`
   - Create an API key on <https://mapsplatform.google.com/>. It should look something like `AIzaSyDQwAloK4wKTeKqKJ4oK4wKTeKqKJ4oK4w`.
+- `google_map_id.txt`
+  - Create a google maps map ID key on <https://mapsplatform.google.com/>. It should look something like `a1b2c3d4e5f6g7h8`. See <https://developers.google.com/maps/documentation/javascript/cloud-configuration#creating-map-id> for detailed steps.
 - `secret_key.txt`
   - Create a secret key. For development, you can use whatever random string. In production, use a secure random string.
 
@@ -50,10 +52,11 @@ View the website at <http://localhost:8000>.
 
 ### Testing
 
-To run the test library:
+To run the test libraries:
 
 ```bash
-make test_container
+make test_container # Python test library
+npm test # UI integration tests. Pass `--ui` for an interative ui to run tests.
 ```
 
 Tests will also run automatically on pull requests.
@@ -133,6 +136,21 @@ To run `pyright`:
 pyright
 ```
 
+### Docstring and JSDoc Conventions
+
+Use concise summary docs for new or changed functions/methods.
+
+- Python:
+  - Follow [PEP 257](https://peps.python.org/pep-0257/).
+  - Prefer a short summary line as the default.
+  - Add `Args:` / `Returns:` only when they improve clarity.
+  - In typed Python code, do not repeat type information from annotations unless needed for clarity.
+- TypeScript/JavaScript:
+  - Follow [TypeScript's supported JSDoc tags](https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html).
+  - For React components with typed props, document prop fields on the props interface/type.
+  - Avoid duplicating the same prop descriptions in both the interface and function-level `@param` docs.
+  - Use function-level `@param` docs for non-prop function parameters when helpful.
+
 ### Creating a Superuser
 
 To create a superuser, run the following command:
@@ -184,3 +202,9 @@ Expand this dropdown to see the service architecture when working in production.
 </summary>
 <img src="./readme-media/service-architecture-production.png" alt="Runtime architecture for the deployed application showing Docker containers and required external services. On the left are three external services not running in Docker: an external PostgreSQL database that must include PostGIS functionality and serves as the application’s primary data store; Sentry, an external error monitoring service configured via environment variables such as SENTRY_DSN and SENTRY_ENVIRONMENT; and an external SMTP server that accepts outgoing email from the application and is configured using environment variables including email host, port, TLS usage, username, and password. On the right are Docker-managed services: a RabbitMQ container on internal port 5672 acting as the message broker for asynchronous tasks and persisting data on a mounted volume; a Celery worker container that depends on RabbitMQ being healthy and processes background jobs, mounting application code, media storage, and system timezone configuration; and the main App container exposing a web server on port 8000 or a configurable port via the APP_PORT environment variable, mounting application code, static files, media files, and system timezone configuration. The App depends on the availability of PostgreSQL, the SMTP server, Sentry, and the Celery and RabbitMQ background processing pipeline. If the App container fails its health check, traffic is routed to Maintenance Mode, where a static HTML page is displayed instead of the application to indicate the service is unavailable."/>
 </details>
+
+## Miscellaneous Notes
+
+Prefix archived or otherwise unused branches with `archive/`. These branches are typically used for experiments or other work that is not currently active. For example, `archive/experiment-with-new-approach`.
+
+In the frontend, when adding charahcter limits, use "limits.ts"

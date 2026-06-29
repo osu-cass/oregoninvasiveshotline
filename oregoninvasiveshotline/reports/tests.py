@@ -5,21 +5,24 @@ import json
 import csv
 import io
 import os
+import tempfile
 from datetime import timedelta
+from typing import cast
 from unittest.mock import Mock, patch
 
 from django.utils import timezone
 from django.conf import settings
 from django.core import mail
-from django.core.exceptions import NON_FIELD_ERRORS
+from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.contrib.gis.geos import Point
 from django.db.models.signals import post_save
 from django.db import transaction
 from django.urls import reverse
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase, TransactionTestCase, override_settings
 
 from model_bakery.baker import make, prepare
+from PIL import Image as PILImage
 
 from oregoninvasiveshotline.utils.test.user import UserMixin
 from oregoninvasiveshotline.comments.forms import CommentForm
@@ -29,7 +32,7 @@ from oregoninvasiveshotline.species.models import Category, Severity, Species
 from oregoninvasiveshotline.notifications.models import UserNotificationQuery
 from oregoninvasiveshotline.users.models import User
 
-from .forms import InviteForm, ManagementForm, ReportForm, ReportSearchForm
+from .forms import InviteForm, ManagementForm, NewReportForm, ReportForm, ReportSearchForm
 from .models import Invite, Report, receiver__generate_icon
 from .views import _export
 
@@ -43,14 +46,14 @@ class SuppressPostSaveMixin:
 
     @classmethod
     def setUpClass(cls):
-    		# Super class comes from tests, which is passed in but not available to static code analysis
-        super().setUpClass()  # pyright: ignore 
+        # Super class comes from tests, which is passed in but not available to static code analysis
+        super().setUpClass()  # pyright: ignore
         post_save.disconnect(receiver__generate_icon, sender=Report)
 
     @classmethod
     def tearDownClass(cls):
-  			# Super class comes from tests, which is passed in but not available to static code analysis
-        super().tearDownClass()  # pyright: ignore 
+        # Super class comes from tests, which is passed in but not available to static code analysis
+        super().tearDownClass()  # pyright: ignore
         post_save.connect(receiver__generate_icon, sender=Report)
 
 
@@ -766,6 +769,145 @@ class ReportFormTest(TransactionTestCase, UserMixin):
         self.assertEqual(len(mail.outbox), 4)
 
 
+class NewReportFormTest(TransactionTestCase):
+
+    def _get_valid_form_data(self) -> dict[str, object]:
+        """Return valid report wizard form data."""
+        category = make(Category)
+        return {
+            "find_description": "Found near trail edge",
+            "category": category.pk,
+            "location_description": "Near mile marker 3",
+            "latitude": 44.0481,
+            "longitude": -123.0906,
+            "email": "foo@example.com",
+            "first_name": "Foo",
+            "last_name": "Bar",
+        }
+
+    def _make_uploaded_image(
+        self,
+        file_name: str = "test.png",
+        image_format: str = "PNG",
+        mode: str = "RGB",
+        color: tuple[int, ...] = (255, 0, 0),
+    ) -> InMemoryUploadedFile:
+        """Return an in-memory uploaded image."""
+        image_data = io.BytesIO()
+        PILImage.new(mode, (2, 2), color).save(image_data, format=image_format)
+        image_size = image_data.tell()
+        image_data.seek(0)
+        return InMemoryUploadedFile(
+            image_data,
+            'image',
+            file_name,
+            f"image/{image_format.lower()}",
+            image_size,
+            None,
+        )
+
+    def test_identification_process_not_required(self):
+        """Ensure the wizard form validates without an identification process note."""
+        category = make(Category)
+        form = NewReportForm({
+            "find_description": "Found near trail edge",
+            "category": category.pk,
+            "location_description": "Near mile marker 3",
+            "latitude": 44.0481,
+            "longitude": -123.0906,
+            "email": "foo@example.com",
+            "first_name": "Foo",
+            "last_name": "Bar",
+        })
+        self.assertTrue(form.is_valid())
+
+        with (
+            patch("oregoninvasiveshotline.reports.forms.notify_report_submission.delay"),
+            patch("oregoninvasiveshotline.reports.forms.notify_report_subscribers.delay"),
+        ):
+            report = form.save()
+
+        self.assertEqual(report.identification_process, "")
+
+    def test_save_maps_wizard_fields(self):
+        """Ensure wizard fields are persisted to report and follow-up comment records."""
+        category = make(Category)
+        form = NewReportForm({
+            "find_description": "Leafy plant with white flowers",
+            "category": category.pk,
+            "identification_process": "Compared leaves and flower clusters with a field guide",
+            "location_description": "Along roadside ditch",
+            "latitude": 44.0521,
+            "longitude": -123.0867,
+            "email": "foo@example.com",
+            "first_name": "Foo",
+            "last_name": "Bar",
+            "questions": "Can someone confirm species?",
+        })
+        self.assertTrue(form.is_valid())
+
+        with (
+            patch("oregoninvasiveshotline.reports.forms.notify_report_submission.delay"),
+            patch("oregoninvasiveshotline.reports.forms.notify_report_subscribers.delay"),
+        ):
+            report = form.save()
+
+        self.assertEqual(report.description, "Leafy plant with white flowers")
+        self.assertEqual(
+            report.identification_process,
+            "Compared leaves and flower clusters with a field guide",
+        )
+        self.assertEqual(
+            report.location,
+            "Along roadside ditch",
+        )
+        self.assertEqual(Comment.objects.get(report=report).body, "Can someone confirm species?")
+
+    def test_save_converts_non_webp_images(self):
+        """Ensure non-WebP uploads are saved as WebP files."""
+        form = NewReportForm(self._get_valid_form_data())
+        self.assertTrue(form.is_valid())
+        uploaded_image = self._make_uploaded_image(
+            mode="RGBA",
+            color=(255, 0, 0, 0),
+        )
+
+        with (
+            tempfile.TemporaryDirectory() as media_root,
+            override_settings(MEDIA_ROOT=media_root),
+            patch("oregoninvasiveshotline.reports.forms.notify_report_submission.delay"),
+            patch("oregoninvasiveshotline.reports.forms.notify_report_subscribers.delay"),
+        ):
+            report = form.save(images=[uploaded_image])
+            saved_image = Image.objects.get(report=report)
+
+            self.assertTrue(saved_image.image.name.endswith(".webp"))
+            with PILImage.open(saved_image.image.path) as img:
+                self.assertEqual(img.format, "WEBP")
+                pixel = cast(tuple[int, int, int, int], img.convert("RGBA").getpixel((0, 0)))
+                self.assertEqual(pixel[3], 0)
+
+    def test_save_raises_validation_error_when_image_conversion_fails(self):
+        """Ensure conversion failures surface as validation errors."""
+        form = NewReportForm(self._get_valid_form_data())
+        self.assertTrue(form.is_valid())
+        image_data = io.BytesIO(b"not an image")
+        uploaded_image = InMemoryUploadedFile(
+            image_data,
+            'image',
+            'test.jpg',
+            'image/jpeg',
+            len(image_data.getvalue()),
+            None,
+        )
+
+        with self.assertRaisesMessage(
+            ValidationError,
+            "One or more images could not be processed. Please upload valid image files.",
+        ):
+            form.save(images=[uploaded_image])
+
+
 class ManagementFormTest(SuppressPostSaveMixin, TestCase):
 
     def test_species_and_category_initialized(self):
@@ -977,7 +1119,7 @@ class UnclaimViewTest(TestCase, UserMixin):
 
         response = self.client.get(reverse("reports-unclaim", args=[report.pk]))
         self.assertEqual(response.status_code, 403)
-        
+
         # Self and report is not typed properly, so self.user/report.claimed_by is not typed properly
         report.claimed_by = self.user  # pyright: ignore
         report.save()

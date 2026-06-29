@@ -57,13 +57,12 @@ urlpatterns = [
 
     re_path(r'^reports/claim/(?P<report_id>\d+)/?$', reports.claim, name='reports-claim'),
     re_path(r'^reports/create/?$', reports.create, name='reports-create'),
+    re_path(r'^reports/create-new/?$', reports.create_new, name='reports-create-new'),
     re_path(r'^reports/delete/(?P<report_id>\d+)/?$', reports.delete, name='reports-delete'),
     re_path(r'^reports/detail/(?P<report_id>\d+)/?$', reports.detail, name='reports-detail'),
     re_path(r'^reports/help/?$', reports.help, name='reports-help'),
     re_path(r'^reports/list/?$', reports.list_, name='reports-list'),
     re_path(r'^reports/unclaim/(?P<report_id>\d+)/?$', reports.unclaim, name='reports-unclaim'),
-
-    path('test/', reports.test, name='test'),
 
     re_path(r'^severities/create/?$', permissions.is_staff(species.SeverityCreateView.as_view()), name='severities-create'),
     re_path(r'^severities/delete/(?P<pk>\d+)/?$', permissions.is_staff(species.SeverityDeleteView.as_view()), name='severities-delete'),

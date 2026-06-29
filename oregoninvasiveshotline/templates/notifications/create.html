@@ -15,6 +15,6 @@
             {% bootstrap_field form.user %}
         {% endif %}
         {% bootstrap_button button_type="submit" content="Submit" class="btn btn-primary" %}
-        <a href="javascript:window.history.go(-1)" class="btn btn-default">Back</a>
+        <button type="button" class="btn btn-default" data-history-back>Back</button>
     </form>
 {% endblock %}
