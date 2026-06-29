@@ -17,7 +17,11 @@ from .perms import can_edit_comment
 def edit(request, comment_id):
     comment = get_object_or_404(Comment, pk=comment_id)
     report = comment.report
-    if report.pk in request.session.get("report_ids", []) and not report.created_by.is_active:
+    if (
+        report.pk in request.session.get("report_ids", []) and
+        not report.created_by.is_active and
+        not request.user.is_active
+    ):
         request.user = report.created_by
 
     if request.user.is_anonymous:
