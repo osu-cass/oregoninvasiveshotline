@@ -216,7 +216,10 @@ export default function LocationMap({
 	];
 
 	return (
-		<div className="d-grid gap-2">
+		<div
+			className="d-grid gap-2"
+			style={{ gridTemplateColumns: "minmax(0, 1fr)" }}
+		>
 			{/* Location mode toggle group. */}
 			<div>
 				<p
