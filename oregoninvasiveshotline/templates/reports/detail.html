@@ -35,7 +35,7 @@ Report #{{ report.pk }} - {{ report }}
                     <em>Submitter does not have a specimen</em><br />
                 {% endif %}
 
-                {% if user|can_create_comment:report %}
+                {% if user|can_view_report_submitter_pii:report %}
                     <strong>Submitted by:</strong> {{ report.created_by.first_name }} {{ report.created_by.last_name }} ({{ report.created_by.email }}) {% if report.created_by.phone %}{{ report.created_by.phone }}{% endif %}<br />
                 {% endif %}
 

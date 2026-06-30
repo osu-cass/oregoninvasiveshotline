@@ -27,6 +27,11 @@ def can_view_private_report(user, report):
         return True
 
 
+@permissions.register(model=Report)
+def can_view_report_submitter_pii(user, report: Report) -> bool:
+    return user.is_authenticated and (user.is_active or user.is_staff)
+
+
 # Ignored the assignment of the decorator as it applies properly at runtime.
 @permissions.register(model=Report)  # pyright: ignore
 def can_adjust_visibility(user, report):
