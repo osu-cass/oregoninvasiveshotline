@@ -18,6 +18,7 @@ Packages are managed with a jsDelivr script link in `templates/base.html`.
 ## Deployment Links
 
 - Staging: <https://staging.oregoninvasiveshotline.org/>
+  - Contact staff for the Mailpit link to view emails on staging.
 - Production: <https://oregoninvasiveshotline.org/>
 
 ## Getting started
