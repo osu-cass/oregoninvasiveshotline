@@ -1,4 +1,5 @@
 import Field from "../../forms/field";
+import { REPORT_LONG_TEXT_MAX_LENGTH } from "../limits";
 import type { WizardStepProps } from "../types";
 
 /** Step 4: Reporter contact info and optional questions. */
@@ -58,6 +59,7 @@ export default function StepFour({ form }: WizardStepProps) {
 					optional
 					as="textarea"
 					textareaProps={{
+						maxLength: REPORT_LONG_TEXT_MAX_LENGTH,
 						rows: 4,
 						placeholder:
 							"Is there anything else you'd like advice on? For example: next steps, safe removal/containment, preventing spread, or what to keep an eye out for nearby",
