@@ -13,6 +13,7 @@ from oregoninvasiveshotline.visibility import Visibility
 from oregoninvasiveshotline.images.models import Image
 from oregoninvasiveshotline.counties.models import County
 
+from .constants import REPORT_LONG_TEXT_MAX_LENGTH
 from .utils import generate_icon, icon_file_name
 
 log = logging.getLogger(__name__)
@@ -33,10 +34,11 @@ class Report(models.Model):
     reported_category = models.ForeignKey("species.Category", on_delete=models.CASCADE)
     reported_species = models.ForeignKey("species.Species", null=True, default=None, related_name="+", on_delete=models.SET_NULL)
 
-    description = models.TextField(verbose_name="Please provide a description of your find")
-    identification_process = models.TextField(null=True, blank=True)
+    description = models.TextField(verbose_name="Please provide a description of your find", max_length=REPORT_LONG_TEXT_MAX_LENGTH)
+    identification_process = models.TextField(null=True, blank=True, max_length=REPORT_LONG_TEXT_MAX_LENGTH)
     location = models.TextField(
         verbose_name="Please provide a description of the area where species was found",
+        max_length=REPORT_LONG_TEXT_MAX_LENGTH,
         help_text="""
             For example name the road, trail or specific landmarks
             near the site whether the species was found. Describe the geographic

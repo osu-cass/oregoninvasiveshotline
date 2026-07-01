@@ -22,6 +22,7 @@ from oregoninvasiveshotline.reports.tasks import (
     notify_report_subscribers,
     notify_invited_reviewer
 )
+from oregoninvasiveshotline.reports.constants import REPORT_LONG_TEXT_MAX_LENGTH
 
 ALLOWED_REPORT_STATES = ("Oregon", "Washington")
 PHONE_VALIDATION_ERROR = (
@@ -291,7 +292,8 @@ class ReportForm(forms.ModelForm):
     phone = forms.CharField(required=False)
     questions = forms.CharField(
         required=False,
-        widget=forms.Textarea,
+        max_length=REPORT_LONG_TEXT_MAX_LENGTH,
+        widget=forms.Textarea(attrs={'maxlength': REPORT_LONG_TEXT_MAX_LENGTH}),
         label=(
             'Do you have additional questions for the invasive species expert who will review '
             'this report?'
@@ -309,7 +311,9 @@ class ReportForm(forms.ModelForm):
             'has_specimen',
         ]
         widgets = {
-            'point': forms.widgets.HiddenInput
+            'point': forms.widgets.HiddenInput,
+            'description': forms.Textarea(attrs={'maxlength': REPORT_LONG_TEXT_MAX_LENGTH}),
+            'location': forms.Textarea(attrs={'maxlength': REPORT_LONG_TEXT_MAX_LENGTH}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -369,9 +373,6 @@ class ReportForm(forms.ModelForm):
         transaction.on_commit(lambda: notify_report_subscribers.delay(report.pk))
 
         return report
-
-
-REPORT_LONG_TEXT_MAX_LENGTH = 3000
 
 
 class NewReportForm(forms.Form):
