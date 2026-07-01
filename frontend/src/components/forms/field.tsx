@@ -135,6 +135,12 @@ export default function Field(props: InputFieldProps | TextareaFieldProps) {
 				/>
 			)}
 
+			{props.as === "textarea" && props.textareaProps?.maxLength != null && (
+				<div className="form-text text-end">
+					{form.data[name].length} / {props.textareaProps.maxLength}
+				</div>
+			)}
+
 			{errorFeedback}
 		</div>
 	);
