@@ -62,7 +62,7 @@ To run the test libraries:
 
 ```bash
 make test_container # Python test library
-npm test # UI integration tests. Pass `--ui` for an interative ui to run tests.
+npm test # UI integration tests. Pass `--ui` for an interactive UI to run tests.
 ```
 
 Tests will also run automatically on pull requests.
