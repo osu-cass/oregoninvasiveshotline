@@ -26,39 +26,43 @@ Report #{{ report.pk }} - {{ report }}
             {% endif %}
         </div>
 
-        <p class="report-status-info">
-            {% if report.has_specimen %}
-                <em>Submitter has sample</em><br />
-            {% else %}
-                <em>Submitter does not have a specimen</em><br />
-            {% endif %}
+        <div class="d-flex flex-column flex-sm-row justify-content-between gap-2 align-items-sm-center mb-2">
+            <h4 class="mb-0">Description of specimen</h4>
+            <p class="x-small p-2 mb-0" style="background-color:#fcf8e3;">
+                {% if report.has_specimen %}
+                    <em>Submitter has sample</em><br />
+                {% else %}
+                    <em>Submitter does not have a specimen</em><br />
+                {% endif %}
 
-            {% if user|can_create_comment:report %}
-                <strong>Submitted by:</strong> {{ report.created_by.first_name }} {{ report.created_by.last_name }} ({{ report.created_by.email }}) {% if report.created_by.phone %}{{ report.created_by.phone }}{% endif %}<br />
-                {% if report.created_by.has_completed_ofpd %}
-                    <em title="Oregon Forest Pest Detector">OFPD trained</em><br />
+                {% if user|can_view_report_submitter_pii:report %}
+                    <strong>Submitted by:</strong> {{ report.created_by.first_name }} {{ report.created_by.last_name }} ({{ report.created_by.email }}) {% if report.created_by.phone %}{{ report.created_by.phone }}{% endif %}<br />
                 {% endif %}
-            {% endif %}
 
-            {% if report.edrr_status %}
-                <strong title="Early Detection and Rapid Response">EDRR Status:</strong> {{ report.get_edrr_status_display }}
-                <br />
-            {% endif %}
+                {% if report.edrr_status %}
+                    <strong title="Early Detection and Rapid Response">EDRR Status:</strong> {{ report.get_edrr_status_display }}
+                    <br />
+                {% endif %}
 
-            {% if user.is_active %}
-                {% if report.is_public %}
-                    <span class="bi bi-eye" title="Public"></span>
+                {% if user.is_active %}
+                    {% if report.is_public %}
+                        <span class="bi bi-eye" title="Public"></span>
+                    {% endif %}
+                    {% if report.actual_species %}
+                        <span class="bi bi-check-circle" title="Confirmed"></span>
+                    {% endif %}
+                    {% if report.is_archived %}
+                        <span class="bi bi-archive" title="Archived"></span>
+                    {% endif %}
                 {% endif %}
-                {% if report.actual_species %}
-                    <span class="bi bi-check-circle" title="Confirmed"></span>
-                {% endif %}
-                {% if report.is_archived %}
-                    <span class="bi bi-archive" title="Archived"></span>
-                {% endif %}
-            {% endif %}
-        </p>
-        <h4>Description of specimen</h4>
-        <blockquote>{{ report.description|default:"No description provided"|linebreaksbr }}</blockquote>
+            </p>
+        </div>
+        <blockquote class="text-break">{{ report.description|default:"No description provided"|linebreaksbr }}</blockquote>
+
+        {% if report.identification_process %}
+	        <h4 class="h6">Identification process:</h4>
+	        <blockquote>{{ report.identification_process|linebreaksbr }}</blockquote>
+        {% endif %}
 
         {% if images %}
             <div class="f-carousel" id="myCarousel">
@@ -132,7 +136,7 @@ Report #{{ report.pk }} - {{ report }}
             <h4>Location</h4>
             <div id="map-canvas" style="height:200px"></div>
             {% if report.location %}
-                <blockquote>{{ report.location|linebreaksbr }}</blockquote>
+                <blockquote class="text-break">{{ report.location|linebreaksbr }}</blockquote>
             {% endif %}
         </div>
 

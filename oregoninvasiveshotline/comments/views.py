@@ -11,26 +11,23 @@ from oregoninvasiveshotline.images.models import Image
 
 from .forms import CommentForm
 from .models import Comment
-from .perms import can_edit_comment
+from .perms import get_comment_editor
 
 
 def edit(request, comment_id):
     comment = get_object_or_404(Comment, pk=comment_id)
-    report = comment.report
-    if report.pk in request.session.get("report_ids", []) and not report.created_by.is_active:
-        request.user = report.created_by
 
-    if request.user.is_anonymous:
-        return login_required(lambda request: HttpResponse())(request)
-
-    if not can_edit_comment(request.user, comment):
+    user = get_comment_editor(request, comment)
+    if user is None:
+        if request.user.is_anonymous:
+            return login_required(lambda request: HttpResponse())(request)
         raise PermissionDenied()
 
-    PartialCommentForm = functools.partial(CommentForm, user=request.user, report=comment.report, instance=comment)
+    PartialCommentForm = functools.partial(CommentForm, user=user, report=comment.report, instance=comment)
     if request.POST:
         form = PartialCommentForm(request.POST)
         # ImageFormSet effectively extends BaseImageFormSet but is Any, so we coerce it to the type we want and ignore the type error
-        formset: BaseImageFormSet = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.filter(comment=comment), form_kwargs={'user': request.user})  # pyright: ignore[reportAssignmentType]
+        formset: BaseImageFormSet = ImageFormSet(request.POST, request.FILES, queryset=Image.objects.filter(comment=comment), form_kwargs={'user': user})  # pyright: ignore[reportAssignmentType]
         if form.is_valid() and formset.is_valid():
             form.save()
             formset.save_all(user=comment.created_by, fk=comment)
@@ -39,7 +36,7 @@ def edit(request, comment_id):
     else:
         form = PartialCommentForm()
         # see above comment for ignore reasoning
-        formset: BaseImageFormSet = ImageFormSet(queryset=Image.objects.filter(comment=comment), form_kwargs={'user': request.user})  # pyright: ignore[reportAssignmentType]
+        formset: BaseImageFormSet = ImageFormSet(queryset=Image.objects.filter(comment=comment), form_kwargs={'user': user})  # pyright: ignore[reportAssignmentType]
 
     return render(request, "comments/edit.html", {
         "comment": comment,
@@ -52,7 +49,7 @@ def delete(request, comment_id):
     comment = get_object_or_404(Comment, pk=comment_id)
     report = comment.report
     if request.method == "POST":
-        if can_edit_comment(request.user, comment):
+        if get_comment_editor(request, comment) is not None:
             comment.delete()
             messages.success(request, "Comment Deleted")
         else:

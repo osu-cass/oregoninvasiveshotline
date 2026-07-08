@@ -5,6 +5,8 @@ secrets:
     file: docker/secrets/db_password.txt
   GOOGLE_API_KEY:
     file: docker/secrets/google_api_key.txt
+  GOOGLE_MAP_ID:
+    file: docker/secrets/google_map_id.txt
 
 networks:
   default:
@@ -23,7 +25,7 @@ services:
       - ${VOLUME_PATH}/postgres/16/main:/var/lib/postgresql/data
       - ${VOLUME_PATH}/dumps:/archive
     ports:
-      - 5439:5432
+      - ${POSTGRES_PORT:-5439}:5432
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U invasives -d invasives"]
       interval: 5s
@@ -59,6 +61,8 @@ services:
       - APP_SERVICE=wsgi
       - APP_ENVIRONMENT=development
       - ENABLE_DEBUGGER=${ENABLE_DEBUGGER:-false}
+      - DJANGO_VITE_DEV_SERVER_HOST=localhost
+      - DJANGO_VITE_DEV_SERVER_PORT=${VITE_PORT:-5173}
     networks:
       - default
     ports:
@@ -79,6 +83,7 @@ services:
       - SECRET_KEY
       - DB_PASSWORD
       - GOOGLE_API_KEY
+      - GOOGLE_MAP_ID
     user: '${USER_ID}'
     healthcheck:
       test: ["CMD-SHELL", python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000')"]
@@ -92,9 +97,11 @@ services:
       dockerfile: docker/Dockerfile
       target: ui-dev
     command: npm run dev
+    environment:
+      - DJANGO_VITE_DEV_SERVER_PORT=${VITE_PORT:-5173}
     tty: true
     ports:
-      - "5173:5173"
+      - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
     develop:
       watch:
         - action: sync

@@ -7,6 +7,10 @@
 Report an Invader
 {% endblock %}
 {% block content %}
+<div class="alert alert-info mb-3 px-3 py-2">
+    <a href="{% url 'reports-create-new' %}">Click here to use the new Hotline reporting tool.</a>
+</div>
+
 <h3>Report an Invader</h3>
 
 <p>Use this form to report a potential invasive species you've found in Oregon or to request help in identifying an unknown species. The information you provide will assist invasive species experts in positively identifying your find. Please try to be as complete and detailed as possible.</p>
@@ -35,7 +39,6 @@ Report an Invader
             </div>
         </div>
         {% bootstrap_field form.email %}
-        {% bootstrap_field form.has_completed_ofpd %}
     </fieldset>
 
 
@@ -71,7 +74,7 @@ Report an Invader
         {% bootstrap_field form.description %}
     </fieldset>
 
-    {% include '_images.html' %}
+    {% include '_images.html' with show_image_alerts=True %}
 
     <fieldset>
         <legend>Questions?</legend>
@@ -95,6 +98,7 @@ Report an Invader
     <script nonce="{{csp_nonce}}" src="{% static 'js/img.js' %}" async></script>
     <script nonce="{{csp_nonce}}">var category_id_to_species_id = {{ category_id_to_species_id|safe }};</script>
     <script nonce="{{csp_nonce}}" src="{% static 'js/species_selector.js' %}" async></script>
+    <script nonce="{{csp_nonce}}" src="{% static 'js/char_counter.js' %}" async></script>
 
     <script nonce="{{csp_nonce}}">
         function initMap() {

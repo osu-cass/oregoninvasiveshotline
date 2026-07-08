@@ -2,6 +2,14 @@
 
 <fieldset id="images">
     <legend>Images</legend>
+    {% if show_image_alerts %}
+        <p class="alert alert-info">
+            <strong>We strongly encourage you to submit a photo with your report. Reports without photos make it extremely difficult for Hotline managers to handle your report.</strong>
+        </p>
+        <p class="alert alert-info">
+            <strong>Emerald Ash Borer reports must include a photo of the insect itself or signs/symptoms of the infested tree for identification.</strong>
+        </p>
+    {% endif %}
     <p>
       <em>
         To add photos, click the button below and browse for the image on your computer.
@@ -11,7 +19,6 @@
         licensing guidelines.
       </em>
     </p>
-    <p class="alert alert-info">The total size of your images when uploading must not exceed 16MB.</p>
     <div class="formset">
         {{ formset.management_form }}
         <!-- the first form yielded is the empty form. We use that as a template for the JS, so make it hidden -->
@@ -56,6 +63,7 @@
             {% endfor %}
         </div>
 
+        <div class="form-text mb-2">The total size of your images when uploading must not exceed 16MB.</div>
         <a href="#" class="formset-adder">Add Another Image</a>
     </div>
 </fieldset>
