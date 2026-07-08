@@ -377,7 +377,7 @@ def create_new(request: HttpRequest):
         form = NewReportForm(data, request.FILES)
 
         if is_precognition(request):
-           return parse_precognition_fields(request, form)
+            return parse_precognition_fields(request, form)
 
         if form.is_valid():
             images = collect_indexed(request.FILES, "images")
