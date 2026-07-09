@@ -395,7 +395,11 @@ class NewReportForm(forms.Form):
     first_name = forms.CharField()
     last_name = forms.CharField()
     phone = forms.CharField(required=False)
-    questions = forms.CharField(required=False, widget=forms.Textarea)
+    questions = forms.CharField(
+        max_length=REPORT_LONG_TEXT_MAX_LENGTH,
+        required=False,
+        widget=forms.Textarea,
+    )
 
     def clean_email(self):
         """Normalize the submitted email address to lowercase.
