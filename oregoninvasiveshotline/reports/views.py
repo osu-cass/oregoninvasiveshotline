@@ -385,7 +385,7 @@ def create_new(request: HttpRequest):
             try:
                 report = form.save(images=images, captions=captions)
             except forms.ValidationError as e:
-                form.add_error("images", e)
+                form.add_error(None, e)
             else:
                 messages.success(request, "Report submitted successfully")
                 request.session.setdefault("report_ids", []).append(report.pk)
