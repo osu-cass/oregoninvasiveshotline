@@ -185,7 +185,7 @@ def create(request: HttpRequest):
             response.delete_cookie("zoom", request.get_full_path())
             return response
     else:
-    		# ImageFormSet inherits type incorrectly so we need to cast it to the correct type
+        # ImageFormSet inherits type incorrectly so we need to cast it to the correct type
         formset: BaseImageFormSet = ImageFormSet(queryset=Image.objects.none())  # pyright: ignore[reportAssignmentType]
         form = ReportForm()
 
@@ -397,8 +397,8 @@ def create_new(request: HttpRequest):
     categories = Category.objects.prefetch_related("species").all()
 
     props["categories"] = [
-    	{
-        	"category_id": category.category_id,
+        {
+            "category_id": category.category_id,
             "name": category.name,
             "species": [
                 {
@@ -411,7 +411,7 @@ def create_new(request: HttpRequest):
                 } for species in category.species.all()
             ]
         }
-     for category in categories
+        for category in categories
     ]
 
     props["google_api_key"] = settings.GOOGLE_API_KEY
