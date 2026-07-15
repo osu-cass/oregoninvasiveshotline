@@ -8,12 +8,14 @@ from oregoninvasiveshotline.utils.test.user import UserMixin
 from oregoninvasiveshotline.comments.models import Comment
 from oregoninvasiveshotline.users.models import User
 
+from ..constants import REPORT_LONG_TEXT_MAX_LENGTH
 from ..forms import ReportForm
 from ..models import Report
 from .shared import ORIGIN
 
 
 class ReportFormTest(TransactionTestCase, UserMixin):
+    LONG_TEXT_FIELDS = ("description", "location", "questions")
 
     def test_reported_species_is_not_required(self):
         form = ReportForm({})
@@ -71,3 +73,14 @@ class ReportFormTest(TransactionTestCase, UserMixin):
             form.save()
 
         self.assertEqual(Comment.objects.get(report=report).body, "hello world")
+
+    def test_long_text_fields_validate_max_length(self):
+        """Long text fields reject values over the max length."""
+        too_long = "a" * (REPORT_LONG_TEXT_MAX_LENGTH + 1)
+        form = ReportForm({field_name: too_long for field_name in self.LONG_TEXT_FIELDS})
+
+        form.is_valid()
+
+        for field_name in self.LONG_TEXT_FIELDS:
+            with self.subTest(field_name=field_name):
+                self.assertTrue(form.has_error(field_name, "max_length"))
