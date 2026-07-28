@@ -1,7 +1,6 @@
 import "vite/modulepreload-polyfill";
 import { createInertiaApp } from "@inertiajs/react";
 import axios from "axios";
-import { client } from "laravel-precognition";
 import type { ComponentType, ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { Toaster } from "sonner";
@@ -13,6 +12,10 @@ type InertiaPage = ComponentType & {
 	layout?: (page: ReactNode) => ReactNode;
 };
 
+type InertiaPageData = NonNullable<
+	NonNullable<Parameters<typeof createInertiaApp>[0]>["page"]
+>;
+
 import "./main.css";
 
 const features = import.meta.glob<{ default: InertiaPage }>(
@@ -20,12 +23,22 @@ const features = import.meta.glob<{ default: InertiaPage }>(
 );
 
 document.addEventListener("DOMContentLoaded", () => {
+	const app = document.getElementById("app");
+	if (!app?.dataset.page) {
+		throw new Error("Inertia page data is missing.");
+	}
+
+	const page = JSON.parse(app.dataset.page) as InertiaPageData;
+
 	axios.defaults.xsrfCookieName = "csrftoken";
 	axios.defaults.xsrfHeaderName = "X-CSRFToken";
 
-	client.use(axios);
-
 	createInertiaApp({
+		page,
+		http: {
+			xsrfCookieName: "csrftoken",
+			xsrfHeaderName: "X-CSRFToken",
+		},
 		resolve: async (name) => {
 			const page = (await features[`./features/${name}.tsx`]()).default;
 			page.layout = page.layout || Layout;
