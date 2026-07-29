@@ -1,22 +1,49 @@
 version: 2
 updates:
+  # Python dependencies live in the root Pipfile / Pipfile.lock, not /docker.
   - package-ecosystem: "pip"
-    directory: "/docker"
+    directory: "/"
     schedule:
-      interval: "daily"
-    allow:
-      - dependency-name: "*"
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Los_Angeles"
+    groups:
+      python-production:
         dependency-type: "production"
+      python-development:
+        dependency-type: "development"
 
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
-    allow:
-      - dependency-name: "*"
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Los_Angeles"
+    groups:
+      # Listed first: a dependency joins the first group whose rules it matches.
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+          - "@inertiajs/react"
+          - "babel-plugin-react-compiler"
+      npm-production:
         dependency-type: "production"
+      npm-development:
+        dependency-type: "development"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Los_Angeles"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
