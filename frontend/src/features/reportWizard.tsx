@@ -1,5 +1,6 @@
 import { useForm } from "@inertiajs/react";
 import { useState } from "react";
+import AnnouncementBanner from "../components/wizard/announcementBanner";
 import ConfirmNoImagesDialog from "../components/wizard/confirmNoImagesDialog";
 import {
 	allFields,
@@ -7,7 +8,6 @@ import {
 	Steps,
 	type WizardFormData,
 } from "../components/wizard/fields";
-import AnnouncementBanner from "../components/wizard/announcementBanner";
 import StepFour from "../components/wizard/steps/four";
 import StepOne from "../components/wizard/steps/one";
 import StepThree from "../components/wizard/steps/three";
@@ -60,7 +60,9 @@ export default function FormWizard(props: FormWizardProps) {
 							Report an Invader
 						</h1>
 						<AnnouncementBanner>
-						<a href="/reports/create">Click here to use the Hotline classic reporting tool.</a>
+							<a href="/reports/create">
+								Click here to use the Hotline classic reporting tool.
+							</a>
 						</AnnouncementBanner>
 						<div className="card rounded-4 shadow-md">
 							<div className="card-body p-3 p-md-4">
@@ -186,26 +188,15 @@ export default function FormWizard(props: FormWizardProps) {
 										</div>
 									</>
 								)}
-								{/* Shows errors not used by a specific field. In theory should never show up if everything is working properly */}
-								{import.meta.env.DEV &&
-									Boolean(
-										Object.entries(form.errors).filter(
-											// @ts-expect-error
-											([k]) => !allFields.includes(k),
-										).length,
-									) && (
-										<>
-											Debug Errors:{" "}
-											{JSON.stringify(
-												Object.fromEntries(
-													Object.entries(form.errors).filter(
-														// @ts-expect-error
-														([k]) => !allFields.includes(k),
-													),
-												),
-											)}
-										</>
-									)}
+								{/* Errors not tied to a wizard field, e.g. server-side image conversion failures. */}
+								{Object.entries(form.errors)
+									// @ts-expect-error
+									.filter(([k]) => !allFields.includes(k))
+									.map(([key, error]) => (
+										<div key={key} className="alert alert-danger mt-3 mb-0">
+											{String(error)}
+										</div>
+									))}
 							</div>
 						</div>
 					</div>

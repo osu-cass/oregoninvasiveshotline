@@ -1,6 +1,5 @@
 import "vite/modulepreload-polyfill";
 import { createInertiaApp } from "@inertiajs/react";
-import axios from "axios";
 import type { ComponentType, ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { Toaster } from "sonner";
@@ -23,15 +22,14 @@ const features = import.meta.glob<{ default: InertiaPage }>(
 );
 
 document.addEventListener("DOMContentLoaded", () => {
+	// inertia-django renders the page object on <div id="app" data-page>, but
+	// Inertia v3 only auto-detects <script data-page="app">, so parse it ourselves.
 	const app = document.getElementById("app");
 	if (!app?.dataset.page) {
 		throw new Error("Inertia page data is missing.");
 	}
 
 	const page = JSON.parse(app.dataset.page) as InertiaPageData;
-
-	axios.defaults.xsrfCookieName = "csrftoken";
-	axios.defaults.xsrfHeaderName = "X-CSRFToken";
 
 	createInertiaApp({
 		page,
