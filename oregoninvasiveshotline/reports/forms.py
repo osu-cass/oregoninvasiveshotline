@@ -165,6 +165,17 @@ class ReportSearchForm(SearchForm):
         widget=forms.widgets.RadioSelect
     )
 
+    # Fields that narrow the result set. Fields with a default value, like
+    # is_archived, are excluded so an untouched search does not look filtered.
+    filter_fields = ['q', 'source', 'categories', 'counties', 'is_public', 'claimed_by']
+
+    @property
+    def has_active_filters(self) -> bool:
+        """Whether the search narrows the report list by any filter."""
+        if not self.is_bound or not self.is_valid():
+            return False
+        return any(self.cleaned_data.get(name) for name in self.filter_fields)
+
     def get_search_fields(self):
         return (
             'county__name',
