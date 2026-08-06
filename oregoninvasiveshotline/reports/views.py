@@ -12,7 +12,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls import reverse
-from django.db.models import Q
+from django.db.models import Count, Q, QuerySet
+from django.db.models.functions import Coalesce, ExtractYear
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -39,10 +40,80 @@ from .serializers import ReportSerializer
 from .utils import icon_file_name
 
 
+def _get_search_stats(reports: QuerySet) -> list[dict[str, int]]:
+    """Aggregate matching reports by year of creation with confirmed counts.
+
+    Years with no reports inside the matched range are filled with zero
+    rows so the chart's year axis is contiguous.
+    """
+    rows = list(
+        reports.order_by()
+        .annotate(year=ExtractYear('created_on'))
+        .values('year')
+        .annotate(
+            total=Count('pk'),
+            confirmed=Count('pk', filter=Q(actual_species__isnull=False)),
+        )
+        .order_by('year')
+    )
+    if not rows:
+        return rows
+    by_year = {row['year']: row for row in rows}
+    return [
+        by_year.get(year, {'year': year, 'total': 0, 'confirmed': 0})
+        for year in range(rows[0]['year'], rows[-1]['year'] + 1)
+    ]
+
+
+def _get_category_stats(reports: QuerySet) -> list[dict]:
+    """Count matching reports per effective category, most common first.
+
+    The effective category is the actual species' category when the
+    report is confirmed, falling back to the reported category.
+    """
+    return list(
+        reports.order_by()
+        .annotate(
+            category_name=Coalesce(
+                'actual_species__category__name', 'reported_category__name',
+            ),
+        )
+        .values('category_name')
+        .annotate(count=Count('pk'))
+        .order_by('-count', 'category_name')
+    )
+
+
+def _get_search_summary(
+    reports: QuerySet,
+    year_stats: list[dict[str, int]],
+    category_stats: list[dict],
+) -> dict:
+    """Build the facts for the stats summary tab."""
+    top_category = next(
+        (row for row in category_stats if row['category_name']),
+        None,
+    )
+    return {
+        'total': sum(row['total'] for row in year_stats),
+        'confirmed': sum(row['confirmed'] for row in year_stats),
+        'top_category': top_category['category_name'] if top_category else None,
+        'top_category_count': top_category['count'] if top_category else None,
+        'county_count': (
+            reports.order_by()
+            .exclude(county=None)
+            .values('county')
+            .distinct()
+            .count()
+        ),
+    }
+
+
 def list_(request):
     params = request.GET
     user = request.user
     report_ids = request.session.get('report_ids', [])
+    result_view = 'stats' if params.get('view') == 'stats' else 'map'
 
     form = ReportSearchForm(params, user=user, report_ids=report_ids)
     reports = Report.objects.all()
@@ -64,6 +135,10 @@ def list_(request):
             'claimed_by',
         )
         return _export(reports=reports, format=export_format)
+
+    report_stats = _get_search_stats(reports)
+    report_category_stats = _get_category_stats(reports)
+    report_summary = _get_search_summary(reports, report_stats, report_category_stats)
 
     # Paginate the results
     paginator = Paginator(reports, settings.ITEMS_PER_PAGE)
@@ -99,6 +174,10 @@ def list_(request):
         'form': form,
         'subscription_url': subscription_url,
         'tab': tab,
+        'report_stats': report_stats,
+        'report_category_stats': report_category_stats,
+        'report_summary': report_summary,
+        'result_view': result_view,
     }
     context.update(tab_context)
 

@@ -54,6 +54,32 @@ select[multiple] {
     width: 100%;
 }
 
+.search-input-column {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.search-input-column .form-control {
+    width: 100%;
+}
+
+/* Holds its line whether or not a count is shown, so nothing below shifts. */
+.search-result-count {
+    display: block;
+    height: 1rem;
+    line-height: 1rem;
+    margin-top: 0;
+    overflow: hidden;
+    padding-left: calc(0.75rem + 1px);
+    transform: translateY(4px);
+    white-space: nowrap;
+}
+
+.search-divider {
+    border-top: 1px solid #eee;
+    margin: 1rem 0 0.5rem;
+}
+
 #header {
     text-align:center;
     padding-bottom:20px;
@@ -331,6 +357,117 @@ select[multiple] {
     padding:10px;
 }
 
+.fixed-height-tabs {
+    container-type:inline-size;
+}
+
+/* Every pane is the same fixed height so switching tabs never shifts the page.
+ * The map used to be a bare 550px box preceded by a <br> (24px). The tab bar
+ * that replaced that <br> is 42px, so the panes give the 18px difference back
+ * and the page keeps the height it had before the tabs were added. */
+.fixed-height-tabs .tab-pane {
+    height:532px;
+}
+
+.fixed-height-tabs .tab-pane.active {
+    display:flex;
+    flex-direction:column;
+}
+
+/* Marks the element that should absorb the leftover height of its pane. */
+.tab-pane-fill {
+    flex:1;
+    min-height:0;
+}
+
+.stats-summary {
+    display:grid;
+    grid-template-columns:repeat(2, minmax(0, 1fr));
+    gap:10px 24px;
+    list-style:none;
+    margin:0 0 10px;
+    padding:12px 14px;
+    border:1px solid #e1e0d9;
+    border-radius:6px;
+    background:#f8f8f5;
+    color:#3d3c39;
+    font-size:0.95rem;
+    line-height:1.4;
+}
+
+.stats-summary-item {
+    min-width:0;
+    overflow-wrap:anywhere;
+}
+
+.stats-summary-item strong {
+    font-weight:600;
+    font-variant-numeric:tabular-nums;
+}
+
+@media (max-width: 767px) {
+    .stats-summary {
+        grid-template-columns:minmax(0, 1fr);
+    }
+}
+
+.stats-charts {
+    display:flex;
+    gap:10px;
+}
+
+.stats-chart-panel {
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    border:1px solid #e1e0d9;
+    border-radius:6px;
+    padding:8px 10px;
+}
+
+.stats-chart-panel-bar {
+    flex:0 0 58%;
+}
+
+.stats-chart-panel-bar:only-child {
+    flex:1 1 auto;
+}
+
+.stats-chart-panel-pie {
+    flex:1 1 auto;
+}
+
+.stats-chart-title {
+    margin:0 0 4px;
+    font-size:0.9rem;
+    font-weight:600;
+    color:#52514e;
+}
+
+/* The chart div absorbs the panel's leftover height. */
+.stats-chart-panel > div:last-child {
+    flex:1;
+    min-height:0;
+}
+
+@container (max-width: 47rem) {
+    #list-stats-pane {
+        height:auto;
+    }
+
+    .stats-charts {
+        flex:none;
+        flex-direction:column;
+    }
+
+    .stats-chart-panel {
+        box-sizing:border-box;
+        flex:0 0 320px;
+        width:100%;
+        height:320px;
+    }
+}
+
 .check-all {
     display:none;
 }
@@ -439,6 +576,41 @@ blockquote {
     overflow-y:auto;
     overflow-x:hidden;
     height:500px;
+}
+
+@media (max-width: 767px) {
+    .reports-table-scroll {
+        height:500px;
+        overflow-x:hidden;
+        overflow-y:auto;
+    }
+
+    .reports-table {
+        margin-bottom:0;
+        table-layout:fixed;
+    }
+
+    .reports-table tbody {
+        display:table-row-group !important;
+        height:auto;
+        overflow:visible;
+    }
+
+    .reports-table td {
+        overflow-wrap:break-word;
+    }
+
+    .reports-table-img {
+        width:64px;
+    }
+
+    .reports-table-img img {
+        display:block;
+        max-width:100%;
+        max-height:64px;
+        height:auto;
+        margin:0 auto;
+    }
 }
 
 .reports-table .reports-table-title {
