@@ -18,7 +18,7 @@
 		"@popperjs/core": "^2.11.8",
 		"@rolldown/plugin-babel": "^0.2.2",
 		"@vis.gl/react-google-maps": "^1.8.1",
-		"axios": "^1.14.0",
+		"axios": "^1.19.0",
 		"bootstrap": "^5.3.8",
 		"browser-image-compression": "^2.0.2",
 		"clsx": "^2.1.1",
