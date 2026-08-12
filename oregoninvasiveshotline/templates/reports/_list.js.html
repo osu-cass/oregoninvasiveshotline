@@ -121,6 +121,7 @@
       function initBarChart() {
           var instance = echarts.init(barContainer);
           instance.setOption({
+              aria: {enabled: true},
               tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}},
               legend: legendStyle,
               grid: {left: 8, right: 8, top: 12, bottom: 28, containLabel: true},
@@ -185,6 +186,7 @@
       function initPieChart() {
           var instance = echarts.init(pieContainer);
           instance.setOption({
+              aria: {enabled: true},
               tooltip: {
                   trigger: 'item',
                   confine: true,

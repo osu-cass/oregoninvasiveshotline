@@ -129,9 +129,11 @@ class ReportSearchForm(SearchForm):
         choices=get_county_choices,
         widget=forms.SelectMultiple(attrs={'title': 'Counties'})
     )
+    default_archive_filter = 'notarchived'
+
     is_archived = forms.ChoiceField(
         required=False,
-        initial='notarchived',
+        initial=default_archive_filter,
         label='Is Archived?',
         choices=[
             ('', '- Archived? -'),
@@ -165,8 +167,7 @@ class ReportSearchForm(SearchForm):
         widget=forms.widgets.RadioSelect
     )
 
-    # Fields that narrow the result set. Fields with a default value, like
-    # is_archived, are excluded so an untouched search does not look filtered.
+    # Fields that narrow the result set without a nonempty default.
     filter_fields = ['q', 'source', 'categories', 'counties', 'is_public', 'claimed_by']
 
     @property
@@ -174,7 +175,14 @@ class ReportSearchForm(SearchForm):
         """Whether the search narrows the report list by any filter."""
         if not self.is_bound or not self.is_valid():
             return False
-        return any(self.cleaned_data.get(name) for name in self.filter_fields)
+        archive_filter = self.cleaned_data.get('is_archived')
+        return (
+            any(self.cleaned_data.get(name) for name in self.filter_fields)
+            or bool(
+                archive_filter
+                and archive_filter != self.default_archive_filter
+            )
+        )
 
     def get_search_fields(self):
         return (

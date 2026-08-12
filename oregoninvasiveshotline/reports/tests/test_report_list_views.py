@@ -341,6 +341,16 @@ class ReportListResultCount(SuppressPostSaveMixin, TestCase, UserMixin):
             reverse("reports-list"), {"is_archived": "notarchived"})
         self.assertNotIn("3 results", response.content.decode())
 
+    def test_shown_for_archived_filter(self):
+        """An explicit archived selection displays its filtered result count."""
+        make(Report, point=ORIGIN, is_archived=True)
+        make(Report, point=ORIGIN, is_archived=False)
+
+        response = self.client.get(
+            reverse("reports-list"), {"is_archived": "archived"})
+
+        self.assertIn("1 result", response.content.decode())
+
     def test_shown_for_keyword_search(self):
         make(Report, _quantity=3, point=ORIGIN)
         response = self.client.get(reverse("reports-list"), {"q": "no-match"})
