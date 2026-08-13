@@ -200,10 +200,17 @@ class ReportSearchForm(SearchForm):
         self.report_ids = report_ids
 
     def search(self, queryset):
+        """Search reports using visibility and form filters."""
         reports = super().search(queryset)
+        source = self.cleaned_data.get('source')
 
-        # Ensure anonymous/public users cannot see non-public reports in all cases
-        if not self.user.is_active:
+        if source == 'invited':
+            user_invites = Invite.objects.filter(user=self.user)
+            reports = reports.filter(
+                pk__in=user_invites.values_list('report_id', flat=True)
+            )
+        elif not self.user.is_active:
+            # Limit non-managers to public or session reports.
             if self.report_ids:
                 reports = reports.filter(
                     Q(pk__in=self.report_ids) | Q(is_public=True)
@@ -239,13 +246,7 @@ class ReportSearchForm(SearchForm):
         elif claimed_by == 'nobody':
             reports = reports.filter(claimed_by__isnull=True)
 
-        source = self.cleaned_data.get('source')
-        if source == 'invited':
-            user_invites = Invite.objects.filter(user=self.user)
-            reports = reports.filter(
-                pk__in=user_invites.values_list('report_id', flat=True)
-            )
-        elif source == 'reported':
+        if source == 'reported':
             if self.user.is_active:
                 reports = reports.filter(created_by=self.user)
             if self.report_ids:
