@@ -1,3 +1,2 @@
-tblib~=3.2.2
 model_bakery
 coverage
