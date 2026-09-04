@@ -18,7 +18,7 @@ class CreateViewTest(TestCase):
         s1 = make(Species, category=c1)
         s2 = make(Species, category=c1)
         make(Species, category=c2)
-        response = self.client.get(reverse("reports-create"))
+        response = self.client.get(reverse("reports-create-old"))
         self.assertEqual(response.status_code, 200)
         # make sure the category_id_to_species_id gets populated
         self.assertEqual(set(json.loads(response.context['category_id_to_species_id'])[str(c1.pk)]), set([s1.pk, s2.pk]))
@@ -41,7 +41,7 @@ class CreateViewTest(TestCase):
             "form-MAX_NUM_FORMS": "1000",
         }
 
-        response = self.client.post(reverse("reports-create"), data)
+        response = self.client.post(reverse("reports-create-old"), data)
         report = Report.objects.order_by("-pk").first()
         assert report is not None
         self.assertRedirects(response, reverse("reports-detail", args=[report.pk]))
