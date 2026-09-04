@@ -5,6 +5,7 @@
   async
 ></script>
 <script nonce="{{csp_nonce}}">
+  /** Initialize the report map and its marker interactions. */
   function initMap() {
       var reports = {{ reports|jsonify }};
       if (reports.length === 0){
@@ -13,6 +14,17 @@
 
       var options = getDefaultMapOptions();
       var map = new google.maps.Map(document.getElementById('map-canvas'), options);
+      var mapTab = document.getElementById('list-map-tab');
+
+      if (mapTab) {
+          mapTab.addEventListener('shown.bs.tab', function () {
+              var center = map.getCenter();
+              google.maps.event.trigger(map, 'resize');
+              if (center) {
+                  map.setCenter(center);
+              }
+          });
+      }
 
       // we need to save all the "info windows" we create, so we can close them
       // all when a balloon is clicked (so only one window opens at a time)
@@ -50,11 +62,240 @@
       }
 
       $('.report-location-click').click(function(){
+          // The map lives in a tab pane, so switch back to it before opening the marker.
+          if (mapTab) {
+              bootstrap.Tab.getOrCreateInstance(mapTab).show();
+          }
           var index = $(this).data("report-index");
           google.maps.event.trigger(reports[index].marker, 'click');
 
       });
   }
+</script>
+<script nonce="{{csp_nonce}}" src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+<script nonce="{{csp_nonce}}">
+  document.addEventListener('DOMContentLoaded', function () {
+      var mapTab = document.getElementById('list-map-tab');
+      var statsTab = document.getElementById('list-stats-tab');
+      var barContainer = document.getElementById('stats-chart');
+      var pieContainer = document.getElementById('stats-pie');
+      if (!mapTab || !statsTab || !barContainer) {
+          return;
+      }
+
+      var stats = {{ report_stats|jsonify }};
+      var categoryStats = {{ report_category_stats|jsonify }};
+      var charts = null;
+
+      // Validated palette -- see docs/superpowers/plans/2026-07-24-stats-summary-charts.md.
+      var CONFIRMED_COLOR = '#2e5f0e';
+      var UNCONFIRMED_COLOR = '#eb6834';
+      var PIE_COLORS = ['#2e5f0e', '#eb6834', '#2a78d6', '#eda100', '#e87ba4', '#1baf7a', '#4a3aa7'];
+      var OTHER_COLOR = '#8f8d86';
+
+      var legendStyle = {
+          bottom: 0,
+          icon: 'circle',
+          itemWidth: 8,
+          itemHeight: 8,
+          itemGap: 10,
+          textStyle: {color: '#52514e', fontSize: 11, fontWeight: 600},
+      };
+
+      /**
+       * Return a padded, rounded maximum for the reports bar chart.
+       * @param {Object} value ECharts axis extent.
+       * @param {number} value.max Highest stacked total.
+       * @returns {number} Padded axis maximum.
+       */
+      function getBarAxisMax(value) {
+          var paddedMax = Math.max(value.max, 1) * 1.15;
+          var magnitude = Math.pow(10, Math.floor(Math.log10(paddedMax)));
+          var normalizedMax = paddedMax / magnitude;
+          var tickSize = normalizedMax <= 2 ? magnitude / 5 :
+              normalizedMax <= 5 ? magnitude / 2 : magnitude;
+          tickSize = Math.max(tickSize, 1);
+          return Math.ceil(paddedMax / tickSize) * tickSize;
+      }
+
+      function initBarChart() {
+          var instance = echarts.init(barContainer);
+          instance.setOption({
+              aria: {enabled: true},
+              tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}},
+              legend: legendStyle,
+              grid: {left: 8, right: 8, top: 12, bottom: 28, containLabel: true},
+              xAxis: {
+                  type: 'category',
+                  data: stats.map(function (s) { return String(s.year); }),
+                  axisLine: {lineStyle: {color: '#c3c2b7'}},
+                  axisLabel: {color: '#898781'},
+                  axisTick: {show: false},
+              },
+              yAxis: {
+                  type: 'value',
+                  min: 0,
+                  max: getBarAxisMax,
+                  minInterval: 1,
+                  axisLabel: {color: '#898781'},
+                  splitLine: {lineStyle: {color: '#e1e0d9', type: 'dashed'}},
+              },
+              series: [
+                  {
+                      name: 'Confirmed',
+                      type: 'bar',
+                      stack: 'reports',
+                      barMaxWidth: 40,
+                      itemStyle: {color: CONFIRMED_COLOR, borderColor: '#fff', borderWidth: 1},
+                      data: stats.map(function (s) { return s.confirmed; }),
+                  },
+                  {
+                      name: 'Unconfirmed',
+                      type: 'bar',
+                      stack: 'reports',
+                      barMaxWidth: 40,
+                      itemStyle: {color: UNCONFIRMED_COLOR, borderColor: '#fff', borderWidth: 1, borderRadius: [4, 4, 0, 0]},
+                      data: stats.map(function (s) { return s.total - s.confirmed; }),
+                  },
+              ],
+          });
+          return instance;
+      }
+
+      // Slices beyond the validated palette fold into a neutral "Other" bucket.
+      function getPieData() {
+          var slices = categoryStats.map(function (c) {
+              return {name: c.category_name, value: c.count};
+          });
+          if (slices.length > PIE_COLORS.length) {
+              var rest = slices.slice(PIE_COLORS.length);
+              slices = slices.slice(0, PIE_COLORS.length);
+              slices.push({
+                  name: 'Other',
+                  value: rest.reduce(function (sum, s) { return sum + s.value; }, 0),
+              });
+          }
+          return slices.map(function (slice, i) {
+              slice.itemStyle = {color: i < PIE_COLORS.length ? PIE_COLORS[i] : OTHER_COLOR};
+              return slice;
+          });
+      }
+
+      function initPieChart() {
+          var instance = echarts.init(pieContainer);
+          instance.setOption({
+              aria: {enabled: true},
+              tooltip: {
+                  trigger: 'item',
+                  confine: true,
+                  valueFormatter: function (value) {
+                      return value + ' report' + (value === 1 ? '' : 's');
+                  },
+              },
+              legend: legendStyle,
+              series: [{
+                  name: 'Reports',
+                  type: 'pie',
+                  radius: ['43%', '64%'],
+                  center: ['50%', '44%'],
+                  avoidLabelOverlap: true,
+                  itemStyle: {borderColor: '#fff', borderWidth: 2, borderRadius: 4},
+                  label: {color: '#52514e', fontSize: 11, fontWeight: 600, formatter: '{c}'},
+                  labelLine: {length: 8, length2: 6},
+                  data: getPieData(),
+              }],
+          });
+          return instance;
+      }
+
+      function resizeCharts() {
+          if (charts) {
+              charts.forEach(function (chart) { chart.resize(); });
+          }
+      }
+
+      /** Initialize or resize the charts after their tab becomes visible. */
+      function showCharts() {
+          if (charts) {
+              resizeCharts();
+              return;
+          }
+          charts = [initBarChart()];
+          if (pieContainer) {
+              charts.push(initPieChart());
+          }
+      }
+
+      /**
+       * Keep result navigation links aligned with the selected view.
+       * @param {'map'|'stats'} view Selected results view.
+       */
+      function updateResultViewLinks(view) {
+          document.querySelectorAll(
+              '.pagination .page-item:not(.disabled) .page-link, ' +
+              '.reports-table-sort .comma a'
+          ).forEach(function (link) {
+              var linkUrl = new URL(link.href);
+              if (view === 'stats') {
+                  linkUrl.searchParams.set('view', 'stats');
+              } else {
+                  linkUrl.searchParams.delete('view');
+              }
+              link.href = linkUrl.toString();
+          });
+      }
+
+      /**
+       * Keep the selected results view in the URL and search form.
+       * @param {'map'|'stats'} view Selected results view.
+       */
+      function updateResultView(view) {
+          var url = new URL(window.location.href);
+          var form = document.querySelector('form.form-inline');
+          var input = document.getElementById('result-view-input');
+
+          if (view === 'stats') {
+              url.searchParams.set('view', 'stats');
+              if (form && !input) {
+                  input = document.createElement('input');
+                  input.id = 'result-view-input';
+                  input.type = 'hidden';
+                  input.name = 'view';
+                  form.appendChild(input);
+              }
+              if (input) {
+                  input.value = 'stats';
+              }
+          } else {
+              url.searchParams.delete('view');
+              if (input) {
+                  input.remove();
+              }
+          }
+
+          updateResultViewLinks(view);
+          window.history.replaceState(
+              window.history.state,
+              '',
+              url.pathname + url.search + url.hash
+          );
+      }
+
+      mapTab.addEventListener('shown.bs.tab', function () {
+          updateResultView('map');
+      });
+
+      statsTab.addEventListener('shown.bs.tab', function () {
+          updateResultView('stats');
+          showCharts();
+      });
+
+      if (statsTab.classList.contains('active')) {
+          showCharts();
+      }
+
+      window.addEventListener('resize', resizeCharts);
+  });
 </script>
 <script nonce="{{csp_nonce}}" src="https://cdn.jsdelivr.net/npm/choices.js@11.1.0/public/assets/scripts/choices.min.js"></script>
 <script nonce="{{csp_nonce}}">
