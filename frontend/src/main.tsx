@@ -1,7 +1,6 @@
 import "vite/modulepreload-polyfill";
+import type { Page } from "@inertiajs/core";
 import { createInertiaApp } from "@inertiajs/react";
-import axios from "axios";
-import { client } from "laravel-precognition";
 import type { ComponentType, ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { Toaster } from "sonner";
@@ -19,17 +18,41 @@ const features = import.meta.glob<{ default: InertiaPage }>(
 	"./features/**/*.tsx",
 );
 
+/** Reads the initial page from the inertia-django~=1.2.0 `#app[data-page]` contract. */
+function readDjangoInitialPage(): Page {
+	const appElement = document.getElementById("app");
+	if (!appElement) {
+		throw new Error("Inertia bootstrap failed: #app element is missing.");
+	}
+
+	const pagePayload = appElement.dataset.page;
+	if (!pagePayload) {
+		throw new Error(
+			"Inertia bootstrap failed: #app[data-page] payload is missing.",
+		);
+	}
+
+	try {
+		return JSON.parse(pagePayload) as Page;
+	} catch (error) {
+		throw new Error(
+			"Inertia bootstrap failed: #app[data-page] payload is invalid JSON.",
+			{ cause: error },
+		);
+	}
+}
+
 document.addEventListener("DOMContentLoaded", () => {
-	axios.defaults.xsrfCookieName = "csrftoken";
-	axios.defaults.xsrfHeaderName = "X-CSRFToken";
-
-	client.use(axios);
-
 	createInertiaApp({
+		page: readDjangoInitialPage(),
+		http: {
+			xsrfCookieName: "csrftoken",
+			xsrfHeaderName: "X-CSRFToken",
+		},
 		resolve: async (name) => {
-			const page = (await features[`./features/${name}.tsx`]()).default;
-			page.layout = page.layout || Layout;
-			return page;
+			const resolvedPage = (await features[`./features/${name}.tsx`]()).default;
+			resolvedPage.layout = resolvedPage.layout || Layout;
+			return resolvedPage;
 		},
 		setup({ el, App, props }) {
 			createRoot(el).render(
