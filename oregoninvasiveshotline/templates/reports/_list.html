@@ -18,7 +18,7 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link{% if result_view == 'stats' %} active{% endif %}" id="list-stats-tab" data-bs-toggle="tab"
                         data-bs-target="#list-stats-pane" type="button" role="tab"
-                        aria-controls="list-stats-pane" aria-selected="{% if result_view == 'stats' %}true{% else %}false{% endif %}">Stats Summary</button>
+                        aria-controls="list-stats-pane" aria-selected="{% if result_view == 'stats' %}true{% else %}false{% endif %}"><strong>(NEW)</strong> Stats Summary</button>
             </li>
         </ul>
         <div class="tab-content fixed-height-tabs">
@@ -27,10 +27,10 @@
             </div>
             <div class="tab-pane{% if result_view == 'stats' %} active{% endif %}" id="list-stats-pane" role="tabpanel" aria-labelledby="list-stats-tab">
                 <ul class="stats-summary" aria-label="Report summary">
-                    <li class="stats-summary-item"><strong>{{ report_summary.total }}</strong> matching report{{ report_summary.total|pluralize }}</li>
-                    <li class="stats-summary-item"><strong>{{ report_summary.confirmed }}</strong> of <strong>{{ report_summary.total }}</strong> confirmed</li>
-                    <li class="stats-summary-item"><strong>{{ report_summary.county_count }}</strong> {% if report_summary.county_count == 1 %}county{% else %}counties{% endif %} represented</li>
-                    <li class="stats-summary-item">{% if report_summary.top_category %}Top category: <strong>{{ report_summary.top_category }}</strong> (<strong>{{ report_summary.top_category_count }}</strong> report{{ report_summary.top_category_count|pluralize }}){% else %}Top category unavailable{% endif %}</li>
+                    <li class="stats-summary-item"><strong>{{ report_summary.total }}</strong> matching reports</li>
+                    <li class="stats-summary-item"><strong>{{ report_summary.confirmed }}</strong> of <strong>{{ report_summary.total }}</strong> confirmed (<strong>{% widthratio report_summary.confirmed report_summary.total 100 %}%</strong>)</li>
+                    <li class="stats-summary-item"><strong>{{ report_summary.county_count }}</strong> counties represented</li>
+                    <li class="stats-summary-item">{% if report_summary.top_category %}Top category: <strong>{{ report_summary.top_category }}</strong> with {{ report_summary.top_category_count }} reports{% else %}Top category unavailable{% endif %}</li>
                 </ul>
                 <div class="stats-charts tab-pane-fill">
                     <div class="stats-chart-panel stats-chart-panel-bar">
