@@ -20,10 +20,12 @@
                         No matching reports found.
                     </p>
                     {% endif %}
-                    <p>
-                        You can <a href="{{ subscription_url }}" style="color: #3e3cbeff;">subscribe to this search</a> to be
-                        alerted when a matching report is added.
-                    </p>
+                    {% if subscription_url %}
+                        <p>
+                            You can <a href="{{ subscription_url }}" style="color: #3e3cbeff;">subscribe to this search</a> to be
+                            alerted when a matching report is added.
+                        </p>
+                    {% endif %}
                 </div>
             {% endif %}
         <br>

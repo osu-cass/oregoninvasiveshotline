@@ -86,7 +86,7 @@ class ReportListView(TestCase, UserMixin):
         self.assertContains(response, "Search")
         self.assertContains(response, "Null characters are not allowed.")
         self.assertNotContains(response, "Export:")
-        self.assertNotContains(response, "Subscribe to this search")
+        self.assertNotContains(response, "subscribe to this search")
 
     def test_anonymous_null_keyword_search_shows_error_and_no_reports(self):
         """Reject a null keyword from an anonymous user."""
@@ -230,3 +230,13 @@ class ReportListView(TestCase, UserMixin):
         self.assertTrue(response.context["form"].is_valid())
         self.assertFalse(response.context["reports"])
         self.assertContains(response, "No matching reports found.")
+
+    def test_empty_search_omits_subscription_link(self):
+        """Do not render a subscription link without search parameters."""
+        self.client.login(email=self.user.email, password="foo")
+
+        response = self.client.get(reverse("reports-list"))
+
+        self.assertTrue(response.context["form"].is_valid())
+        self.assertIsNone(response.context["subscription_url"])
+        self.assertNotContains(response, "subscribe to this search")
