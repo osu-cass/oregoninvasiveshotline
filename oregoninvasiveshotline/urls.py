@@ -56,8 +56,9 @@ urlpatterns = [
     re_path(r'^notifications/list/?$', notifications.list_, name='notifications-list'),
 
     re_path(r'^reports/claim/(?P<report_id>\d+)/?$', reports.claim, name='reports-claim'),
-    re_path(r'^reports/create/?$', reports.create, name='reports-create'),
+    re_path(r'^reports/create/?$', reports.create_new, name='reports-create'),
     re_path(r'^reports/create-new/?$', reports.create_new, name='reports-create-new'),
+    re_path(r'^reports/create-old/?$', reports.create, name='reports-create-old'),
     re_path(r'^reports/delete/(?P<report_id>\d+)/?$', reports.delete, name='reports-delete'),
     re_path(r'^reports/detail/(?P<report_id>\d+)/?$', reports.detail, name='reports-detail'),
     re_path(r'^reports/help/?$', reports.help, name='reports-help'),

@@ -10,7 +10,7 @@ from oregoninvasiveshotline.species.models import Category, Species
 from ..models import Report
 
 
-class CreateViewTest(TestCase):
+class ClassicCreateViewTest(TestCase):
 
     def test_get(self):
         c1 = make(Category)
@@ -18,7 +18,7 @@ class CreateViewTest(TestCase):
         s1 = make(Species, category=c1)
         s2 = make(Species, category=c1)
         make(Species, category=c2)
-        response = self.client.get(reverse("reports-create"))
+        response = self.client.get(reverse("reports-create-old"))
         self.assertEqual(response.status_code, 200)
         # make sure the category_id_to_species_id gets populated
         self.assertEqual(set(json.loads(response.context['category_id_to_species_id'])[str(c1.pk)]), set([s1.pk, s2.pk]))
@@ -41,10 +41,20 @@ class CreateViewTest(TestCase):
             "form-MAX_NUM_FORMS": "1000",
         }
 
-        response = self.client.post(reverse("reports-create"), data)
+        response = self.client.post(reverse("reports-create-old"), data)
         report = Report.objects.order_by("-pk").first()
         assert report is not None
         self.assertRedirects(response, reverse("reports-detail", args=[report.pk]))
         session = self.client.session
         # make sure the report_ids in the session gets updated
         self.assertIn(report.pk, session['report_ids'])
+
+
+class NewCreateViewRouteTest(TestCase):
+
+    def test_get(self):
+        for route_name in ("reports-create", "reports-create-new"):
+            with self.subTest(route_name=route_name):
+                response = self.client.get(reverse(route_name), HTTP_X_INERTIA="true")
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json()["component"], "reportWizard")
