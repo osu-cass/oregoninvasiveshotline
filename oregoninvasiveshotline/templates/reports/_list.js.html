@@ -118,8 +118,9 @@
           return Math.ceil(paddedMax / tickSize) * tickSize;
       }
 
+      /** Initialize the yearly confirmed and unconfirmed reports chart. */
       function initBarChart() {
-          var instance = echarts.init(barContainer);
+          var instance = echarts.init(barContainer, null, {renderer: 'svg'});
           instance.setOption({
               aria: {enabled: true},
               tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}},
@@ -182,7 +183,7 @@
       }
 
       function initPieChart() {
-          var instance = echarts.init(pieContainer);
+          var instance = echarts.init(pieContainer, null, {renderer: 'svg'});
           instance.setOption({
               aria: {enabled: true},
               tooltip: {
