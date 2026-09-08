@@ -70,7 +70,7 @@ def list_(request: HttpRequest) -> HttpResponse:
 
     # Paginate the results
     paginator = Paginator(reports, settings.ITEMS_PER_PAGE)
-    active_page = request.GET.get('page')
+    active_page = request.GET.get('page') or 1
 
     try:
         page = paginator.page(active_page)
