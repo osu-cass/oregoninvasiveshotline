@@ -438,6 +438,39 @@ select[multiple] {
     color:#52514e;
 }
 
+.stats-chart-heading {
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:8px;
+    margin-bottom:4px;
+}
+
+.stats-chart-heading .stats-chart-title {
+    margin:0;
+}
+
+.stats-chart-back {
+    padding:0;
+    border:0;
+    background:transparent;
+    color:#0d6efd;
+    font-size:0.78rem;
+    font-weight:600;
+    line-height:1;
+    text-decoration:underline;
+}
+
+.stats-chart-back:hover {
+    color:#0a58ca;
+}
+
+.stats-chart-back:focus-visible {
+    border-radius:2px;
+    outline:2px solid #0d6efd;
+    outline-offset:2px;
+}
+
 /* The chart div absorbs the panel's leftover height. */
 .stats-chart-panel > div:last-child {
     flex:1;
