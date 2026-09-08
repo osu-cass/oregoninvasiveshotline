@@ -10,7 +10,7 @@ from oregoninvasiveshotline.species.models import Category, Species
 from ..models import Report
 
 
-class CreateViewTest(TestCase):
+class ClassicCreateViewTest(TestCase):
 
     def test_get(self):
         c1 = make(Category)
@@ -48,3 +48,13 @@ class CreateViewTest(TestCase):
         session = self.client.session
         # make sure the report_ids in the session gets updated
         self.assertIn(report.pk, session['report_ids'])
+
+
+class NewCreateViewRouteTest(TestCase):
+
+    def test_get(self):
+        for route_name in ("reports-create", "reports-create-new"):
+            with self.subTest(route_name=route_name):
+                response = self.client.get(reverse(route_name), HTTP_X_INERTIA="true")
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.json()["component"], "reportWizard")
