@@ -405,12 +405,6 @@ select[multiple] {
     font-variant-numeric:tabular-nums;
 }
 
-@media (max-width: 767px) {
-    .stats-summary {
-        grid-template-columns:minmax(0, 1fr);
-    }
-}
-
 .stats-charts {
     display:flex;
     gap:10px;
@@ -465,6 +459,17 @@ select[multiple] {
         flex:0 0 320px;
         width:100%;
         height:320px;
+    }
+}
+
+@media (max-width: 767px) {
+    .stats-summary {
+        grid-template-columns:minmax(0, 1fr);
+    }
+
+    .stats-chart-panel {
+        flex-basis:350px;
+        height:350px;
     }
 }
 
