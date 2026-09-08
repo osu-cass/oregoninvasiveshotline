@@ -39,7 +39,12 @@
                     </div>
                     {% if report_category_stats|length > 1 %}
                     <div class="stats-chart-panel stats-chart-panel-pie">
-                        <h3 class="stats-chart-title">Reports by category</h3>
+                        <div class="stats-chart-heading">
+                            <h3 class="stats-chart-title">Reports by category</h3>
+                            <button id="stats-pie-back" class="stats-chart-back" type="button" hidden>
+                                &larr; All categories
+                            </button>
+                        </div>
                         <div id="stats-pie"></div>
                     </div>
                     {% endif %}
