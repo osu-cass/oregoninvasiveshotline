@@ -13,17 +13,19 @@
         {% if reports %}
             <div id="map-canvas" style="height: 550px;"></div>
         {% endif %}
-            <div class="alert alert-info">
-                {% if not reports %}
-                <p>
-                    No matching reports found.
-                </p>
-                {% endif %}
-                <p>
-                    You can <a href="{{ subscription_url }}" style="color: #3e3cbeff;">subscribe to this search</a> to be
-                    alerted when a matching report is added.
-                </p>
-            </div>
+            {% if form_is_valid %}
+                <div class="alert alert-info">
+                    {% if not reports %}
+                    <p>
+                        No matching reports found.
+                    </p>
+                    {% endif %}
+                    <p>
+                        You can <a href="{{ subscription_url }}" style="color: #3e3cbeff;">subscribe to this search</a> to be
+                        alerted when a matching report is added.
+                    </p>
+                </div>
+            {% endif %}
         <br>
 
         {% include 'reports/_legend_dialog.html' %}
@@ -31,7 +33,9 @@
 
     <div class="col-md-5 {% if not reports %}hidden{% endif %}">
 
-        {% include 'reports/search/_sort.html' %}
+        {% if form_is_valid %}
+            {% include 'reports/search/_sort.html' %}
+        {% endif %}
 
         <table class="table reports-table double-zebra">
             <tbody>
