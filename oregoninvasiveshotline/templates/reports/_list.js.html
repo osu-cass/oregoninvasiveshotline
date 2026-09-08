@@ -87,6 +87,13 @@
       var categoryStats = {{ report_category_stats|jsonify }};
       var charts = null;
 
+      /** Return whether the current viewport uses mobile chart interactions. */
+      function isMobileViewport() {
+          return window.matchMedia('(max-width: 767px)').matches;
+      }
+
+      var isMobileChart = isMobileViewport();
+
       // Validated palette -- see docs/superpowers/plans/2026-07-24-stats-summary-charts.md.
       var CONFIRMED_COLOR = '#2e5f0e';
       var UNCONFIRMED_COLOR = '#eb6834';
@@ -96,10 +103,10 @@
       var legendStyle = {
           bottom: 0,
           icon: 'circle',
-          itemWidth: 8,
-          itemHeight: 8,
+          itemWidth: isMobileChart ? 10 : 8,
+          itemHeight: isMobileChart ? 10 : 8,
           itemGap: 10,
-          textStyle: {color: '#52514e', fontSize: 11, fontWeight: 600},
+          textStyle: {color: '#52514e', fontSize: isMobileChart ? 13 : 11, fontWeight: 600},
       };
 
       /**
@@ -130,7 +137,11 @@
                   type: 'category',
                   data: stats.map(function (s) { return String(s.year); }),
                   axisLine: {lineStyle: {color: '#c3c2b7'}},
-                  axisLabel: {color: '#898781'},
+                  axisLabel: {
+                      color: isMobileChart ? '#66645f' : '#898781',
+                      fontSize: isMobileChart ? 13 : 12,
+                      fontWeight: isMobileChart ? 500 : 'normal',
+                  },
                   axisTick: {show: false},
               },
               yAxis: {
@@ -138,7 +149,11 @@
                   min: 0,
                   max: getBarAxisMax,
                   minInterval: 1,
-                  axisLabel: {color: '#898781'},
+                  axisLabel: {
+                      color: isMobileChart ? '#66645f' : '#898781',
+                      fontSize: isMobileChart ? 13 : 12,
+                      fontWeight: isMobileChart ? 500 : 'normal',
+                  },
                   splitLine: {lineStyle: {color: '#e1e0d9', type: 'dashed'}},
               },
               series: [
