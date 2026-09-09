@@ -267,17 +267,17 @@ class ReportListSummary(SuppressPostSaveMixin, TestCase, UserMixin):
         )
         self.assertIn(
             '<li class="stats-summary-item"><strong>1</strong> of '
-            '<strong>3</strong> confirmed</li>',
+            '<strong>3</strong> confirmed (<strong>33%</strong>)</li>',
             content,
         )
         self.assertIn(
             '<li class="stats-summary-item"><strong>1</strong> '
-            'county represented</li>',
+            'counties represented</li>',
             content,
         )
         self.assertIn(
             '<li class="stats-summary-item">Top category: '
-            '<strong>Land Plants</strong> (<strong>3</strong> reports)</li>',
+            '<strong>Land Plants</strong> with 3 reports</li>',
             content,
         )
         self.assertNotIn("stats-fact", content)
