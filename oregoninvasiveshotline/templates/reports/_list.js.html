@@ -5,6 +5,7 @@
   async
 ></script>
 <script nonce="{{csp_nonce}}">
+  /** Initialize the report map and its marker interactions. */
   function initMap() {
       var reports = {{ reports|jsonify }};
       if (reports.length === 0){
@@ -13,6 +14,17 @@
 
       var options = getDefaultMapOptions();
       var map = new google.maps.Map(document.getElementById('map-canvas'), options);
+      var mapTab = document.getElementById('list-map-tab');
+
+      if (mapTab) {
+          mapTab.addEventListener('shown.bs.tab', function () {
+              var center = map.getCenter();
+              google.maps.event.trigger(map, 'resize');
+              if (center) {
+                  map.setCenter(center);
+              }
+          });
+      }
 
       // we need to save all the "info windows" we create, so we can close them
       // all when a balloon is clicked (so only one window opens at a time)
@@ -50,11 +62,486 @@
       }
 
       $('.report-location-click').click(function(){
+          // The map lives in a tab pane, so switch back to it before opening the marker.
+          if (mapTab) {
+              bootstrap.Tab.getOrCreateInstance(mapTab).show();
+          }
           var index = $(this).data("report-index");
           google.maps.event.trigger(reports[index].marker, 'click');
 
       });
   }
+</script>
+<script nonce="{{csp_nonce}}" src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+<script nonce="{{csp_nonce}}">
+  document.addEventListener('DOMContentLoaded', function () {
+      var mapTab = document.getElementById('list-map-tab');
+      var statsTab = document.getElementById('list-stats-tab');
+      var barContainer = document.getElementById('stats-chart');
+      var pieContainer = document.getElementById('stats-pie');
+      var pieBackButton = document.getElementById('stats-pie-back');
+      if (!mapTab || !statsTab || !barContainer) {
+          return;
+      }
+
+      var stats = {{ report_stats|jsonify }};
+      var categoryStats = {{ report_category_stats|jsonify }};
+      var charts = null;
+
+      /** Return whether the current viewport uses mobile chart interactions. */
+      function isMobileViewport() {
+          return window.matchMedia('(max-width: 767px)').matches;
+      }
+
+      var isMobileChart = isMobileViewport();
+
+      // Validated palette -- see docs/superpowers/plans/2026-07-24-stats-summary-charts.md.
+      var CONFIRMED_COLOR = '#2e5f0e';
+      var UNCONFIRMED_COLOR = '#eb6834';
+      var PIE_COLORS = ['#2e5f0e', '#eb6834', '#2a78d6', '#eda100', '#e87ba4', '#1baf7a', '#4a3aa7'];
+      var OTHER_COLOR = '#8f8d86';
+
+      var legendStyle = {
+          bottom: 0,
+          icon: 'circle',
+          itemWidth: isMobileChart ? 10 : 8,
+          itemHeight: isMobileChart ? 10 : 8,
+          itemGap: 10,
+          textStyle: {color: '#52514e', fontSize: isMobileChart ? 13 : 11, fontWeight: 600},
+      };
+
+      /**
+       * Return a padded, rounded maximum for the reports bar chart.
+       * @param {Object} value ECharts axis extent.
+       * @param {number} value.max Highest stacked total.
+       * @returns {number} Padded axis maximum.
+       */
+      function getBarAxisMax(value) {
+          var paddedMax = Math.max(value.max, 1) * 1.15;
+          var magnitude = Math.pow(10, Math.floor(Math.log10(paddedMax)));
+          var normalizedMax = paddedMax / magnitude;
+          var tickSize = normalizedMax <= 2 ? magnitude / 5 :
+              normalizedMax <= 5 ? magnitude / 2 : magnitude;
+          tickSize = Math.max(tickSize, 1);
+          return Math.ceil(paddedMax / tickSize) * tickSize;
+      }
+
+      /** Initialize the yearly confirmed and unconfirmed reports chart. */
+      function initBarChart() {
+          var instance = echarts.init(barContainer, null, {renderer: 'svg'});
+          instance.setOption({
+              aria: {enabled: true},
+              tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}},
+              legend: legendStyle,
+              grid: {left: 8, right: 8, top: 12, bottom: 28, containLabel: true},
+              xAxis: {
+                  type: 'category',
+                  data: stats.map(function (s) { return String(s.year); }),
+                  axisLine: {lineStyle: {color: '#c3c2b7'}},
+                  axisLabel: {
+                      color: isMobileChart ? '#66645f' : '#898781',
+                      fontSize: isMobileChart ? 13 : 12,
+                      fontWeight: isMobileChart ? 500 : 'normal',
+                  },
+                  axisTick: {show: false},
+              },
+              yAxis: {
+                  type: 'value',
+                  min: 0,
+                  max: getBarAxisMax,
+                  minInterval: 1,
+                  axisLabel: {
+                      color: isMobileChart ? '#66645f' : '#898781',
+                      fontSize: isMobileChart ? 13 : 12,
+                      fontWeight: isMobileChart ? 500 : 'normal',
+                  },
+                  splitLine: {lineStyle: {color: '#e1e0d9', type: 'dashed'}},
+              },
+              series: [
+                  {
+                      name: 'Confirmed',
+                      type: 'bar',
+                      stack: 'reports',
+                      barMaxWidth: 40,
+                      itemStyle: {color: CONFIRMED_COLOR, borderColor: '#fff', borderWidth: 1},
+                      data: stats.map(function (s) { return s.confirmed; }),
+                  },
+                  {
+                      name: 'Unconfirmed',
+                      type: 'bar',
+                      stack: 'reports',
+                      barMaxWidth: 40,
+                      itemStyle: {color: UNCONFIRMED_COLOR, borderColor: '#fff', borderWidth: 1, borderRadius: [4, 4, 0, 0]},
+                      data: stats.map(function (s) { return s.total - s.confirmed; }),
+                  },
+              ],
+          });
+          return instance;
+      }
+
+      /**
+       * @typedef {Object} PieSlice
+       * @property {string} name Category name.
+       * @property {number} value Report count.
+       * @property {PieSlice[]} [groupedCategories] Categories grouped into this slice.
+       * @property {Object} [itemStyle] ECharts slice styling.
+       */
+
+      /**
+       * Return category slices, folding overflow into a neutral "Other" bucket.
+       * @returns {PieSlice[]} Category chart data.
+       */
+      function getPieData() {
+          var slices = categoryStats.map(function (c) {
+              return {name: c.category_name, value: c.count};
+          });
+          if (slices.length > PIE_COLORS.length) {
+              var rest = slices.slice(PIE_COLORS.length);
+              slices = slices.slice(0, PIE_COLORS.length);
+              slices.push({
+                  name: 'Other',
+                  value: rest.reduce(function (sum, s) { return sum + s.value; }, 0),
+                  groupedCategories: rest,
+              });
+          }
+          return slices.map(function (slice, i) {
+              return Object.assign({}, slice, {
+                  itemStyle: {
+                      color: slice.groupedCategories ? OTHER_COLOR : PIE_COLORS[i % PIE_COLORS.length],
+                  },
+              });
+          });
+      }
+
+      /**
+       * Assign chart colors to categories shown inside the Other drill-down.
+       * @param {PieSlice[]} slices Category slices.
+       * @returns {PieSlice[]} Colored category slices.
+       */
+      function getDrilldownPieData(slices) {
+          return slices.map(function (slice, i) {
+              return Object.assign({}, slice, {
+                  itemStyle: {color: PIE_COLORS[i % PIE_COLORS.length]},
+              });
+          });
+      }
+
+      /**
+       * Escape category names before adding them to an HTML tooltip.
+       * @param {string} value Unescaped text.
+       * @returns {string} HTML-safe text.
+       */
+      function escapeHtml(value) {
+          var replacements = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'};
+          return String(value).replace(/[&<>"']/g, function (character) {
+              return replacements[character];
+          });
+      }
+
+      /**
+       * Format an emphasized report count for an HTML tooltip.
+       * @param {number} value Report count.
+       * @returns {string} Labeled report count.
+       */
+      function formatTooltipReportCount(value) {
+          return '<strong>' + value + '</strong> report' + (value === 1 ? '' : 's');
+      }
+
+      /** @type {null|function(): void} Refresh the pie labels after a resize. */
+      var refreshPieLabels = null;
+
+      /** Initialize the report category distribution chart. */
+      function initPieChart() {
+          var instance = echarts.init(pieContainer, null, {renderer: 'svg'});
+          var overviewData = getPieData();
+          var innerRadius = 0.43;
+          var outerRadius = 0.64;
+          var labelFontSize = 11;
+          var labelContext = document.createElement('canvas').getContext('2d');
+          var isOtherTapArmed = false;
+          var activePieData = overviewData;
+
+          /** Choose one readable font size that fits every count in the ring. */
+          function chooseLabelFontSize() {
+              if (!labelContext) {
+                  return 0;
+              }
+              var chartRadius = Math.min(instance.getWidth(), instance.getHeight()) / 2;
+              var ringSpace = chartRadius * (outerRadius - innerRadius) / 2;
+              for (var size = 13; size >= 11; size -= 1) {
+                  labelContext.font = '600 ' + size + 'px sans-serif';
+                  var fits = activePieData.every(function (slice) {
+                      var width = labelContext.measureText(String(slice.value)).width;
+                      return Math.hypot(width, size) / 2 + 3 <= ringSpace;
+                  });
+                  if (fits) {
+                      return size;
+                  }
+              }
+              return 0;
+          }
+
+          /**
+           * Show counts only when a padded label fits inside its donut slice.
+           * @param {Object} params Pie label values.
+           * @param {number} params.value Report count.
+           * @param {number} params.percent Slice percentage.
+           * @returns {string} Count or an empty label.
+           */
+          function formatSliceCount(params) {
+              if (!labelContext || !labelFontSize || params.value <= 0) {
+                  return '';
+              }
+              var text = String(params.value);
+              labelContext.font = '600 ' + labelFontSize + 'px sans-serif';
+              var labelRadius = Math.hypot(labelContext.measureText(text).width, labelFontSize) / 2 + 3;
+              var chartRadius = Math.min(instance.getWidth(), instance.getHeight()) / 2;
+              var middleRadius = chartRadius * (innerRadius + outerRadius) / 2;
+              var sliceSpace = middleRadius * Math.sin(Math.min(params.percent * Math.PI / 100, Math.PI / 2));
+              return labelRadius <= sliceSpace ? text : '';
+          }
+
+          /**
+           * Pull slice labels toward the middle of the donut ring.
+           * @param {Object} params Pie label layout values.
+           * @param {Object} params.labelRect Label bounds.
+           * @returns {Object} Adjusted label position.
+           */
+          function getSliceLabelLayout(params) {
+              var centerX = instance.getWidth() * 0.5;
+              var centerY = instance.getHeight() * 0.44;
+              var labelX = params.labelRect.x + params.labelRect.width / 2;
+              var labelY = params.labelRect.y + params.labelRect.height / 2;
+              var offsetX = labelX - centerX;
+              var offsetY = labelY - centerY;
+              var currentRadius = Math.hypot(offsetX, offsetY);
+              var chartRadius = Math.min(instance.getWidth(), instance.getHeight()) / 2;
+              var labelRadius = chartRadius * (innerRadius + outerRadius) / 2;
+              return {
+                  x: centerX + offsetX / currentRadius * labelRadius,
+                  y: centerY + offsetY / currentRadius * labelRadius,
+                  align: 'center',
+                  verticalAlign: 'middle',
+                  hideOverlap: true,
+              };
+          }
+
+          /**
+           * Return tooltip content for a category or the contents of Other.
+           * @param {Object} params ECharts tooltip values.
+           * @param {string} params.name Slice name.
+           * @param {number} params.value Report count.
+           * @param {PieSlice} params.data Slice data.
+           * @returns {string} Tooltip HTML.
+           */
+          function formatPieTooltip(params) {
+              var content = '<strong>' + escapeHtml(params.name) + '</strong><br>' +
+                  formatTooltipReportCount(params.value);
+              if (!params.data.groupedCategories) {
+                  return content;
+              }
+              return content +
+                  '<br><span style="color:#0d6efd;font-weight:600">' +
+                  (isMobileViewport() ? 'Tap again to expand' : 'Click to expand') + '</span>';
+          }
+
+          /**
+           * Return the shared category pie series with the supplied data.
+           * @param {PieSlice[]} data Category slices.
+           * @returns {Object} ECharts pie series.
+           */
+          function getPieSeries(data) {
+              activePieData = data;
+              labelFontSize = chooseLabelFontSize();
+              return {
+                  name: 'Reports',
+                  type: 'pie',
+                  radius: [innerRadius * 100 + '%', outerRadius * 100 + '%'],
+                  center: ['50%', '44%'],
+                  percentPrecision: 6,
+                  avoidLabelOverlap: true,
+                  itemStyle: {borderColor: '#fff', borderWidth: 2, borderRadius: 4},
+                  label: {
+                      position: 'inside',
+                      color: '#fff',
+                      textBorderWidth: 0,
+                      fontFamily: 'sans-serif',
+                      fontSize: labelFontSize || 11,
+                      fontWeight: 600,
+                      formatter: formatSliceCount,
+                  },
+                  labelLine: {show: false},
+                  labelLayout: getSliceLabelLayout,
+                  data: data,
+              };
+          }
+
+          /**
+           * Replace the pie contents without changing the chart panel size.
+           * @param {PieSlice[]} data Category slices.
+           * @param {boolean} isDrilldown Whether the Other categories are shown.
+           */
+          function showPieData(data, isDrilldown) {
+              isOtherTapArmed = false;
+              instance.dispatchAction({type: 'hideTip'});
+              instance.setOption({
+                  legend: Object.assign({}, legendStyle, {
+                      data: data.map(function (slice) { return slice.name; }),
+                  }),
+                  series: [getPieSeries(data)],
+              }, {replaceMerge: ['series']});
+              if (pieBackButton) {
+                  pieBackButton.hidden = !isDrilldown;
+              }
+          }
+
+          instance.setOption({
+              aria: {enabled: true},
+              tooltip: {
+                  trigger: 'item',
+                  confine: true,
+                  formatter: formatPieTooltip,
+              },
+              legend: Object.assign({}, legendStyle, {
+                  data: overviewData.map(function (slice) { return slice.name; }),
+              }),
+              series: [getPieSeries(overviewData)],
+          });
+
+          /** Recalculate the shared font and visibility using the current chart size. */
+          refreshPieLabels = function () {
+              labelFontSize = chooseLabelFontSize();
+              instance.setOption({series: [{label: {fontSize: labelFontSize || 11}}]});
+          };
+
+          instance.on('click', function (params) {
+              if (params.componentType !== 'series') {
+                  return;
+              }
+              if (!params.data.groupedCategories) {
+                  isOtherTapArmed = false;
+                  return;
+              }
+              if (isMobileViewport() && !isOtherTapArmed) {
+                  isOtherTapArmed = true;
+                  instance.dispatchAction({
+                      type: 'showTip',
+                      seriesIndex: params.seriesIndex,
+                      dataIndex: params.dataIndex,
+                  });
+                  return;
+              }
+              showPieData(getDrilldownPieData(params.data.groupedCategories), true);
+          });
+
+          if (pieBackButton) {
+              pieBackButton.addEventListener('click', function () {
+                  showPieData(overviewData, false);
+              });
+          }
+          return instance;
+      }
+
+      /** Resize initialized charts to fit their containers. */
+      function resizeCharts() {
+          if (charts) {
+              charts.forEach(function (chart) { chart.resize(); });
+              if (refreshPieLabels) {
+                  refreshPieLabels();
+              }
+          }
+      }
+
+      /** Initialize or resize the charts after their tab becomes visible. */
+      function showCharts() {
+          if (charts) {
+              resizeCharts();
+              return;
+          }
+          charts = [initBarChart()];
+          if (pieContainer) {
+              charts.push(initPieChart());
+          }
+      }
+
+      /**
+       * Keep result navigation links aligned with the selected view.
+       * @param {'map'|'stats'} view Selected results view.
+       */
+      function updateResultViewLinks(view) {
+          document.querySelectorAll(
+              '.pagination .page-item:not(.disabled) .page-link, ' +
+              '.reports-table-sort .comma a'
+          ).forEach(function (link) {
+              var linkUrl = new URL(link.href);
+              if (view === 'stats') {
+                  linkUrl.searchParams.set('view', 'stats');
+              } else {
+                  linkUrl.searchParams.delete('view');
+              }
+              link.href = linkUrl.toString();
+          });
+      }
+
+      /**
+       * Keep the selected results view in the URL and search form.
+       * @param {'map'|'stats'} view Selected results view.
+       */
+      function updateResultView(view) {
+          var url = new URL(window.location.href);
+          var form = document.querySelector('form.form-inline');
+          var input = document.getElementById('result-view-input');
+
+          if (view === 'stats') {
+              url.searchParams.set('view', 'stats');
+              if (form && !input) {
+                  input = document.createElement('input');
+                  input.id = 'result-view-input';
+                  input.type = 'hidden';
+                  input.name = 'view';
+                  form.appendChild(input);
+              }
+              if (input) {
+                  input.value = 'stats';
+              }
+          } else {
+              url.searchParams.delete('view');
+              if (input) {
+                  input.remove();
+              }
+          }
+
+          updateResultViewLinks(view);
+          window.history.replaceState(
+              window.history.state,
+              '',
+              url.pathname + url.search + url.hash
+          );
+      }
+
+      mapTab.addEventListener('shown.bs.tab', function () {
+          updateResultView('map');
+      });
+
+      statsTab.addEventListener('shown.bs.tab', function () {
+          updateResultView('stats');
+          showCharts();
+      });
+
+      if (statsTab.classList.contains('active')) {
+          showCharts();
+      }
+
+      window.addEventListener('resize', resizeCharts);
+      var chartResizeObserver = null;
+      if (window.ResizeObserver) {
+          chartResizeObserver = new ResizeObserver(resizeCharts);
+          chartResizeObserver.observe(barContainer);
+          if (pieContainer) {
+              chartResizeObserver.observe(pieContainer);
+          }
+      }
+  });
 </script>
 <script nonce="{{csp_nonce}}" src="https://cdn.jsdelivr.net/npm/choices.js@11.1.0/public/assets/scripts/choices.min.js"></script>
 <script nonce="{{csp_nonce}}">
