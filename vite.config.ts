@@ -37,6 +37,7 @@ export default defineConfig(({ mode }) => {
 			rollupOptions: {
 				input: {
 					main: join(INPUT_DIR, "/src/main.tsx"),
+					reports: join(INPUT_DIR, "/src/reports/main.ts"),
 					css: join(INPUT_DIR, "/src/main.css"),
 				},
 			},

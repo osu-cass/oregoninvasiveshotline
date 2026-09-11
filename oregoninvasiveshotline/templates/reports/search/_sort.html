@@ -5,7 +5,7 @@
     {% for subwidget in form.order_by %}
         {# closing tag placement is intentional to remove trailing whitespace #}
         <span class="comma">
-            <a href="{% add_get order_by=subwidget.data.value %}"
+            <a data-result-view-link href="{% add_get order_by=subwidget.data.value %}"
                class="{% if subwidget.data.value == form.cleaned_data.order_by %}strong{% endif %}">
               {{ subwidget.choice_label }}</a></span>
     {% endfor %}

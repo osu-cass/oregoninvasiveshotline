@@ -35,6 +35,7 @@ class ReportListView(TestCase, UserMixin):
 class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
 
     def setUp(self):
+        """Create the authenticated user used by report stats tests."""
         self.user = self.create_user(
             username="foo@example.com",
             password="foo",
@@ -49,6 +50,7 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         )
 
     def test_stats_grouped_by_year_with_confirmed_counts(self):
+        """Group report totals and confirmed counts by year."""
         species = make(Species)
         confirmed = make(Report, point=ORIGIN, actual_species=species)
         unconfirmed = make(Report, point=ORIGIN)
@@ -66,6 +68,7 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         ])
 
     def test_map_is_the_default_result_view(self):
+        """Use the map as the default result view."""
         make(Report, point=ORIGIN)
         self.client.login(email=self.user.email, password="foo")
 
@@ -79,6 +82,7 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         self.assertNotIn('id="result-view-input"', content)
 
     def test_stats_query_selects_and_preserves_stats_view(self):
+        """Select and preserve the stats view through its query parameter."""
         make(Report, point=ORIGIN)
         self.client.login(email=self.user.email, password="foo")
 
@@ -95,6 +99,7 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         )
 
     def test_invalid_result_view_defaults_to_map(self):
+        """Fall back to the map for an invalid result view."""
         make(Report, point=ORIGIN)
         self.client.login(email=self.user.email, password="foo")
 
@@ -106,6 +111,7 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         self.assertNotIn('id="result-view-input"', content)
 
     def test_map_and_stats_hidden_when_search_has_no_matches(self):
+        """Hide result views when a search has no matches."""
         self.client.login(email=self.user.email, password="foo")
         response = self.client.get(
             reverse("reports-list"),
@@ -124,6 +130,7 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         self.assertIn("No matching reports found.", content)
 
     def test_stats_for_anonymous_only_count_public_reports(self):
+        """Exclude private reports from anonymous stats."""
         public = make(Report, point=ORIGIN, is_public=True)
         private = make(Report, point=ORIGIN, is_public=False)
         self._backdate(public, 2024)
@@ -136,6 +143,7 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         ])
 
     def test_stats_unaffected_by_pagination(self):
+        """Calculate stats from all matches instead of one result page."""
         reports = make(Report, _quantity=30, point=ORIGIN)
         for report in reports:
             self._backdate(report, 2024)
@@ -148,6 +156,7 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         ])
 
     def test_stats_fill_missing_years_with_zeros(self):
+        """Fill gaps between report years with zero-valued entries."""
         newer = make(Report, point=ORIGIN)
         older = make(Report, point=ORIGIN)
         self._backdate(newer, 2025)
@@ -168,6 +177,7 @@ class ReportListCategoryStats(SuppressPostSaveMixin, TestCase, UserMixin):
     """Category breakdown for the stats summary tab."""
 
     def setUp(self):
+        """Create and authenticate the category stats test user."""
         self.user = self.create_user(
             username="foo@example.com",
             password="foo",
@@ -177,6 +187,7 @@ class ReportListCategoryStats(SuppressPostSaveMixin, TestCase, UserMixin):
         self.client.login(email=self.user.email, password="foo")
 
     def test_grouped_by_effective_category(self):
+        """Group reports by their confirmed or reported category."""
         plants = make(Category, name="Land Plants")
         insects = make(Category, name="Insects and Spiders")
         insect_species = make(Species, category=insects)
@@ -192,6 +203,7 @@ class ReportListCategoryStats(SuppressPostSaveMixin, TestCase, UserMixin):
         ])
 
     def test_empty_when_no_matches(self):
+        """Return no category stats when a search has no matches."""
         response = self.client.get(reverse("reports-list"), {"q": "no-match"})
         self.assertEqual(response.context["report_category_stats"], [])
 
@@ -200,6 +212,7 @@ class ReportListSummary(SuppressPostSaveMixin, TestCase, UserMixin):
     """Facts for the stats summary tab."""
 
     def setUp(self):
+        """Create and authenticate the report summary test user."""
         self.user = self.create_user(
             username="foo@example.com",
             password="foo",
@@ -318,6 +331,7 @@ class ReportListResultCount(SuppressPostSaveMixin, TestCase, UserMixin):
     """The result count under the search box renders only for active filters."""
 
     def setUp(self):
+        """Create and authenticate the result count test user."""
         self.user = self.create_user(
             username="foo@example.com",
             password="foo",
@@ -327,15 +341,18 @@ class ReportListResultCount(SuppressPostSaveMixin, TestCase, UserMixin):
         self.client.login(email=self.user.email, password="foo")
 
     def _make_county(self) -> County:
+        """Create a county with geometry for filter tests."""
         square = Polygon(((0, 0), (0, 1), (1, 1), (1, 0), (0, 0)))
         return make(County, the_geom=MultiPolygon(square))
 
     def test_hidden_without_filters(self):
+        """Hide the result count when no filters are active."""
         make(Report, _quantity=3, point=ORIGIN)
         response = self.client.get(reverse("reports-list"))
         self.assertNotIn("3 results", response.content.decode())
 
     def test_hidden_when_only_default_valued_filters_are_set(self):
+        """Hide the result count when filters retain default values."""
         make(Report, _quantity=3, point=ORIGIN)
         response = self.client.get(
             reverse("reports-list"), {"is_archived": "notarchived"})
@@ -352,11 +369,13 @@ class ReportListResultCount(SuppressPostSaveMixin, TestCase, UserMixin):
         self.assertIn("1 result", response.content.decode())
 
     def test_shown_for_keyword_search(self):
+        """Show the result count for a keyword search."""
         make(Report, _quantity=3, point=ORIGIN)
         response = self.client.get(reverse("reports-list"), {"q": "no-match"})
         self.assertIn("0 results", response.content.decode())
 
     def test_shown_for_county_filter(self):
+        """Show the result count for a county filter."""
         county = self._make_county()
         make(Report, point=ORIGIN, county=county)
         make(Report, _quantity=2, point=ORIGIN, county=None)
@@ -365,6 +384,7 @@ class ReportListResultCount(SuppressPostSaveMixin, TestCase, UserMixin):
         self.assertIn("1 result", response.content.decode())
 
     def test_shown_for_category_filter(self):
+        """Show the result count for a category filter."""
         category = make(Category)
         make(Report, point=ORIGIN, reported_category=category)
         make(Report, _quantity=2, point=ORIGIN)
