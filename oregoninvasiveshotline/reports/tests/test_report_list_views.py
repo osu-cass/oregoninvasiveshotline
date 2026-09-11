@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from unittest.mock import patch
 
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.urls import reverse
@@ -269,34 +270,21 @@ class ReportListSummary(SuppressPostSaveMixin, TestCase, UserMixin):
 
         response = self.client.get(reverse("reports-list"))
         content = response.content.decode()
-        self.assertIn(
-            '<ul class="stats-summary" aria-label="Report summary">',
-            content,
-        )
-        self.assertIn(
-            '<li class="stats-summary-item"><strong>3</strong> '
-            'matching reports</li>',
-            content,
-        )
-        self.assertIn(
-            '<li class="stats-summary-item"><strong>1</strong> of '
-            '<strong>3</strong> confirmed (<strong>33%</strong>)</li>',
-            content,
-        )
-        self.assertIn(
-            '<li class="stats-summary-item"><strong>1</strong> '
-            'counties represented</li>',
-            content,
-        )
-        self.assertIn(
-            '<li class="stats-summary-item">Top category: '
-            '<strong>Land Plants</strong> with 3 reports</li>',
-            content,
-        )
+        self.assertNotContains(response, 'Report statistics')
+        self.assertNotContains(response, 'Summary of reports matching your current filters.')
+        for card in (
+            '<dt class="stats-label">Matching reports</dt><dd class="stats-value">3</dd>',
+            '<dt class="stats-label">Confirmed reports</dt><dd class="stats-value">1</dd>'
+            '<dd class="stats-detail">of 3 reports (33%)</dd>',
+            '<dt class="stats-label">Counties with reports</dt><dd class="stats-value">1</dd>',
+            '<dt class="stats-label">Most-reported category</dt><dd class="stats-value">Land Plants</dd>'
+            '<dd class="stats-detail">3 reports</dd>',
+        ):
+            self.assertContains(response, f'<div class="stats-summary-item">{card}</div>', html=True)
         self.assertNotIn("stats-fact", content)
         self.assertIn('id="stats-chart"', content)
         self.assertNotIn('id="stats-pie"', content)
-        self.assertIn("Reports by year", content)
+        self.assertIn("Reports submitted by year", content)
         self.assertNotIn("Reports by category", content)
         self.assertNotIn("all-time", content)
 
@@ -322,10 +310,26 @@ class ReportListSummary(SuppressPostSaveMixin, TestCase, UserMixin):
         response = self.client.get(reverse("reports-list"))
 
         self.assertIn(
-            '<li class="stats-summary-item">Top category unavailable</li>',
+            '<dd class="stats-detail">Top category unavailable</dd>',
             response.content.decode(),
         )
 
+    def test_summary_formats_large_counts_and_preserves_category_name(self):
+        """Format card counts with commas and retain the full category name."""
+        make(Report, point=ORIGIN)
+        with patch('oregoninvasiveshotline.reports.views._get_search_summary', return_value={
+                'total': 12345,
+                'confirmed': 1234,
+                'county_count': 12,
+                'top_category': 'Reptiles and Amphibians',
+                'top_category_count': 2345,
+        }):
+            content = self.client.get(reverse('reports-list')).content.decode()
+        self.assertIn('<dd class="stats-value">12,345</dd>', content)
+        self.assertIn('<dd class="stats-value">1,234</dd>', content)
+        self.assertIn('of 12,345 reports (10%)', content)
+        self.assertIn('<dd class="stats-value">Reptiles and Amphibians</dd>', content)
+        self.assertIn('<dd class="stats-detail">2,345 reports</dd>', content)
 
 class ReportListResultCount(SuppressPostSaveMixin, TestCase, UserMixin):
     """The result count under the search box renders only for active filters."""

@@ -1,4 +1,4 @@
-
+{% load humanize %}
 
 <div class="row">
     <div class="col-md-12">
@@ -26,15 +26,34 @@
                 <div id="map-canvas" class="tab-pane-fill"></div>
             </div>
             <div class="tab-pane{% if result_view == 'stats' %} active{% endif %}" id="list-stats-pane" role="tabpanel" aria-labelledby="list-stats-tab">
-                <ul class="stats-summary" aria-label="Report summary">
-                    <li class="stats-summary-item"><strong>{{ report_summary.total }}</strong> matching reports</li>
-                    <li class="stats-summary-item"><strong>{{ report_summary.confirmed }}</strong> of <strong>{{ report_summary.total }}</strong> confirmed (<strong>{% widthratio report_summary.confirmed report_summary.total 100 %}%</strong>)</li>
-                    <li class="stats-summary-item"><strong>{{ report_summary.county_count }}</strong> counties represented</li>
-                    <li class="stats-summary-item">{% if report_summary.top_category %}Top category: <strong>{{ report_summary.top_category }}</strong> with {{ report_summary.top_category_count }} reports{% else %}Top category unavailable{% endif %}</li>
-                </ul>
+                <dl class="stats-summary">
+                    <div class="stats-summary-item">
+                        <dt class="stats-label">Matching reports</dt>
+                        <dd class="stats-value">{{ report_summary.total|intcomma }}</dd>
+                    </div>
+                    <div class="stats-summary-item">
+                        <dt class="stats-label">Confirmed reports</dt>
+                        <dd class="stats-value">{{ report_summary.confirmed|intcomma }}</dd>
+                        <dd class="stats-detail">of {{ report_summary.total|intcomma }} reports ({% widthratio report_summary.confirmed report_summary.total 100 %}%)</dd>
+                    </div>
+                    <div class="stats-summary-item">
+                        <dt class="stats-label">Counties with reports</dt>
+                        <dd class="stats-value">{{ report_summary.county_count|intcomma }}</dd>
+                    </div>
+                    <div class="stats-summary-item">
+                        <dt class="stats-label">Most-reported category</dt>
+                        {% if report_summary.top_category %}
+                        <dd class="stats-value">{{ report_summary.top_category }}</dd>
+                        <dd class="stats-detail">{{ report_summary.top_category_count|intcomma }} reports</dd>
+                        {% else %}
+                        <dd class="stats-value">&mdash;</dd>
+                        <dd class="stats-detail">Top category unavailable</dd>
+                        {% endif %}
+                    </div>
+                </dl>
                 <div class="stats-charts tab-pane-fill">
                     <div class="stats-chart-panel stats-chart-panel-bar">
-                        <h3 class="stats-chart-title">Reports by year</h3>
+                        <h3 class="stats-chart-title">Reports submitted by year</h3>
                         <div id="stats-chart"></div>
                     </div>
                     {% if report_category_stats|length > 1 %}
