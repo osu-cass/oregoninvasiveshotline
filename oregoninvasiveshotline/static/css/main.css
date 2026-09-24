@@ -54,6 +54,32 @@ select[multiple] {
     width: 100%;
 }
 
+.search-input-column {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.search-input-column .form-control {
+    width: 100%;
+}
+
+/* Holds its line whether or not a count is shown, so nothing below shifts. */
+.search-result-count {
+    display: block;
+    height: 1rem;
+    line-height: 1rem;
+    margin-top: 0;
+    overflow: hidden;
+    padding-left: calc(0.75rem + 1px);
+    transform: translateY(4px);
+    white-space: nowrap;
+}
+
+.search-divider {
+    border-top: 1px solid #eee;
+    margin: 1rem 0 0.5rem;
+}
+
 #header {
     text-align:center;
     padding-bottom:20px;
@@ -331,6 +357,200 @@ select[multiple] {
     padding:10px;
 }
 
+.fixed-height-tabs {
+    container-type:inline-size;
+}
+
+/* Every pane is the same fixed height so switching tabs never shifts the page.
+ * The map used to be a bare 550px box preceded by a <br> (24px). The tab bar
+ * that replaced that <br> is 42px, so the panes give the 18px difference back
+ * and the page keeps the height it had before the tabs were added. */
+.fixed-height-tabs .tab-pane {
+    height:532px;
+}
+
+.fixed-height-tabs .tab-pane.active {
+    display:flex;
+    flex-direction:column;
+}
+
+/* Marks the element that should absorb the leftover height of its pane. */
+.tab-pane-fill {
+    flex:1;
+    min-height:0;
+}
+
+#list-stats-pane {
+    overflow-y:auto;
+}
+
+.stats-summary {
+    display:grid;
+    flex:none;
+    grid-template-columns:repeat(4, minmax(0, 1fr));
+    gap:6px;
+    margin:0 0 8px;
+    padding:0;
+}
+
+.stats-summary-item {
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    min-width:0;
+    padding:6px 10px;
+    border:1px solid #e1e0d9;
+    border-radius:6px;
+    background:#fff;
+    color:#3d3c39;
+    line-height:1.2;
+}
+
+.stats-value {
+    display:block;
+    margin:0;
+    overflow-wrap:anywhere;
+    font-size:1.15rem;
+    font-weight:600;
+    letter-spacing:-0.01em;
+    font-variant-numeric:tabular-nums;
+    color:#2b2a28;
+    line-height:1.1;
+}
+
+.stats-label,
+.stats-sub {
+    font-size:0.78rem;
+    font-weight:500;
+    color:#6b6a65;
+}
+
+.stats-sub {
+    white-space:nowrap;
+}
+
+.stats-label {
+    display:block;
+    margin:0;
+}
+
+.stats-summary-item:last-child .stats-value {
+    font-size:0.95rem;
+    line-height:1.25;
+}
+
+.stats-charts {
+    display:flex;
+    align-items:stretch;
+    gap:10px;
+}
+
+.stats-chart-panel {
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    min-height:0;
+    border:1px solid #e1e0d9;
+    border-radius:6px;
+    padding:8px 10px;
+}
+
+.stats-chart-panel-bar {
+    flex:0 0 58%;
+}
+
+.stats-chart-panel-bar:only-child {
+    flex:1 1 auto;
+}
+
+.stats-chart-panel-pie {
+    flex:1 1 auto;
+}
+
+.stats-chart-title {
+    margin:0 0 4px;
+    font-size:0.9rem;
+    font-weight:600;
+    color:#52514e;
+}
+
+.stats-chart-heading {
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) auto;
+    align-items:baseline;
+    gap:8px;
+    flex:none;
+    margin-bottom:4px;
+}
+
+.stats-chart-heading .stats-chart-title {
+    margin:0;
+}
+
+/* Reserve the button's space so drilldown never changes header height. */
+.stats-chart-back[hidden] {
+    display:block !important;
+    visibility:hidden;
+}
+
+.stats-chart-back {
+    white-space:nowrap;
+    padding:0;
+    border:0;
+    border-radius:4px;
+    background:#fff;
+    color:#0d6efd;
+    font-size:0.875rem;
+    font-weight:600;
+    line-height:1.4;
+    text-decoration:underline;
+}
+
+.stats-chart-back:hover {
+    color:#0a58ca;
+}
+
+.stats-chart-back:focus-visible {
+    border-radius:2px;
+    outline:2px solid #0d6efd;
+    outline-offset:2px;
+}
+
+#stats-chart,
+#stats-pie {
+    flex:1;
+    min-height:0;
+}
+
+#stats-pie {
+    position:relative;
+}
+
+@container (width < 42rem) {
+    .stats-summary {
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container (width < 30rem) {
+    /* Stacked charts need their own height once the pane grows freely. */
+    #list-stats-pane {
+        height:auto;
+    }
+
+    .stats-charts {
+        flex:none;
+        flex-direction:column;
+    }
+
+    .stats-chart-panel {
+        box-sizing:border-box;
+        flex:none;
+        width:100%;
+        height:320px;
+    }
+}
+
 .check-all {
     display:none;
 }
@@ -439,6 +659,41 @@ blockquote {
     overflow-y:auto;
     overflow-x:hidden;
     height:500px;
+}
+
+@media (max-width: 767px) {
+    .reports-table-scroll {
+        height:500px;
+        overflow-x:hidden;
+        overflow-y:auto;
+    }
+
+    .reports-table {
+        margin-bottom:0;
+        table-layout:fixed;
+    }
+
+    .reports-table tbody {
+        display:table-row-group !important;
+        height:auto;
+        overflow:visible;
+    }
+
+    .reports-table td {
+        overflow-wrap:break-word;
+    }
+
+    .reports-table-img {
+        width:64px;
+    }
+
+    .reports-table-img img {
+        display:block;
+        max-width:100%;
+        max-height:64px;
+        height:auto;
+        margin:0 auto;
+    }
 }
 
 .reports-table .reports-table-title {

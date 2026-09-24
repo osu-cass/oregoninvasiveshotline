@@ -1,10 +1,11 @@
-{% load static %}
+{% load static django_vite %}
 
 <script nonce="{{csp_nonce}}"
   src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_API_KEY }}&callback=initMap"
   async
 ></script>
 <script nonce="{{csp_nonce}}">
+  /** Initialize the report map and its marker interactions. */
   function initMap() {
       var reports = {{ reports|jsonify }};
       if (reports.length === 0){
@@ -13,6 +14,17 @@
 
       var options = getDefaultMapOptions();
       var map = new google.maps.Map(document.getElementById('map-canvas'), options);
+      var mapTab = document.getElementById('list-map-tab');
+
+      if (mapTab) {
+          mapTab.addEventListener('shown.bs.tab', function () {
+              var center = map.getCenter();
+              google.maps.event.trigger(map, 'resize');
+              if (center) {
+                  map.setCenter(center);
+              }
+          });
+      }
 
       // we need to save all the "info windows" we create, so we can close them
       // all when a balloon is clicked (so only one window opens at a time)
@@ -50,12 +62,20 @@
       }
 
       $('.report-location-click').click(function(){
+          // The map lives in a tab pane, so switch back to it before opening the marker.
+          if (mapTab) {
+              bootstrap.Tab.getOrCreateInstance(mapTab).show();
+          }
           var index = $(this).data("report-index");
           google.maps.event.trigger(reports[index].marker, 'click');
 
       });
   }
 </script>
+{{ report_stats|json_script:"report-year-stats" }}
+{{ report_category_stats|json_script:"report-category-stats" }}
+{% vite_hmr_client %}
+{% vite_asset 'src/reports/main.ts' nonce=csp_nonce %}
 <script nonce="{{csp_nonce}}" src="https://cdn.jsdelivr.net/npm/choices.js@11.1.0/public/assets/scripts/choices.min.js"></script>
 <script nonce="{{csp_nonce}}">
   document.addEventListener("DOMContentLoaded", function () {
