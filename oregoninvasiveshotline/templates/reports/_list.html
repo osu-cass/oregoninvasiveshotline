@@ -33,21 +33,18 @@
                     </div>
                     <div class="stats-summary-item">
                         <dt class="stats-label">Confirmed reports</dt>
-                        <dd class="stats-value">{{ report_summary.confirmed|intcomma }}</dd>
-                        <dd class="stats-detail">of {{ report_summary.total|intcomma }} reports ({% widthratio report_summary.confirmed report_summary.total 100 %}%)</dd>
+                        <dd class="stats-value">{{ report_summary.confirmed|intcomma }} <span class="stats-sub">of {{ report_summary.total|intcomma }} reports ({% widthratio report_summary.confirmed report_summary.total 100 %}%)</span></dd>
                     </div>
                     <div class="stats-summary-item">
                         <dt class="stats-label">Counties with reports</dt>
                         <dd class="stats-value">{{ report_summary.county_count|intcomma }}</dd>
                     </div>
                     <div class="stats-summary-item">
-                        <dt class="stats-label">Most-reported category</dt>
+                        <dt class="stats-label">Top category</dt>
                         {% if report_summary.top_category %}
-                        <dd class="stats-value">{{ report_summary.top_category }}</dd>
-                        <dd class="stats-detail">{{ report_summary.top_category_count|intcomma }} reports</dd>
+                        <dd class="stats-value">{{ report_summary.top_category }} <span class="stats-sub">{{ report_summary.top_category_count|intcomma }} reports</span></dd>
                         {% else %}
-                        <dd class="stats-value">&mdash;</dd>
-                        <dd class="stats-detail">Top category unavailable</dd>
+                        <dd class="stats-value">&mdash; <span class="stats-sub">Unavailable</span></dd>
                         {% endif %}
                     </div>
                 </dl>
@@ -56,7 +53,8 @@
                         <h3 class="stats-chart-title">Reports submitted by year</h3>
                         <div id="stats-chart"></div>
                     </div>
-                    {% if report_category_stats|length > 1 %}
+                    {# The pie needs more than one category to be meaningful. #}
+                    {% if report_category_stats.1 %}
                     <div class="stats-chart-panel stats-chart-panel-pie">
                         <div class="stats-chart-heading">
                             <h3 class="stats-chart-title">Reports by category</h3>
