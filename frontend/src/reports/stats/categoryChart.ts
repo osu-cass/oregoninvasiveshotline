@@ -96,6 +96,9 @@ export function createCategoryChart(
 	let otherTapArmed = false;
 	let geometry = getPieGeometry(overviewData);
 	let labelFontSize = chooseLabelFontSize();
+	let overviewPieHeight: number | null = null;
+	let geometryWidth = chart.getWidth();
+	let geometryHeight = chart.getHeight();
 
 	/** Estimate the legend block height so the ring can claim the rest. */
 	function estimateLegendHeight(data: PieSlice[]): number {
@@ -161,11 +164,24 @@ export function createCategoryChart(
 		};
 	}
 
-	/** Measure the flushed legend before drawing or repositioning slices. */
+	/** Keep the ring size fixed when the visible legend changes. */
 	function updateGeometry(): void {
 		chart.getZr().flush();
-		const pieHeight = measureLegendTop();
-		geometry = getPieGeometry(activeData, pieHeight ?? undefined);
+		const width = chart.getWidth();
+		const height = chart.getHeight();
+		if (activeData === overviewData) {
+			overviewPieHeight =
+				measureLegendTop() ?? height - estimateLegendHeight(overviewData);
+		} else if (
+			overviewPieHeight === null ||
+			width !== geometryWidth ||
+			height !== geometryHeight
+		) {
+			overviewPieHeight = height - estimateLegendHeight(overviewData);
+		}
+		geometryWidth = width;
+		geometryHeight = height;
+		geometry = getPieGeometry(overviewData, overviewPieHeight);
 		labelFontSize = chooseLabelFontSize();
 	}
 
