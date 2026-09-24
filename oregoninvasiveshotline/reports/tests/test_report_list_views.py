@@ -274,11 +274,11 @@ class ReportListSummary(SuppressPostSaveMixin, TestCase, UserMixin):
         self.assertNotContains(response, 'Summary of reports matching your current filters.')
         for card in (
             '<dt class="stats-label">Matching reports</dt><dd class="stats-value">3</dd>',
-            '<dt class="stats-label">Confirmed reports</dt><dd class="stats-value">1</dd>'
-            '<dd class="stats-detail">of 3 reports (33%)</dd>',
+            '<dt class="stats-label">Confirmed reports</dt><dd class="stats-value">1 '
+            '<span class="stats-sub">of 3 reports (33%)</span></dd>',
             '<dt class="stats-label">Counties with reports</dt><dd class="stats-value">1</dd>',
-            '<dt class="stats-label">Most-reported category</dt><dd class="stats-value">Land Plants</dd>'
-            '<dd class="stats-detail">3 reports</dd>',
+            '<dt class="stats-label">Top category</dt><dd class="stats-value">Land Plants '
+            '<span class="stats-sub">3 reports</span></dd>',
         ):
             self.assertContains(response, f'<div class="stats-summary-item">{card}</div>', html=True)
         self.assertNotIn("stats-fact", content)
@@ -310,7 +310,7 @@ class ReportListSummary(SuppressPostSaveMixin, TestCase, UserMixin):
         response = self.client.get(reverse("reports-list"))
 
         self.assertIn(
-            '<dd class="stats-detail">Top category unavailable</dd>',
+            '<dd class="stats-value">&mdash; <span class="stats-sub">Unavailable</span></dd>',
             response.content.decode(),
         )
 
@@ -326,10 +326,15 @@ class ReportListSummary(SuppressPostSaveMixin, TestCase, UserMixin):
         }):
             content = self.client.get(reverse('reports-list')).content.decode()
         self.assertIn('<dd class="stats-value">12,345</dd>', content)
-        self.assertIn('<dd class="stats-value">1,234</dd>', content)
-        self.assertIn('of 12,345 reports (10%)', content)
-        self.assertIn('<dd class="stats-value">Reptiles and Amphibians</dd>', content)
-        self.assertIn('<dd class="stats-detail">2,345 reports</dd>', content)
+        self.assertIn(
+            '<dd class="stats-value">1,234 <span class="stats-sub">of 12,345 reports (10%)</span></dd>',
+            content,
+        )
+        self.assertIn(
+            '<dd class="stats-value">Reptiles and Amphibians '
+            '<span class="stats-sub">2,345 reports</span></dd>',
+            content,
+        )
 
 class ReportListResultCount(SuppressPostSaveMixin, TestCase, UserMixin):
     """The result count under the search box renders only for active filters."""
