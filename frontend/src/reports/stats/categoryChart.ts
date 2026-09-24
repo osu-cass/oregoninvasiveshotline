@@ -1,6 +1,7 @@
 import { type EChartsOption, init, type PieSeriesOption } from "echarts";
 import {
 	CONFIRMED_COLOR,
+	getLegendMetrics,
 	getLegendStyle,
 	isMobileViewport,
 	UNCONFIRMED_COLOR,
@@ -17,8 +18,11 @@ const PIE_COLORS = [
 	"#4a3aa7",
 ];
 const OTHER_COLOR = "#8f8d86";
-const INNER_RADIUS = 0.43;
-const OUTER_RADIUS = 0.64;
+/** Inner ring edge as a fraction of the outer radius. */
+const INNER_RATIO = 0.67;
+/** Breathing room between the ring and the box edges or the legend. */
+const SIDE_PAD = 12;
+const VERTICAL_PAD = 6;
 
 /** A category slice, optionally containing the categories folded into Other. */
 interface PieSlice {
@@ -38,6 +42,14 @@ function colorSlices(slices: PieSlice[]): PieSlice[] {
 				: PIE_COLORS[index % PIE_COLORS.length],
 		},
 	}));
+}
+
+/** Pixel geometry the ring fills: the chart box minus the legend block. */
+interface PieGeometry {
+	centerX: number;
+	centerY: number;
+	innerRadius: number;
+	outerRadius: number;
 }
 
 /** Fold categories beyond the palette into an expandable Other slice. */
@@ -82,13 +94,85 @@ export function createCategoryChart(
 	const labelContext = document.createElement("canvas").getContext("2d");
 	let activeData = overviewData;
 	let otherTapArmed = false;
+	let geometry = getPieGeometry(overviewData);
 	let labelFontSize = chooseLabelFontSize();
+
+	/** Estimate the legend block height so the ring can claim the rest. */
+	function estimateLegendHeight(data: PieSlice[]): number {
+		if (!labelContext) return 0;
+		const metrics = getLegendMetrics();
+		labelContext.font = `600 ${metrics.fontSize}px sans-serif`;
+		// Wrap rows the way ECharts does; the slack avoids underestimating.
+		const rowWidth = chart.getWidth() - 2 * metrics.padding - 4;
+		let rows = 1;
+		let lineWidth = 0;
+		for (const slice of data) {
+			const itemWidth =
+				metrics.itemWidth +
+				metrics.iconTextGap +
+				labelContext.measureText(slice.name).width;
+			if (lineWidth > 0 && lineWidth + metrics.itemGap + itemWidth > rowWidth) {
+				rows += 1;
+				lineWidth = itemWidth;
+			} else {
+				lineWidth += lineWidth > 0 ? metrics.itemGap + itemWidth : itemWidth;
+			}
+		}
+		return rows * metrics.lineHeight + 2 * metrics.padding;
+	}
+
+	/** Read the rendered legend's top edge (relative to the chart box). */
+	function measureLegendTop(): number | null {
+		if (chart.isDisposed()) return null;
+		const boxRect = chart.getDom().getBoundingClientRect();
+		if (!boxRect.width || !boxRect.height) return null;
+		const names = new Set(activeData.map((slice) => slice.name));
+		let minTop: number | null = null;
+		chart
+			.getDom()
+			.querySelectorAll("svg text")
+			.forEach((text) => {
+				if (!names.has(text.textContent ?? "")) return;
+				const top = text.getBoundingClientRect().top;
+				if (minTop === null || top < minTop) minTop = top;
+			});
+		if (minTop === null) return null;
+		// Leave room for the legend's padding above the first row of text.
+		return minTop - boxRect.top - getLegendMetrics().padding;
+	}
+
+	/** Fill the chart box above the legend with the largest ring that fits. */
+	function getPieGeometry(
+		data: PieSlice[],
+		pieHeightOverride?: number,
+	): PieGeometry {
+		const width = chart.getWidth();
+		const pieHeight =
+			pieHeightOverride ?? chart.getHeight() - estimateLegendHeight(data);
+		const outerRadius = Math.max(
+			0,
+			Math.min((width - SIDE_PAD) / 2, pieHeight / 2 - VERTICAL_PAD),
+		);
+		return {
+			centerX: width / 2,
+			centerY: pieHeight / 2,
+			innerRadius: outerRadius * INNER_RATIO,
+			outerRadius,
+		};
+	}
+
+	/** Measure the flushed legend before drawing or repositioning slices. */
+	function updateGeometry(): void {
+		chart.getZr().flush();
+		const pieHeight = measureLegendTop();
+		geometry = getPieGeometry(activeData, pieHeight ?? undefined);
+		labelFontSize = chooseLabelFontSize();
+	}
 
 	/** Choose one readable font size that fits every count inside the ring. */
 	function chooseLabelFontSize(): number {
 		if (!labelContext) return 0;
-		const chartRadius = Math.min(chart.getWidth(), chart.getHeight()) / 2;
-		const ringSpace = (chartRadius * (OUTER_RADIUS - INNER_RADIUS)) / 2;
+		const ringSpace = (geometry.outerRadius - geometry.innerRadius) / 2;
 		for (let size = 13; size >= 11; size -= 1) {
 			labelContext.font = `600 ${size}px sans-serif`;
 			const fits = activeData.every((slice) => {
@@ -102,11 +186,14 @@ export function createCategoryChart(
 
 	/** Build the pie series without changing the current chart state. */
 	function getSeries(data: PieSlice[]): PieSeriesOption {
+		const { centerX, centerY, innerRadius, outerRadius } = geometry;
+		const middleRadius = (innerRadius + outerRadius) / 2;
 		return {
 			name: "Reports",
 			type: "pie",
-			radius: [`${INNER_RADIUS * 100}%`, `${OUTER_RADIUS * 100}%`],
-			center: ["50%", "44%"],
+			animation: false,
+			radius: [innerRadius, outerRadius],
+			center: [centerX, centerY],
 			percentPrecision: 6,
 			avoidLabelOverlap: true,
 			itemStyle: { borderColor: "#fff", borderWidth: 2, borderRadius: 4 },
@@ -128,9 +215,6 @@ export function createCategoryChart(
 						Math.hypot(labelContext.measureText(text).width, labelFontSize) /
 							2 +
 						3;
-					const chartRadius = Math.min(chart.getWidth(), chart.getHeight()) / 2;
-					const middleRadius =
-						(chartRadius * (INNER_RADIUS + OUTER_RADIUS)) / 2;
 					const sliceSpace =
 						middleRadius *
 						Math.sin(
@@ -142,16 +226,12 @@ export function createCategoryChart(
 			labelLine: { show: false },
 			/** Center labels between the inner and outer edges of the ring. */
 			labelLayout({ labelRect }) {
-				const centerX = chart.getWidth() * 0.5;
-				const centerY = chart.getHeight() * 0.44;
 				const offsetX = labelRect.x + labelRect.width / 2 - centerX;
 				const offsetY = labelRect.y + labelRect.height / 2 - centerY;
 				const currentRadius = Math.hypot(offsetX, offsetY);
-				const chartRadius = Math.min(chart.getWidth(), chart.getHeight()) / 2;
-				const labelRadius = (chartRadius * (INNER_RADIUS + OUTER_RADIUS)) / 2;
 				return {
-					x: centerX + (offsetX / currentRadius) * labelRadius,
-					y: centerY + (offsetY / currentRadius) * labelRadius,
+					x: centerX + (offsetX / currentRadius) * middleRadius,
+					y: centerY + (offsetY / currentRadius) * middleRadius,
 					align: "center",
 					verticalAlign: "middle",
 					hideOverlap: true,
@@ -165,13 +245,13 @@ export function createCategoryChart(
 	function showData(data: PieSlice[], drilldown: boolean): void {
 		activeData = data;
 		otherTapArmed = false;
-		labelFontSize = chooseLabelFontSize();
 		chart.dispatchAction({ type: "hideTip" });
+		chart.setOption({
+			legend: { ...legendStyle, data: data.map((slice) => slice.name) },
+		});
+		updateGeometry();
 		chart.setOption(
-			{
-				legend: { ...legendStyle, data: data.map((slice) => slice.name) },
-				series: [getSeries(data)],
-			},
+			{ series: [getSeries(data)] },
 			{ replaceMerge: ["series"] },
 		);
 		if (backButton) backButton.hidden = !drilldown;
@@ -202,9 +282,10 @@ export function createCategoryChart(
 			},
 		},
 		legend: { ...legendStyle, data: overviewData.map((slice) => slice.name) },
-		series: [getSeries(overviewData)],
 	};
 	chart.setOption(option);
+	updateGeometry();
+	chart.setOption({ series: [getSeries(overviewData)] });
 	chart.on("click", (params) => {
 		if (params.componentType !== "series") return;
 		const slice = params.data as PieSlice;
@@ -226,13 +307,19 @@ export function createCategoryChart(
 	backButton?.addEventListener("click", showOverview);
 
 	return {
-		/** Resize the pie and recalculate labels for its new dimensions. */
+		/** Resize the pie and recalculate its geometry and labels. */
 		resize() {
-			chart.resize();
-			labelFontSize = chooseLabelFontSize();
-			chart.setOption({
-				series: [{ label: { fontSize: labelFontSize || 11 } }],
-			});
+			const { clientWidth, clientHeight } = container;
+			if (!clientWidth || !clientHeight) return;
+			if (
+				clientWidth === chart.getWidth() &&
+				clientHeight === chart.getHeight()
+			) {
+				return;
+			}
+			chart.resize({ animation: { duration: 0 } });
+			updateGeometry();
+			chart.setOption({ series: [getSeries(activeData)] });
 		},
 		/** Remove the back-button listener and dispose of the chart. */
 		destroy() {
