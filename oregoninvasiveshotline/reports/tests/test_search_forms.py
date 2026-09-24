@@ -151,6 +151,48 @@ class ReportSearchFormTest(TestCase, UserMixin):
         self.assertNotIn(other_report, reports)
         self.assertEqual(len(reports), 1)
 
+    def test_invited_non_manager_sees_only_their_private_report(self):
+        """An invited non-manager sees only private reports tied to their invites."""
+        inviter = self.create_user(
+            username="inviter@example.com",
+            is_active=True,
+            is_staff=False,
+        )
+        invited_user = self.create_user(
+            username="invited@example.com",
+            is_active=False,
+            is_staff=False,
+        )
+        other_invited_user = self.create_user(
+            username="other-invited@example.com",
+            is_active=False,
+            is_staff=False,
+        )
+        invited_report = make(
+            Report,
+            created_by=inviter,
+            is_public=False,
+            point=ORIGIN,
+        )
+        unrelated_report = make(Report, is_public=False, point=ORIGIN)
+        make(Invite, user=invited_user, created_by=inviter, report=invited_report)
+        make(
+            Invite,
+            user=other_invited_user,
+            created_by=inviter,
+            report=unrelated_report,
+        )
+
+        form = ReportSearchForm({
+            "q": "",
+            "source": "invited",
+        }, user=invited_user)
+        reports = form.search(Report.objects.all())
+
+        self.assertIn(invited_report, reports)
+        self.assertNotIn(unrelated_report, reports)
+        self.assertEqual(len(reports), 1)
+
     def test_filter_by_reports_user_reported(self):
         my_report = make(Report, created_by=self.user, point=ORIGIN)
         other_report = make(Report, point=ORIGIN)
