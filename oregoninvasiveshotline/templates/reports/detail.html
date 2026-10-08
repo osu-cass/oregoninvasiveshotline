@@ -61,7 +61,7 @@ Report #{{ report.pk }} - {{ report }}
 
         {% if report.identification_process %}
 	        <h4 class="h6">Identification process:</h4>
-	        <blockquote>{{ report.identification_process|linebreaksbr }}</blockquote>
+	        <blockquote class="text-break">{{ report.identification_process|linebreaksbr }}</blockquote>
         {% endif %}
 
         {% if images %}

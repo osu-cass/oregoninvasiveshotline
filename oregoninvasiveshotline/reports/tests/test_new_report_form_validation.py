@@ -44,6 +44,7 @@ class NewReportFormValidationTest(TransactionTestCase):
             "find_description",
             "identification_process",
             "location_description",
+            "questions",
         ]
 
         for field_name in fields:
