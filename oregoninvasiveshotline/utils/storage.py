@@ -13,9 +13,10 @@ class ViteManifestStaticFilesStorage(ManifestStaticFilesStorage):
     every module in it (including React).
     """
 
-    def file_hash(self, name, content=None):
+    def file_hash(self, name, content=None) -> str:
         """Skip hashing for Vite assets and hash everything else as usual."""
         # Django passes no name when hashing the manifest itself.
         if name and name.startswith(VITE_ASSETS_PREFIX):
-            return None
+            # An empty hash tells Django to keep the original filename.
+            return ""
         return super().file_hash(name, content)
