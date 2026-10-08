@@ -57,4 +57,6 @@ class NewCreateViewRouteTest(TestCase):
             with self.subTest(route_name=route_name):
                 response = self.client.get(reverse(route_name), HTTP_X_INERTIA="true")
                 self.assertEqual(response.status_code, 200)
-                self.assertEqual(response.json()["component"], "reportWizard")
+                page = response.json()
+                self.assertEqual(page["component"], "reportWizard")
+                self.assertEqual(page["props"]["submit_url"], reverse("reports-create"))

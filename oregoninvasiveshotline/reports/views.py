@@ -414,6 +414,7 @@ def create_new(request: HttpRequest):
         for category in categories
     ]
 
+    props["submit_url"] = reverse("reports-create")
     props["google_api_key"] = settings.GOOGLE_API_KEY
     props["google_map_id"] = settings.GOOGLE_MAP_ID
 
