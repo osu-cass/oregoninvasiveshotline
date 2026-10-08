@@ -24,6 +24,8 @@ interface FormWizardProps {
 	user: ContactInfo;
 	/** Category + species tree from the backend. */
 	categories: CategoryWithSpecies[];
+	/** Endpoint for precognition validation and the final submit. */
+	submit_url: string;
 	/** Google Maps API key for location step. */
 	google_api_key?: string;
 	/** Google Map ID for advanced marker support. */
@@ -46,7 +48,7 @@ export default function FormWizard(props: FormWizardProps) {
 			phone: props.user.phone,
 		}),
 	})
-		.withPrecognition("post", "/reports/create-new")
+		.withPrecognition("post", props.submit_url)
 		.setValidationTimeout(250);
 
 	const currentStep = Steps[step];
@@ -141,7 +143,7 @@ export default function FormWizard(props: FormWizardProps) {
 														form.validate({
 															only: currentStep.fields,
 															onSuccess: () =>
-																form.post("/reports/create-new", {
+																form.post(props.submit_url, {
 																	// Forces form data to be always submitted as a formdata object for consistancy.
 																	// see https://inertiajs.com/docs/v2/the-basics/file-uploads
 																	forceFormData: true,
@@ -194,7 +196,11 @@ export default function FormWizard(props: FormWizardProps) {
 								{Object.entries(form.errors)
 									.filter(([field]) => !wizardFieldNames.has(field))
 									.map(([field, error]) => (
-										<div key={field} className="alert alert-danger mt-3 mb-0">
+										<div
+											key={field}
+											role="alert"
+											className="alert alert-danger mt-3 mb-0"
+										>
 											{String(error)}
 										</div>
 									))}
