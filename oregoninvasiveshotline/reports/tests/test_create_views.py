@@ -22,6 +22,8 @@ class ClassicCreateViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         # make sure the category_id_to_species_id gets populated
         self.assertEqual(set(json.loads(response.context['category_id_to_species_id'])[str(c1.pk)]), set([s1.pk, s2.pk]))
+        # The banner links to the canonical wizard URL, not the legacy alias.
+        self.assertNotContains(response, f'href="{reverse("reports-create-new")}"')
 
     def test_post(self):
         data = {
