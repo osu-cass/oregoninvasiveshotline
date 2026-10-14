@@ -39,7 +39,6 @@ env = environ.Env(
     CELERY_TASK_ALWAYS_EAGER=(bool, False),
     STATIC_ROOT=(str, ''),
     MEDIA_ROOT=(str, ''),
-    STATICFILES_STORAGE=(str, 'oregoninvasiveshotline.utils.storage.ViteManifestStaticFilesStorage'),
     CSRF_COOKIE_SECURE=(bool, True),
     SESSION_COOKIE_SECURE=(bool, True),
     SECURE_PROXY_SSL_HEADER=(str, ''),
@@ -132,7 +131,9 @@ STATIC_ROOT = env('STATIC_ROOT', default=os.path.join(FILE_ROOT, 'static'))  # p
 STATIC_URL = '/static/'
 MEDIA_ROOT = env('MEDIA_ROOT', default=os.path.join(FILE_ROOT, 'media'))  # pyright: ignore
 MEDIA_URL = '/media/'
-STATICFILES_STORAGE = env('STATICFILES_STORAGE')
+# Not read from the environment. Older deploy .env files still set Django's
+# ManifestStaticFilesStorage, which re-hashes Vite chunks and loads React twice.
+STATICFILES_STORAGE = 'oregoninvasiveshotline.utils.storage.ViteManifestStaticFilesStorage'
 if ENV == 'test':
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 STORAGES = {
