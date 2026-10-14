@@ -49,9 +49,7 @@
                   {% bootstrap_field form.is_archived class="mb-0" label_class="visually-hidden" %}
                   {% if form.source %}{% bootstrap_field form.source class="mb-0" label_class="visually-hidden" %}{% endif %}
                 </div>
-                <div class="row">
-                  {{ form.non_field_errors }}
-                </div>
+                {% include 'reports/search/_errors.html' %}
             </form>
             {% include 'reports/_list.html' %}
         </div>
