@@ -1,38 +1,96 @@
-
+{% load humanize %}
 
 <div class="row">
-  <div class="col-md-12">
-    <div style="margin: 1em 0em 0.5em 0em; border-top: 1px solid #eee;"></div>
-  </div>
+    <div class="col-md-12">
+        <div class="search-divider"></div>
+    </div>
 </div>
 
 <div class="row">
-    <div class="col-md-7">
-        <br>
-
+    <div class="col-lg-7">
         {% if reports %}
-            <div id="map-canvas" style="height: 550px;"></div>
-        {% endif %}
-            <div class="alert alert-info">
-                {% if not reports %}
-                <p>
-                    No matching reports found.
-                </p>
-                {% endif %}
-                <p>
-                    You can <a href="{{ subscription_url }}" style="color: #3e3cbeff;">subscribe to this search</a> to be
-                    alerted when a matching report is added.
-                </p>
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link{% if result_view == 'map' %} active{% endif %}" id="list-map-tab" data-bs-toggle="tab"
+                        data-bs-target="#list-map-pane" type="button" role="tab"
+                        aria-controls="list-map-pane" aria-selected="{% if result_view == 'map' %}true{% else %}false{% endif %}">Map</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link{% if result_view == 'stats' %} active{% endif %}" id="list-stats-tab" data-bs-toggle="tab"
+                        data-bs-target="#list-stats-pane" type="button" role="tab"
+                        aria-controls="list-stats-pane" aria-selected="{% if result_view == 'stats' %}true{% else %}false{% endif %}"><strong>(NEW)</strong> Stats Summary</button>
+            </li>
+        </ul>
+        <div class="tab-content fixed-height-tabs">
+            <div class="tab-pane{% if result_view == 'map' %} active{% endif %}" id="list-map-pane" role="tabpanel" aria-labelledby="list-map-tab">
+                <div id="map-canvas" class="tab-pane-fill"></div>
             </div>
+            <div class="tab-pane{% if result_view == 'stats' %} active{% endif %}" id="list-stats-pane" role="tabpanel" aria-labelledby="list-stats-tab">
+                <dl class="stats-summary">
+                    <div class="stats-summary-item">
+                        <dt class="stats-label">Matching reports</dt>
+                        <dd class="stats-value">{{ report_summary.total|intcomma }}</dd>
+                    </div>
+                    <div class="stats-summary-item">
+                        <dt class="stats-label">Confirmed reports</dt>
+                        <dd class="stats-value">{{ report_summary.confirmed|intcomma }} <span class="stats-sub">of {{ report_summary.total|intcomma }} reports ({% widthratio report_summary.confirmed report_summary.total 100 %}%)</span></dd>
+                    </div>
+                    <div class="stats-summary-item">
+                        <dt class="stats-label">Counties with reports</dt>
+                        <dd class="stats-value">{{ report_summary.county_count|intcomma }}</dd>
+                    </div>
+                    <div class="stats-summary-item">
+                        <dt class="stats-label">Top category</dt>
+                        {% if report_summary.top_category %}
+                        <dd class="stats-value">{{ report_summary.top_category }} <span class="stats-sub">{{ report_summary.top_category_count|intcomma }} reports</span></dd>
+                        {% else %}
+                        <dd class="stats-value">&mdash; <span class="stats-sub">Unavailable</span></dd>
+                        {% endif %}
+                    </div>
+                </dl>
+                <div class="stats-charts tab-pane-fill">
+                    <div class="stats-chart-panel stats-chart-panel-bar">
+                        <h3 class="stats-chart-title">Reports submitted by year</h3>
+                        <div id="stats-chart"></div>
+                    </div>
+                    {# The pie needs more than one category to be meaningful. #}
+                    {% if report_category_stats.1 %}
+                    <div class="stats-chart-panel stats-chart-panel-pie">
+                        <div class="stats-chart-heading">
+                            <h3 class="stats-chart-title">Reports by category</h3>
+                            <button id="stats-pie-back" class="stats-chart-back" type="button" hidden>
+                                &larr; All categories
+                            </button>
+                        </div>
+                        <div id="stats-pie"></div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="alert alert-info">
+            {% if not reports %}
+            <p>
+                No matching reports found.
+            </p>
+            {% endif %}
+            <p>
+                You can <a href="{{ subscription_url }}" style="color: #3e3cbeff;">subscribe to this search</a> to be
+                alerted when a matching report is added.
+            </p>
+        </div>
         <br>
 
         {% include 'reports/_legend_dialog.html' %}
     </div>
 
-    <div class="col-md-5 {% if not reports %}hidden{% endif %}">
+    <div class="col-lg-5 {% if not reports %}hidden{% endif %}">
 
         {% include 'reports/search/_sort.html' %}
 
+        <div class="reports-table-scroll">
         <table class="table reports-table double-zebra">
             <tbody>
                 {% for report in reports %}
@@ -92,7 +150,8 @@
                 {% endfor %}
             </tbody>
         </table>
+        </div>
 
-        {% include '_pagination.html' with items=page %}
+        {% include '_pagination.html' with items=page preserve_result_view=True %}
     </div>
 </div>
