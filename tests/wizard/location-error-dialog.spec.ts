@@ -48,13 +48,12 @@ test.describe("report wizard", () => {
 
 		await wizard.getByRole("button", { name: "Current location" }).click();
 
-		await expect(
-			page.getByRole("alertdialog", { name: "Location unavailable" }),
-		).toBeVisible();
+		const locationDialog = page.getByRole("alertdialog", {
+			name: "Location unavailable",
+		});
+		await expect(locationDialog).toBeVisible();
 		await expect(page.getByText(locationErrorMessage)).toBeVisible();
-		await page.getByRole("button", { name: "OK" }).click();
-		await expect(
-			page.getByRole("alertdialog", { name: "Location unavailable" }),
-		).toBeHidden();
+		await locationDialog.getByRole("button", { name: "OK" }).click();
+		await expect(locationDialog).toBeHidden();
 	});
 });
