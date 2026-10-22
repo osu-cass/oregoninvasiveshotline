@@ -39,20 +39,23 @@ from .serializers import ReportSerializer
 from .utils import icon_file_name
 
 
-def list_(request):
+def list_(request: HttpRequest) -> HttpResponse:
+    """Render reports that match a valid search form."""
     params = request.GET
     user = request.user
     report_ids = request.session.get('report_ids', [])
 
     form = ReportSearchForm(params, user=user, report_ids=report_ids)
-    reports = Report.objects.all()
-    if form.is_valid():
-        reports = form.search(reports)
+    form_is_valid = form.is_valid()
+    if form_is_valid:
+        reports = form.search(Report.objects.all())
+    else:
+        reports = Report.objects.none()
 
     # Handle the case where they want to export the reports
     # XXX: Why isn't this a separate view?
     export_format = params.get('export')
-    if user.is_active and export_format in ('kml', 'csv'):
+    if form_is_valid and user.is_active and export_format in ('kml', 'csv'):
         reports = reports.select_related(
             'reported_category',
             'reported_species',
@@ -67,7 +70,7 @@ def list_(request):
 
     # Paginate the results
     paginator = Paginator(reports, settings.ITEMS_PER_PAGE)
-    active_page = request.GET.get('page')
+    active_page = request.GET.get('page') or 1
 
     try:
         page = paginator.page(active_page)
@@ -86,17 +89,20 @@ def list_(request):
     tab = params.get('tabs') or 'search'
     tab_context = get_tab_counts(user, report_ids)
 
-    subscription_url = reverse('notifications-create')
-    subscription_params = request.GET.urlencode()
-    if subscription_params:
-        subscription_url = '?'.join((subscription_url, subscription_params))
-    else:
-        subscription_url = None
+    subscription_url = None
+    if form_is_valid:
+        subscription_url = reverse('notifications-create')
+        subscription_params = request.GET.urlencode()
+        if subscription_params:
+            subscription_url = '?'.join((subscription_url, subscription_params))
+        else:
+            subscription_url = None
 
     context = {
         'reports': reports,
         'page': page,
         'form': form,
+        'form_is_valid': form_is_valid,
         'subscription_url': subscription_url,
         'tab': tab,
     }
