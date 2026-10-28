@@ -287,8 +287,8 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         """Assert that the given result tab and pane are the active ones."""
         tab = get_element_attrs(content, f"list-{view}-tab")
         pane = get_element_attrs(content, f"list-{view}-pane")
-        self.assertIsNotNone(tab)
-        self.assertIsNotNone(pane)
+        assert tab is not None
+        assert pane is not None
         self.assertIn("active", tab["class"].split())
         self.assertEqual(tab["aria-selected"], "true")
         self.assertEqual(tab["aria-controls"], f"list-{view}-pane")
@@ -317,7 +317,7 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         content = response.content.decode()
         self.assert_active_result_view(content, "stats")
         view_input = get_element_attrs(content, "result-view-input")
-        self.assertIsNotNone(view_input)
+        assert view_input is not None
         self.assertEqual(view_input["type"], "hidden")
         self.assertEqual(view_input["name"], "view")
         self.assertEqual(view_input["value"], "stats")

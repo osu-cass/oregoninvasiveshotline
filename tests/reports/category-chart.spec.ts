@@ -131,7 +131,8 @@ test("category donut fits wrapped legends through resizing and Other drilldown",
 	await expect(other).toHaveCount(1);
 	expect((await readChartLayout(page, 8)).fits).toBe(true);
 
-	await other.click();
+	// The slice label can receive the click instead of the underlying path.
+	await other.click({ force: true });
 	await expect(back).toBeVisible();
 	expect((await readChartLayout(page, 2)).fits).toBe(true);
 	await back.click();
