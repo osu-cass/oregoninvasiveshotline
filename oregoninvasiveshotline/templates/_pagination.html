@@ -2,6 +2,7 @@
     <ul class="pagination justify-content-center">
         <li class="page-item {% if not items.has_previous %}disabled{% endif %}">
             <a class="page-link" title="First page" aria-label="First page"
+            {% if preserve_result_view and items.has_previous %}data-result-view-link{% endif %}
             {% if items.has_previous %}
                 href="{% add_get page=1 %}"
             {% else %}
@@ -14,6 +15,7 @@
 
         <li class="page-item {% if not items.has_previous %}disabled{% endif %}">
             <a class="page-link" title="Previous page" aria-label="Previous page"
+            {% if preserve_result_view and items.has_previous %}data-result-view-link{% endif %}
             {% if items.has_previous %}
                 href="{% add_get page=items.previous_page_number %}"
             {% else %}
@@ -26,6 +28,7 @@
 
         <li class="page-item {% if not items.has_next %}disabled{% endif %}">
             <a class="page-link" title="Next page" aria-label="Next page"
+            {% if preserve_result_view and items.has_next %}data-result-view-link{% endif %}
             {% if items.has_next %}
                 href="{% add_get page=items.next_page_number %}"
             {% else %}
@@ -38,6 +41,7 @@
 
         <li class="page-item {% if not items.has_next %}disabled{% endif %}">
             <a class="page-link" title="Last page" aria-label="Last page"
+            {% if preserve_result_view and items.has_next %}data-result-view-link{% endif %}
             {% if items.has_next %}
                 href="{% add_get page=items.paginator.num_pages %}"
             {% else %}

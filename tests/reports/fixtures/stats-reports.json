@@ -1,0 +1,88 @@
+[
+	{
+		"model": "users.user",
+		"pk": 1,
+		"fields": {
+			"email": "stats-reporter@example.com",
+			"first_name": "Stats",
+			"last_name": "Reporter",
+			"prefix": "",
+			"suffix": "",
+			"is_active": false,
+			"is_staff": false,
+			"password": "!",
+			"date_joined": "2023-01-01T00:00:00Z"
+		}
+	},
+	{
+		"model": "reports.report",
+		"pk": 1,
+		"fields": {
+			"reported_category": 3,
+			"description": "Stats fixture report",
+			"location": "Stats fixture location",
+			"point": "SRID=4326;POINT (-122.6 45.4)",
+			"county": 1,
+			"created_by": 1,
+			"created_on": "2023-06-15T12:00:00Z",
+			"is_public": true
+		}
+	},
+	{
+		"model": "reports.report",
+		"pk": 2,
+		"fields": {
+			"reported_category": 3,
+			"actual_species": 36,
+			"description": "Stats fixture report",
+			"location": "Stats fixture location",
+			"point": "SRID=4326;POINT (-122.6 45.4)",
+			"county": 1,
+			"created_by": 1,
+			"created_on": "2024-06-15T12:00:00Z",
+			"is_public": true
+		}
+	},
+	{
+		"model": "reports.report",
+		"pk": 3,
+		"fields": {
+			"reported_category": 2,
+			"description": "Stats fixture report",
+			"location": "Stats fixture location",
+			"point": "SRID=4326;POINT (-123.3 43.2)",
+			"county": 2,
+			"created_by": 1,
+			"created_on": "2025-06-15T12:00:00Z",
+			"is_public": true
+		}
+	},
+	{
+		"model": "reports.report",
+		"pk": 4,
+		"fields": {
+			"reported_category": 2,
+			"description": "Stats fixture report",
+			"location": "Stats fixture location",
+			"point": "SRID=4326;POINT (-123.3 43.2)",
+			"county": 2,
+			"created_by": 1,
+			"created_on": "2025-06-15T12:00:00Z",
+			"is_public": true
+		}
+	},
+	{
+		"model": "reports.report",
+		"pk": 5,
+		"fields": {
+			"reported_category": 3,
+			"description": "Private stats fixture report",
+			"location": "Stats fixture location",
+			"point": "SRID=4326;POINT (-122.6 45.4)",
+			"county": 1,
+			"created_by": 1,
+			"created_on": "2024-06-15T12:00:00Z",
+			"is_public": false
+		}
+	}
+]
