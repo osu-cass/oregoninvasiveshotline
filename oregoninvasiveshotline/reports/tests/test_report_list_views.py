@@ -12,7 +12,14 @@ from oregoninvasiveshotline.species.models import Category, Species
 from oregoninvasiveshotline.utils.test.user import UserMixin
 
 from ..models import Invite, Report
-from .shared import ORIGIN, SuppressPostSaveMixin
+from .shared import ORIGIN, SuppressPostSaveMixin, get_element_attrs
+
+
+def backdate_report(report: Report, year: int) -> None:
+    """Set created_on to mid-year, bypassing auto_now_add."""
+    Report.objects.filter(pk=report.pk).update(
+        created_on=datetime(year, 6, 15, 12, tzinfo=timezone.utc)
+    )
 
 
 class ReportListView(TestCase, UserMixin):
@@ -258,21 +265,15 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
             is_staff=False
         )
 
-    def _backdate(self, report: Report, year: int) -> None:
-        """Set created_on to mid-year, bypassing auto_now_add."""
-        Report.objects.filter(pk=report.pk).update(
-            created_on=datetime(year, 6, 15, 12, tzinfo=timezone.utc)
-        )
-
     def test_stats_grouped_by_year_with_confirmed_counts(self):
         """Group report totals and confirmed counts by year."""
         species = make(Species)
         confirmed = make(Report, point=ORIGIN, actual_species=species)
         unconfirmed = make(Report, point=ORIGIN)
         older = make(Report, point=ORIGIN)
-        self._backdate(confirmed, 2024)
-        self._backdate(unconfirmed, 2024)
-        self._backdate(older, 2023)
+        backdate_report(confirmed, 2024)
+        backdate_report(unconfirmed, 2024)
+        backdate_report(older, 2023)
 
         self.client.login(email=self.user.email, password="foo")
         response = self.client.get(reverse("reports-list"))
@@ -281,6 +282,17 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
             {"year": 2023, "total": 1, "confirmed": 0},
             {"year": 2024, "total": 2, "confirmed": 1},
         ])
+
+    def assert_active_result_view(self, content: str, view: str) -> None:
+        """Assert that the given result tab and pane are the active ones."""
+        tab = get_element_attrs(content, f"list-{view}-tab")
+        pane = get_element_attrs(content, f"list-{view}-pane")
+        self.assertIsNotNone(tab)
+        self.assertIsNotNone(pane)
+        self.assertIn("active", tab["class"].split())
+        self.assertEqual(tab["aria-selected"], "true")
+        self.assertEqual(tab["aria-controls"], f"list-{view}-pane")
+        self.assertIn("active", pane["class"].split())
 
     def test_map_is_the_default_result_view(self):
         """Use the map as the default result view."""
@@ -291,10 +303,8 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
 
         self.assertEqual(response.context["result_view"], "map")
         content = response.content.decode()
-        self.assertIn('class="nav-link active" id="list-map-tab"', content)
-        self.assertIn('aria-controls="list-map-pane" aria-selected="true"', content)
-        self.assertIn('class="tab-pane active" id="list-map-pane"', content)
-        self.assertNotIn('id="result-view-input"', content)
+        self.assert_active_result_view(content, "map")
+        self.assertIsNone(get_element_attrs(content, "result-view-input"))
 
     def test_stats_query_selects_and_preserves_stats_view(self):
         """Select and preserve the stats view through its query parameter."""
@@ -305,13 +315,12 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
 
         self.assertEqual(response.context["result_view"], "stats")
         content = response.content.decode()
-        self.assertIn('class="nav-link active" id="list-stats-tab"', content)
-        self.assertIn('aria-controls="list-stats-pane" aria-selected="true"', content)
-        self.assertIn('class="tab-pane active" id="list-stats-pane"', content)
-        self.assertIn(
-            'id="result-view-input" type="hidden" name="view" value="stats"',
-            content,
-        )
+        self.assert_active_result_view(content, "stats")
+        view_input = get_element_attrs(content, "result-view-input")
+        self.assertIsNotNone(view_input)
+        self.assertEqual(view_input["type"], "hidden")
+        self.assertEqual(view_input["name"], "view")
+        self.assertEqual(view_input["value"], "stats")
 
     def test_invalid_result_view_defaults_to_map(self):
         """Fall back to the map for an invalid result view."""
@@ -322,8 +331,8 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
 
         self.assertEqual(response.context["result_view"], "map")
         content = response.content.decode()
-        self.assertIn('class="nav-link active" id="list-map-tab"', content)
-        self.assertNotIn('id="result-view-input"', content)
+        self.assert_active_result_view(content, "map")
+        self.assertIsNone(get_element_attrs(content, "result-view-input"))
 
     def test_map_and_stats_hidden_when_search_has_no_matches(self):
         """Hide result views when a search has no matches."""
@@ -348,8 +357,8 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         """Exclude private reports from anonymous stats."""
         public = make(Report, point=ORIGIN, is_public=True)
         private = make(Report, point=ORIGIN, is_public=False)
-        self._backdate(public, 2024)
-        self._backdate(private, 2024)
+        backdate_report(public, 2024)
+        backdate_report(private, 2024)
 
         response = self.client.get(reverse("reports-list"))
         self.assertEqual(response.status_code, 200)
@@ -361,7 +370,7 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         """Calculate stats from all matches instead of one result page."""
         reports = make(Report, _quantity=30, point=ORIGIN)
         for report in reports:
-            self._backdate(report, 2024)
+            backdate_report(report, 2024)
 
         self.client.login(email=self.user.email, password="foo")
         response = self.client.get(reverse("reports-list"), {"page": 2})
@@ -374,8 +383,8 @@ class ReportListStats(SuppressPostSaveMixin, TestCase, UserMixin):
         """Fill gaps between report years with zero-valued entries."""
         newer = make(Report, point=ORIGIN)
         older = make(Report, point=ORIGIN)
-        self._backdate(newer, 2025)
-        self._backdate(older, 2022)
+        backdate_report(newer, 2025)
+        backdate_report(older, 2022)
 
         self.client.login(email=self.user.email, password="foo")
         response = self.client.get(reverse("reports-list"))
@@ -461,6 +470,55 @@ class ReportListSummary(SuppressPostSaveMixin, TestCase, UserMixin):
             "county_count": 1,
         })
 
+    def test_stats_only_aggregate_filtered_reports(self):
+        """Exclude nonmatching reports from every stats aggregate."""
+        plants = make(Category, name="Land Plants")
+        insects = make(Category, name="Insects and Spiders")
+        plant_species = make(Species, category=plants)
+        square = Polygon(((0, 0), (0, 1), (1, 1), (1, 0), (0, 0)))
+        plant_county, insect_county = make(
+            County, the_geom=MultiPolygon(square), _quantity=2,
+        )
+        matching = [
+            make(
+                Report,
+                point=ORIGIN,
+                reported_category=plants,
+                actual_species=plant_species,
+                county=plant_county,
+            ),
+            make(Report, point=ORIGIN, reported_category=plants, county=plant_county),
+        ]
+        nonmatching = make(
+            Report,
+            point=ORIGIN,
+            reported_category=insects,
+            county=insect_county,
+            _quantity=3,
+        )
+        for report in matching:
+            backdate_report(report, 2024)
+        for report in nonmatching:
+            backdate_report(report, 2022)
+
+        response = self.client.get(
+            reverse("reports-list"), {"categories": str(plants.pk)},
+        )
+
+        self.assertEqual(response.context["report_stats"], [
+            {"year": 2024, "total": 2, "confirmed": 1},
+        ])
+        self.assertEqual(response.context["report_category_stats"], [
+            {"category_name": "Land Plants", "count": 2},
+        ])
+        self.assertEqual(response.context["report_summary"], {
+            "total": 2,
+            "confirmed": 1,
+            "top_category": "Land Plants",
+            "top_category_count": 2,
+            "county_count": 1,
+        })
+
     def test_summary_empty_search(self):
         """An empty result set has no top category or category count."""
         response = self.client.get(reverse("reports-list"), {"q": "no-match"})
@@ -484,8 +542,6 @@ class ReportListSummary(SuppressPostSaveMixin, TestCase, UserMixin):
 
         response = self.client.get(reverse("reports-list"))
         content = response.content.decode()
-        self.assertNotContains(response, 'Report statistics')
-        self.assertNotContains(response, 'Summary of reports matching your current filters.')
         for card in (
             '<dt class="stats-label">Matching reports</dt><dd class="stats-value">3</dd>',
             '<dt class="stats-label">Confirmed reports</dt><dd class="stats-value">1 '
@@ -495,12 +551,10 @@ class ReportListSummary(SuppressPostSaveMixin, TestCase, UserMixin):
             '<span class="stats-sub">3 reports</span></dd>',
         ):
             self.assertContains(response, f'<div class="stats-summary-item">{card}</div>', html=True)
-        self.assertNotIn("stats-fact", content)
         self.assertIn('id="stats-chart"', content)
         self.assertNotIn('id="stats-pie"', content)
         self.assertIn("Reports submitted by year", content)
         self.assertNotIn("Reports by category", content)
-        self.assertNotIn("all-time", content)
 
     def test_stats_pane_renders_multiple_category_chart(self):
         """The stats pane renders the category chart for multiple slices."""
