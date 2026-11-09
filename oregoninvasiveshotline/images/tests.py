@@ -1,11 +1,16 @@
+import os
+import shutil
 import tempfile
+import time
 from base64 import b64decode
+from io import StringIO
 from unittest.mock import patch
 
 from django import forms
 from django.contrib.gis.geos import Point
+from django.core.management import call_command
 from django.forms.models import modelformset_factory
-from django.test import TestCase
+from django.test import SimpleTestCase, TestCase, override_settings
 
 from model_bakery.baker import make
 
@@ -15,9 +20,42 @@ from oregoninvasiveshotline.reports.models import Report
 from .fields import ClearableImageInput
 from .forms import BaseImageFormSet, ImageForm, ImageFormSet
 from .models import Image
+from .tmp_uploads import TMP_UPLOAD_MAX_AGE, tmp_upload_dir
 
 
 ORIGIN = Point(0, 0)
+
+
+class PurgeTmpUploadsCommandTest(SimpleTestCase):
+    def setUp(self):
+        # Tests otherwise share the real MEDIA_ROOT, so purge an isolated directory.
+        media_root = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, media_root)
+        override = override_settings(MEDIA_ROOT=media_root)
+        override.enable()
+        self.addCleanup(override.disable)
+
+    def make_tmp_file(self, name: str, age_seconds: float) -> str:
+        """Create a temp upload file whose mtime is ``age_seconds`` in the past."""
+        os.makedirs(tmp_upload_dir(), exist_ok=True)
+        path = os.path.join(tmp_upload_dir(), name)
+        with open(path, "wb") as f:
+            f.write(b"x")
+        mtime = time.time() - age_seconds
+        os.utime(path, (mtime, mtime))
+        return path
+
+    def test_deletes_old_files_and_keeps_recent_ones(self):
+        max_age = TMP_UPLOAD_MAX_AGE.total_seconds()
+        old = self.make_tmp_file("old.jpg", max_age + 60)
+        recent = self.make_tmp_file("recent.jpg", max_age - 60)
+
+        out = StringIO()
+        call_command("purge_tmp_uploads", stdout=out)
+
+        self.assertFalse(os.path.exists(old))
+        self.assertTrue(os.path.exists(recent))
+        self.assertIn("Deleted 1 temporary upload(s).", out.getvalue())
 
 
 class ImageFormTest(TestCase, UserMixin):
@@ -113,6 +151,19 @@ class ClearableImageInputTest(TestCase):
 
         form = self.Form({"name": "hello", "image_signed_path": "asdf"})
         self.assertFalse(form.is_valid())
+
+    def test_signed_path_to_purged_file_clears_field(self):
+        img_uri = "data:image/gif;base64," + self.b64
+        form = self.Form({"name": "", "image_data_uri": img_uri})
+        self.assertFalse(form.is_valid())
+        # Attribute exists at runtime but isn't defined during typechecking.
+        widget = form.fields['image'].widget
+        signed_path = widget.signed_path  # pyright: ignore
+        os.remove(widget.signer.unsign(signed_path))  # pyright: ignore
+
+        form = self.Form({"name": "hello", "image_signed_path": signed_path})
+        self.assertFalse(form.is_valid())
+        self.assertIn("image", form.errors)
 
     def test_invalid_data_uri(self):
         img_uri = "invalid"
