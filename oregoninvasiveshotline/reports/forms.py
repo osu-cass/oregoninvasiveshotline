@@ -6,6 +6,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
 from django.db import transaction
 from django.db.models import Q
+from django.utils.html import format_html
 from django import forms
 
 from oregoninvasiveshotline.utils.images import ImageConversionError, get_webp_image
@@ -614,7 +615,7 @@ class ManagementForm(forms.ModelForm):
     def __init__(self, *args, instance, **kwargs):
         initial = kwargs.pop("initial", {})
         if instance.actual_species is None:
-            initial['actual_species'] = instance.reported_species
+            # Pre-filling the species would confirm it on any save.
             initial['category'] = instance.reported_category
         else:
             initial['category'] = instance.actual_species.category
@@ -630,6 +631,11 @@ class ManagementForm(forms.ModelForm):
         actual_species_field = cast(forms.ModelChoiceField, self.fields['actual_species'])
         actual_species_field.empty_label = ""
         actual_species_field.required = False
+        if instance.actual_species is None and instance.reported_species is not None:
+            # The bootstrap help text template marks help text safe, so escape the species name.
+            actual_species_field.help_text = format_html(
+                "Reported as: {}", instance.reported_species
+            )
 
         if self.instance.actual_species and self.instance.actual_species.is_confidential:
             self.fields['is_public'].widget.attrs['disabled'] = True
