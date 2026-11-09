@@ -12,12 +12,38 @@ from .shared import ORIGIN, SuppressPostSaveMixin
 
 class ManagementFormTest(SuppressPostSaveMixin, TestCase):
 
-    def test_species_and_category_initialized(self):
+    def test_category_initialized_but_species_left_empty_on_unconfirmed_report(self):
         species = make(Species)
         report = make(Report, reported_species=species, reported_category=species.category, point=ORIGIN)
         form = ManagementForm(instance=report)
         self.assertEqual(form.initial['category'], species.category)
-        self.assertEqual(form.initial['actual_species'], species)
+        self.assertIsNone(form.initial.get('actual_species'))
+        self.assertEqual(form.fields['actual_species'].help_text, f"Reported as: {species}")
+
+    def test_saving_without_picking_a_species_leaves_report_unconfirmed(self):
+        """Saving only archive, public, or EDRR changes must not confirm the reported species."""
+        species = make(Species)
+        for field, value in (("is_archived", True), ("is_public", True), ("edrr_status", 2)):
+            with self.subTest(field=field):
+                report = make(
+                    Report,
+                    reported_species=species,
+                    reported_category=species.category,
+                    point=ORIGIN,
+                )
+                unbound_form = ManagementForm(instance=report)
+                # Submit what the rendered form would post, plus the one changed field.
+                data = {
+                    "category": unbound_form.initial["category"].pk,
+                    "actual_species": unbound_form.initial.get("actual_species") or "",
+                    field: value,
+                }
+                form = ManagementForm(data, instance=report)
+                self.assertTrue(form.is_valid(), form.errors)
+                form.save()
+                report.refresh_from_db()
+                self.assertEqual(getattr(report, field), value)
+                self.assertIsNone(report.actual_species)
 
     def test_field_widget_ids_match_expected_id_from_javascript(self):
         """
