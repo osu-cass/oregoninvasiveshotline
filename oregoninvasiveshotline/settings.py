@@ -362,6 +362,13 @@ CELERY_BEAT_SCHEDULE = {
         "task": "oregoninvasiveshotline.reports.tasks.generate_icons",
         "schedule": crontab(hour=3, minute=15),
     },
+
+    ## Deletes temporary image uploads older than 24 hours
+    ## 3:30 a.m.
+    "purge_tmp_uploads": {
+        "task": "oregoninvasiveshotline.images.tasks.purge_tmp_uploads",
+        "schedule": crontab(hour=3, minute=30),
+    },
 }
 
 # Application-specific configuration

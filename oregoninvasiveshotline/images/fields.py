@@ -11,6 +11,8 @@ from django.core.signing import BadSignature, Signer
 from django.forms.widgets import FILE_INPUT_CONTRADICTION, ClearableFileInput
 from django.utils.safestring import mark_safe
 
+from .tmp_uploads import tmp_upload_dir
+
 CHOICES = string.ascii_letters + string.digits + "-_"
 assert len(CHOICES) == 64
 
@@ -40,16 +42,13 @@ class ClearableImageInput(ClearableFileInput):
 
     signer = Signer(salt="file-resubmit")
 
-    # where uploaded files are stored temporarily. This needs to be in
-    # MEDIA_ROOT somewhere so the files can be accessed via the web
-    tmp_dir = os.path.join(settings.MEDIA_ROOT, "tmp")
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.signed_path = None
         self._sentinel = object()
         self._cached_value = self._sentinel
-        self.tmp_dir = os.path.join(settings.MEDIA_ROOT, "tmp")
+        # Temp copies live under MEDIA_ROOT so the upload preview can link to them.
+        self.tmp_dir = tmp_upload_dir()
 
     def signed_path_field_name(self, name):
         """
@@ -80,9 +79,10 @@ class ClearableImageInput(ClearableFileInput):
                     try:
                         path = self.signer.unsign(self.signed_path)
                     except BadSignature:
-                        # False means the field value should be cleared, which
-                        # is the best thing we can do in this case. It
-                        # shouldn't happen anyways.
+                        path = None
+                    if path is None or not os.path.isfile(path):
+                        # Clear the field when the signature is bad or the purge task already
+                        # deleted the temp file, so the user re-uploads.
                         self.signed_path = ""
                         self._cached_value = None
                         return self._cached_value
