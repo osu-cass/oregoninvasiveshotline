@@ -1,3 +1,7 @@
+import csv
+import io
+import re
+
 from django.urls import reverse
 from django.test import TestCase
 
@@ -7,6 +11,16 @@ from oregoninvasiveshotline.utils.test.user import UserMixin
 
 from ..models import Invite, Report
 from .shared import ORIGIN
+
+
+def exported_report_ids(export_format: str, content: str) -> set[int]:
+    """Return the report IDs in a CSV or KML export.
+
+    Parsing the IDs avoids false matches against timestamps or other numbers in the export.
+    """
+    if export_format == "csv":
+        return {int(row["Report ID"]) for row in csv.DictReader(io.StringIO(content))}
+    return {int(pk) for pk in re.findall(r"<name>#(\d+) ", content)}
 
 
 class ReportListView(TestCase, UserMixin):
@@ -200,7 +214,8 @@ class ReportListView(TestCase, UserMixin):
     def test_valid_filtered_exports_only_include_matching_reports(self):
         """Export only reports selected by a valid active search."""
         selected_report = make(Report, point=ORIGIN, is_archived=True)
-        excluded_report = make(Report, point=ORIGIN, is_archived=False)
+        # An unarchived report that the search must leave out.
+        make(Report, point=ORIGIN, is_archived=False)
         self.client.login(email=self.user.email, password="foo")
 
         for export_format in ("csv", "kml"):
@@ -216,8 +231,7 @@ class ReportListView(TestCase, UserMixin):
                     response["Content-Disposition"],
                     "attachment; filename=\"reports.{}\"".format(export_format),
                 )
-                self.assertIn(str(selected_report.pk), content)
-                self.assertNotIn(str(excluded_report.pk), content)
+                self.assertEqual(exported_report_ids(export_format, content), {selected_report.pk})
 
     def test_valid_empty_search_keeps_no_matches_message(self):
         """Keep the empty-result message for valid searches."""
