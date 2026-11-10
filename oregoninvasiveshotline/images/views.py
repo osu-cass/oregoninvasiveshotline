@@ -4,6 +4,7 @@ from urllib.parse import quote
 
 from django.conf import settings
 from django.http import FileResponse, Http404, HttpRequest, HttpResponse
+from django.http.response import HttpResponseBase
 from django.shortcuts import get_object_or_404
 from django.utils._os import safe_join
 
@@ -20,7 +21,7 @@ PROTECTED_MEDIA_URL = "/protected-media/"
 CACHE_CONTROL = "private, no-cache"
 
 
-def media_response(name: str) -> HttpResponse:
+def media_response(name: str) -> HttpResponseBase:
     """Return a response that sends the media file ``name``. Callers check permissions first.
 
     Nginx sends the file through ``X-Accel-Redirect``. Django sends it in DEBUG, where
@@ -30,7 +31,7 @@ def media_response(name: str) -> HttpResponse:
         path = safe_join(settings.MEDIA_ROOT, name)
         if not os.path.isfile(path):
             raise Http404()
-        response: HttpResponse = FileResponse(open(path, "rb"))
+        response: HttpResponseBase = FileResponse(open(path, "rb"))
     else:
         # An unknown type must not fall back to Django's text/html default.
         content_type = mimetypes.guess_type(name)[0] or "application/octet-stream"
@@ -40,7 +41,7 @@ def media_response(name: str) -> HttpResponse:
     return response
 
 
-def report_image_response(request: HttpRequest, image: Image, name: str) -> HttpResponse:
+def report_image_response(request: HttpRequest, image: Image, name: str) -> HttpResponseBase:
     """Send the file ``name`` for ``image`` if the requester can see the image on its report."""
     report = image.report or (image.comment.report if image.comment else None)
     if report is None:
@@ -51,7 +52,7 @@ def report_image_response(request: HttpRequest, image: Image, name: str) -> Http
     return media_response(name)
 
 
-def serve_image(request: HttpRequest, name: str) -> HttpResponse:
+def serve_image(request: HttpRequest, name: str) -> HttpResponseBase:
     """Serve an uploaded image from ``MEDIA_ROOT/images``.
 
     User profile photos share this directory and are public.
@@ -65,7 +66,7 @@ def serve_image(request: HttpRequest, name: str) -> HttpResponse:
     raise Http404()
 
 
-def serve_thumbnail(request: HttpRequest, image_id: int) -> HttpResponse:
+def serve_thumbnail(request: HttpRequest, image_id: int) -> HttpResponseBase:
     """Serve the generated thumbnail for an image."""
     image = get_object_or_404(Image.objects.select_related("report", "comment__report"), pk=image_id)
     return report_image_response(request, image, f"generated_thumbnails/{image_id}.png")

@@ -254,7 +254,8 @@ def detail(request, report_id):
                 messages.success(request, "Comment Added!")
                 if can_claim_report(request.user, report):
                     if report.claimed_by is None:
-                        report.claimed_by = request.user
+                        # Pyright narrows claimed_by to None from the check above and rejects any user.
+                        report.claimed_by = request.user  # pyright: ignore[reportAttributeAccessIssue]
                         report.save()
                         messages.success(request, "Report claimed!")
                 return safe_redirect(request, request.get_full_path())

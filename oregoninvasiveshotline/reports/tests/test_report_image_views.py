@@ -141,4 +141,4 @@ class ReportImageViewTest(SuppressPostSaveMixin, DetailViewUserSetupMixin, TestC
             response = self.get_image(image)
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("X-Accel-Redirect", response)
-        self.assertEqual(b"".join(response.streaming_content), b"image-bytes")
+        self.assertEqual(response.getvalue(), b"image-bytes")

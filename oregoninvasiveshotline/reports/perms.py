@@ -1,3 +1,4 @@
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Q, QuerySet
 from django.http import HttpRequest
@@ -5,12 +6,11 @@ from django.http import HttpRequest
 from ..comments.models import Comment
 from ..images.models import Image
 from ..perms import permissions
-from ..users.models import User
 from ..visibility import Visibility
 from .models import Invite, Report
 
 # A logged-in user, an anonymous visitor, or a report creator a session acts as.
-Viewer = User | AnonymousUser
+Viewer = AbstractBaseUser | AnonymousUser
 
 
 @permissions.register(model=Report)
