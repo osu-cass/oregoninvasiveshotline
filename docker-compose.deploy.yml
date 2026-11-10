@@ -36,6 +36,7 @@ services:
       - ./docker/nginx/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./docker/nginx/docker-entrypoint.sh:/docker-entrypoint-custom.sh:ro
       - ./docker/nginx/maintenance.conf:/etc/nginx/conf.d/maintenance.conf:ro
+      - ./docker/nginx/proxy_django.conf:/etc/nginx/snippets/proxy_django.conf:ro
     entrypoint: ["/docker-entrypoint-custom.sh"]
     depends_on:
       - app
