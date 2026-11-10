@@ -155,3 +155,6 @@ version = {attr = "oregoninvasiveshotline.__version__"}
 # https://pip.pypa.io/en/stable/reference/pip/#pep-517-and-518-support
 requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.ruff.lint]
+extend-select = ["E101", "W191"]

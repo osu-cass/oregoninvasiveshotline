@@ -26,7 +26,8 @@
             <li class="nav-item" style="position: relative;">
                 <a class="btn btn-warning" href="{% url 'reports-create' %}">Report Now</a>
                 {% comment %} only show phone on certain screens, since it's kinda ugly {% endcomment %}
-                {% if request.path == '/' or request.path == '/reports/create' %}
+                {% with url_name=request.resolver_match.url_name %}
+                {% if url_name == 'home' or url_name == 'reports-create' or url_name == 'reports-create-new' or url_name == 'reports-create-old' %}
                 	<a
                  		href="tel:+18664682337" 
                      	class="d-none d-lg-inline navbar-phone-number text-decoration-none"
@@ -35,6 +36,7 @@
                         or call <strong>1-866-INVADER</strong>
                     </a>
                 {% endif %}
+                {% endwith %}
             </li>
         </ul>
         <ul class="navbar-nav">

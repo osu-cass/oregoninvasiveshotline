@@ -143,7 +143,6 @@ export default function LocationMap({
 
 		autocomplete.id = searchInputId;
 		autocomplete.className = "d-block w-100 border-0 bg-transparent px-3 py-2";
-		// @ts-expect-error Placeholder does exist but is missing from types.
 		autocomplete.placeholder = "Search for a place...";
 		autocomplete.style.colorScheme = "light";
 

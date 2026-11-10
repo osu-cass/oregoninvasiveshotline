@@ -1,0 +1,31 @@
+{% if form.errors %}
+  <div class="alert alert-danger" role="alert" aria-labelledby="search-errors-heading">
+    <h2 id="search-errors-heading" class="h5">Search errors</h2>
+    <p>Correct the search errors above to view reports.</p>
+    <ul>
+      {% if user.is_active %}
+        {% if form.q.errors %}
+          <li><strong>{{ form.q.label }}:</strong>
+            {% for error in form.q.errors %}{{ error }}{% if not forloop.last %} {% endif %}{% endfor %}
+          </li>
+        {% endif %}
+        {% if form.order_by.errors %}
+          <li><strong>{{ form.order_by.label }}:</strong>
+            {% for error in form.order_by.errors %}{{ error }}{% if not forloop.last %} {% endif %}{% endfor %}
+          </li>
+        {% endif %}
+      {% else %}
+        {% for field in form %}
+          {% if field.errors %}
+            <li><strong>{{ field.label|default:field.name|capfirst }}:</strong>
+              {% for error in field.errors %}{{ error }}{% if not forloop.last %} {% endif %}{% endfor %}
+            </li>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}

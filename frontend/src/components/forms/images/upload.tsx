@@ -117,15 +117,16 @@ export default function ImageUpload({
 			await Promise.allSettled(
 				incoming.map(async (file) => {
 					const tags = await ExifReader.load(file, { expanded: true });
-					const lng = tags.gps?.Longitude;
-					const lat = tags.gps?.Latitude;
-					if (lng != null && lat != null) {
-						if (operationVersion !== locationVersion.current) return;
-						imageLocations.set(`${file.name}-${file.lastModified}`, {
-							lat: Number(lat),
-							lng: Number(lng),
-						});
-					}
+
+					/**
+					 * Android may redact EXIF location metadata, resulting in NaN values.
+					 * Missing values also become NaN through Number(undefined).
+					 */
+					const lat = Number(tags.gps?.Latitude);
+					const lng = Number(tags.gps?.Longitude);
+					if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+					if (operationVersion !== locationVersion.current) return;
+					imageLocations.set(getImageKey(file), { lat, lng });
 				}),
 			);
 
