@@ -15,6 +15,11 @@ CHOICES = string.ascii_letters + string.digits + "-_"
 assert len(CHOICES) == 64
 
 
+def random_name() -> str:
+    """Return 16 random URL-safe characters (96 bits)."""
+    return "".join(CHOICES[x % 64] for x in os.urandom(16))
+
+
 class ClearableImageInput(ClearableFileInput):
     """
     This field widget can be used on an ImageField. It writes the file to
@@ -88,7 +93,7 @@ class ClearableImageInput(ClearableFileInput):
                         return self._cached_value
                 elif has_file:
                     # we have a file, so write it to disk, just in case form validation fails
-                    with NamedTemporaryFile(prefix="".join(CHOICES[x % 64] for x in os.urandom(16)), suffix=".jpg", dir=self.tmp_dir, delete=False) as f:
+                    with NamedTemporaryFile(prefix=random_name(), suffix=".jpg", dir=self.tmp_dir, delete=False) as f:
                         # write the uploaded file to disk, or the data from the dataURI
                         try:
                             if upload:
@@ -103,7 +108,9 @@ class ClearableImageInput(ClearableFileInput):
                             self.signed_path = self.signer.sign(f.name)
 
                 if path:
-                    upload = UploadedFile(open(path, "rb"), name=path, size=os.path.getsize(path))
+                    # The saved file gets its own random name, so its URL
+                    # doesn't reveal the public temp copy's URL.
+                    upload = UploadedFile(open(path, "rb"), name=random_name() + ".jpg", size=os.path.getsize(path))
                     # tack on a URL attribute so the parent Widget thinks it
                     # has an initial value
                     setattr(upload, 'url', settings.MEDIA_URL + os.path.relpath(upload.file.name, settings.MEDIA_ROOT))
