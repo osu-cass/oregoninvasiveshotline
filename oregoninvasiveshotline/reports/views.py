@@ -12,7 +12,6 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls import reverse
-from django.db.models import Q
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
@@ -25,7 +24,6 @@ from oregoninvasiveshotline.utils.inertia import collect_indexed, get_post_data,
 from oregoninvasiveshotline.utils.urls import safe_redirect
 from oregoninvasiveshotline.utils.db import will_be_deleted_with
 from oregoninvasiveshotline.comments.forms import CommentForm
-from oregoninvasiveshotline.comments.models import Comment
 from oregoninvasiveshotline.comments.perms import can_create_comment
 from oregoninvasiveshotline.images.forms import BaseImageFormSet, ImageFormSet
 from oregoninvasiveshotline.images.models import Image
@@ -34,7 +32,15 @@ from oregoninvasiveshotline.users.utils import get_tab_counts
 
 from .forms import InviteForm, ManagementForm, NewReportForm, ReportForm, ReportSearchForm
 from .models import Invite, Report
-from .perms import can_manage_report, can_view_private_report, can_claim_report, permissions
+from .perms import (
+    can_claim_report,
+    can_manage_report,
+    can_view_report,
+    permissions,
+    report_session_user,
+    visible_report_comments,
+    visible_report_images,
+)
 from .serializers import ReportSerializer
 from .utils import icon_file_name
 
@@ -212,27 +218,16 @@ def detail(request, report_id):
     """
     report = get_object_or_404(Report, pk=report_id)
 
-    if (report.pk in request.session.get("report_ids", []) and
-            report.created_by.is_active and
-            report.created_by.pk != request.user.pk and
-            not request.user.is_active):
-        # if the report was created by an active user and they aren't logged in
+    session_user = report_session_user(request, report)
+    if session_user is None:
         return login_required(lambda request: HttpResponse())(request)
+    request.user = session_user
 
-    if (report.pk in request.session.get("report_ids", []) and
-            not report.created_by.is_active and
-            report.created_by.pk != request.user.pk and
-            not request.user.is_active):
-        # if the user submitted the report, allow them to masquerade as that
-        # user for the life of this request
-        request.user = report.created_by
-
-    if not report.is_public:
+    if not can_view_report(request.user, report):
         if request.user.is_anonymous:
             messages.info(request, "If this is your report, please use the login system below to authenticate yourself.")
             return login_required(lambda request: HttpResponse())(request)
-        elif not can_view_private_report(request.user, report):
-            raise PermissionDenied()
+        raise PermissionDenied()
 
     # there are a bunch of forms that can be filled out on this page, by
     # default, they can't be filled out
@@ -259,7 +254,8 @@ def detail(request, report_id):
                 messages.success(request, "Comment Added!")
                 if can_claim_report(request.user, report):
                     if report.claimed_by is None:
-                        report.claimed_by = request.user
+                        # Pyright narrows claimed_by to None from the check above and rejects any user.
+                        report.claimed_by = request.user  # pyright: ignore[reportAttributeAccessIssue]
                         report.save()
                         messages.success(request, "Report claimed!")
                 return safe_redirect(request, request.get_full_path())
@@ -294,19 +290,8 @@ def detail(request, report_id):
         else:
             invite_form = InviteForm()
 
-    # filter down the comments based on the user's permissions
-    comments = Comment.objects.filter(report=report)
-    images = Image.objects.filter(Q(report=report) | Q(comment__report=report))
-    if request.user.is_anonymous:
-        comments = comments.filter(visibility=Comment.PUBLIC)
-        images = images.filter(visibility=Image.PUBLIC)
-    elif request.user.is_active or Invite.objects.filter(user=request.user, report=report).exists():
-        # no need to filter for these folks
-        pass
-    else:
-        # the logged in user is the person who reported
-        comments = comments.filter(Q(visibility=Comment.PUBLIC) | Q(visibility=Comment.PROTECTED))
-        images = images.filter(Q(visibility=Image.PUBLIC) | Q(visibility=Image.PROTECTED))
+    comments = visible_report_comments(request.user, report)
+    images = visible_report_images(request.user, report)
 
     invites = list(i.user.email for i in Invite.objects.filter(report=report).select_related("user"))
 

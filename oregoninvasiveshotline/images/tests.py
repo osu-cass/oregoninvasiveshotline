@@ -1,3 +1,4 @@
+import os
 import tempfile
 from base64 import b64decode
 from unittest.mock import patch
@@ -105,6 +106,18 @@ class ClearableImageInputTest(TestCase):
 
         form = self.Form({"name": "hello", "image_signed_path": signed_path})
         self.assertTrue(form.is_valid())
+
+    def test_upload_name_differs_from_temp_file_name(self):
+        img_uri = "data:image/gif;base64," + self.b64
+        form = self.Form({"name": "hi", "image_data_uri": img_uri})
+        self.assertTrue(form.is_valid())
+
+        upload = form.cleaned_data["image"]
+        temp_name = os.path.basename(upload.file.name)
+        self.assertEqual(os.path.dirname(upload.file.name), form.fields["image"].widget.tmp_dir)  # pyright: ignore
+        self.assertNotEqual(upload.name, temp_name)
+        # The preview still links to the temp copy.
+        self.assertTrue(upload.url.endswith("tmp/" + temp_name))
 
     def test_invalid_signed_path(self):
         img_uri = "data:image/gif;base64," + self.b64

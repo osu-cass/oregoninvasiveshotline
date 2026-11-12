@@ -22,6 +22,7 @@ from django.contrib import admin
 from django.shortcuts import redirect
 
 from .comments import views as comments
+from .images import views as images
 from .notifications import views as notifications
 from .perms import permissions
 from .reports import views as reports
@@ -45,6 +46,10 @@ urlpatterns = [
     re_path(r'^categories/delete/(?P<pk>\d+)/?$', permissions.is_staff(species.CategoryDeleteView.as_view()), name='categories-delete'),
     re_path(r'^categories/detail/(?P<pk>\d+)/?$', permissions.is_staff(species.CategoryDetailView.as_view()), name='categories-detail'),
     re_path(r'^categories/list/?$', permissions.is_staff(species.CategoryList.as_view()), name='categories-list'),
+
+    # Report images go through a permission check. Other media is served directly.
+    path('media/images/<path:name>', images.serve_image, name='images-serve'),
+    path('media/generated_thumbnails/<int:image_id>.png', images.serve_thumbnail, name='images-thumbnail'),
 
     re_path(r'^comments/delete/(?P<comment_id>\d+)/?$', comments.delete, name='comments-delete'),
     re_path(r'^comments/edit/(?P<comment_id>\d+)/?$', comments.edit, name='comments-edit'),
